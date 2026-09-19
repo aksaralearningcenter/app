@@ -36,7 +36,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
     if (!data.nama) { toast('Nama kelas wajib diisi.', 'err'); return; }
     try {
       const res = await api('addClass', data);
-      closeModal(); toast(res.message || 'Kelas ditambahkan.', 'ok'); invalidateCache('classes'); loadPage('classes');
+      closeModal(); toast(res.message || 'Kelas ditambahkan.', 'ok'); invalidateCache('classes'); app.loadPage('classes');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -58,13 +58,13 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
     if (!data.nama) { toast('Nama kelas wajib diisi.', 'err'); return; }
     try {
       const res = await api('updateClass', id, data);
-      closeModal(); toast(res.message || 'Kelas diperbarui.', 'ok'); invalidateCache('classes'); loadPage('classes');
+      closeModal(); toast(res.message || 'Kelas diperbarui.', 'ok'); invalidateCache('classes'); app.loadPage('classes');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function delClass(id, nama) {
     if (!confirm('Hapus kelas ' + nama + '?')) return;
-    try { const res = await api('deleteClass', id); toast(res.message || 'Terhapus.', 'ok'); invalidateCache('classes'); loadPage('classes'); }
+    try { const res = await api('deleteClass', id); toast(res.message || 'Terhapus.', 'ok'); invalidateCache('classes'); app.loadPage('classes'); }
     catch (ex) { toast(ex.message, 'err'); }
   }
 

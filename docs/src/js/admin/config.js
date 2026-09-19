@@ -1,6 +1,6 @@
 // ============ KONFIGURASI (WAJIB DIISI) ============
 // Base URL REST API backend baru (Vercel). Ganti bila domain berubah.
-export const API_DEFAULT = 'https://aksara-api-mocha.vercel.app/api';
+export const API_DEFAULT = 'https://backend-aksara.vercel.app/api';
 
 // Tes lokal: buka sites/index.html?api=http://localhost:3000/api
 // Tanpa parameter itu, selalu memakai API_DEFAULT (produksi).

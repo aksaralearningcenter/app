@@ -220,7 +220,6 @@ const KAMUS = {
   'Email Orang Tua': 'Parent Email',
   'No. HP': 'Phone Number',
   'No HP': 'Phone Number',
-  'Alamat': 'Address',
   'Mapel': 'Subject',
   'Topik': 'Topic',
   'Guru Pengampu': 'Teacher',
@@ -441,7 +440,6 @@ const KAMUS = {
   'Skor dihitung otomatis dari jawaban pilihan ganda &amp; isian. Soal esai menunggu penilaian Anda — buka Detail untuk menilai.': 'The score is calculated automatically from multiple-choice &amp; short answers. Essay questions await your grading — open Detail to grade them.',
   'Tidak ada jawaban tercatat.': 'No answers recorded.',
   'Belum ada siswa yang mengerjakan. Bagikan tautan ujian dari halaman soal.': 'No student has taken this yet. Share the exam link from the questions page.',
-  'Kembali ke daftar': 'Back to list',
 
   // ---------- Pesan (toast) ----------
   'Tersimpan': 'Saved',

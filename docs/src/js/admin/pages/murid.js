@@ -90,7 +90,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
     if (!data.nama || data.nama.length < 3) { toast('Nama wajib diisi (min. 3 huruf).', 'err'); return; }
     try {
       const res = await api('addStudent', data);
-      closeModal(); toast(res.message || 'Murid ditambahkan.', 'ok'); invalidateCache('students'); loadPage('students');
+      closeModal(); toast(res.message || 'Murid ditambahkan.', 'ok'); invalidateCache('students'); app.loadPage('students');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -113,13 +113,13 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
     const data = { id, nama: $('e-nama').value, kelasId: $('e-kelas').value, email: $('e-email').value, noHP: $('e-hp').value, status: $('e-status').value };
     try {
       const res = await api('updateStudent', id, data);
-      closeModal(); toast(res.message || 'Tersimpan.', 'ok'); invalidateCache('students'); loadPage('students');
+      closeModal(); toast(res.message || 'Tersimpan.', 'ok'); invalidateCache('students'); app.loadPage('students');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function delStudent(id, nama) {
     if (!confirm('Hapus murid ' + nama + '?')) return;
-    try { const res = await api('deleteStudent', id); toast(res.message || 'Terhapus.', 'ok'); invalidateCache('students'); loadPage('students'); }
+    try { const res = await api('deleteStudent', id); toast(res.message || 'Terhapus.', 'ok'); invalidateCache('students'); app.loadPage('students'); }
     catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -139,7 +139,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
     if (!data.studentId) { toast('Pilih murid dulu.', 'err'); return; }
     try {
       const res = await api('recordAttendance', data);
-      closeModal(); toast(res.message || 'Absensi dicatat.', 'ok'); invalidateCache('attendance'); loadPage('attendance');
+      closeModal(); toast(res.message || 'Absensi dicatat.', 'ok'); invalidateCache('attendance'); app.loadPage('attendance');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -169,7 +169,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
     if (data.jumlah < 1) { toast('Jumlah minimal Rp 1.', 'err'); return; }
     try {
       const res = await api('addTransaction', data);
-      closeModal(); toast(res.message || 'Transaksi berhasil.', 'ok'); invalidateCache('savings'); loadPage('savings');
+      closeModal(); toast(res.message || 'Transaksi berhasil.', 'ok'); invalidateCache('savings'); app.loadPage('savings');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 

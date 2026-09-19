@@ -44,6 +44,25 @@ function terapkan(res) {
   try { if (window.siapkanChat) window.siapkanChat(res.chat || {}, res.settings || {}); } catch (err) { console.warn('Gagal menyiapkan chatbot:', err); }
 }
 
+// Tampilkan penanda kecil bila konten dinamis gagal dimuat — seksi yang
+// normalnya diisi admin memang disembunyikan, jadi tanpa penanda ini halaman
+// tampak kosong tanpa penjelasan.
+function pasangBannerCobaUlang() {
+  try {
+    if (elById('konten-gagal')) return;
+    const b = document.createElement('div');
+    b.id = 'konten-gagal';
+    b.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;background:#1c2431;color:#fff;padding:10px 16px;border-radius:8px;font:600 13px/1.4 "Plus Jakarta Sans",Arial,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Muat ulang';
+    btn.style.cssText = 'border:0;background:#B8934A;color:#fff;border-radius:6px;padding:5px 10px;font-weight:700;cursor:pointer';
+    btn.addEventListener('click', function () { location.reload(); });
+    b.append(document.createTextNode('Konten belum bisa dimuat (koneksi/API). '), btn);
+    document.body.appendChild(b);
+  } catch (e) { /* abaikan */ }
+}
+
 // Muat konten publik via REST. Tanpa cache sessionStorage lagi: CORS kini
 // benar sehingga panggilan langsung murah, dan perubahan admin langsung
 // terlihat saat halaman dimuat ulang.
@@ -59,5 +78,6 @@ if (LP_API_URL) {
     })
     .catch(function (err) {
       console.warn('Konten dinamis tidak tersedia (' + (err && err.message) + ') — seksi yang belum diisi admin tetap disembunyikan.');
+      pasangBannerCobaUlang();
     });
 }

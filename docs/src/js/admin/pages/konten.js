@@ -400,14 +400,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updatePricing', id, data) : await api('addPricing', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('pricing'); loadPage('pricing');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('pricing'); app.loadPage('pricing');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editPricing(id) { const row = (state.cache.pricing || []).find(r => String(r.id) === String(id)); if (row) openPricingModal(row); }
   async function delPricing(id) {
     if (!confirm('Hapus baris harga ini?')) return;
-    try { const res = await api('deletePricing', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('pricing'); loadPage('pricing'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deletePricing', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('pricing'); app.loadPage('pricing'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ============ KONTEN LANDING: BERITA ============
@@ -432,14 +432,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updateNews', id, data) : await api('addNews', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('news'); loadPage('news');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('news'); app.loadPage('news');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editNews(id) { const row = (state.cache.news || []).find(n => String(n.id) === String(id)); if (row) openNewsModal(row); }
   async function delNews(id) {
     if (!confirm('Hapus berita ini?')) return;
-    try { const res = await api('deleteNews', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('news'); loadPage('news'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deleteNews', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('news'); app.loadPage('news'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ============ KONTEN LANDING: BUKU ============
@@ -468,14 +468,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updateBook', id, data) : await api('addBook', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('books'); loadPage('books');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('books'); app.loadPage('books');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editBook(id) { const row = (state.cache.books || []).find(b => String(b.id) === String(id)); if (row) openBookModal(row); }
   async function delBook(id) {
     if (!confirm('Hapus buku ini?')) return;
-    try { const res = await api('deleteBook', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('books'); loadPage('books'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deleteBook', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('books'); app.loadPage('books'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ============ KONTEN LANDING: GALERI ============
@@ -501,14 +501,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updateGallery', id, data) : await api('addGallery', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('gallery'); loadPage('gallery');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('gallery'); app.loadPage('gallery');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editGallery(id) { const row = (state.cache.gallery || []).find(g => String(g.id) === String(id)); if (row) openGalleryModal(row); }
   async function delGallery(id) {
     if (!confirm('Hapus foto galeri ini?')) return;
-    try { const res = await api('deleteGallery', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('gallery'); loadPage('gallery'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deleteGallery', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('gallery'); app.loadPage('gallery'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ============ KONTEN LANDING: MITRA ============
@@ -530,14 +530,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updatePartner', id, data) : await api('addPartner', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('partners'); loadPage('partners');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('partners'); app.loadPage('partners');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editPartner(id) { const row = (state.cache.partners || []).find(p => String(p.id) === String(id)); if (row) openPartnerModal(row); }
   async function delPartner(id) {
     if (!confirm('Hapus mitra ini?')) return;
-    try { const res = await api('deletePartner', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('partners'); loadPage('partners'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deletePartner', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('partners'); app.loadPage('partners'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ============ KONTEN LANDING: TESTIMONI & FAQ ============
@@ -562,14 +562,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updateTestimoni', id, data) : await api('addTestimoni', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('testimoni'); loadPage('testimoni');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('testimoni'); app.loadPage('testimoni');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editTestimoni(id) { const row = (state.cache.testimoni || []).find(t => String(t.id) === String(id)); if (row) openTestimoniModal(row); }
   async function delTestimoni(id) {
     if (!confirm('Hapus testimoni ini?')) return;
-    try { const res = await api('deleteTestimoni', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('testimoni'); loadPage('testimoni'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deleteTestimoni', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('testimoni'); app.loadPage('testimoni'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function openFaqModal(row) {
@@ -588,14 +588,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updateFaq', id, data) : await api('addFaq', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('faq'); loadPage('faq');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('faq'); app.loadPage('faq');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editFaq(id) { const row = (state.cache.faq || []).find(f => String(f.id) === String(id)); if (row) openFaqModal(row); }
   async function delFaq(id) {
     if (!confirm('Hapus FAQ ini?')) return;
-    try { const res = await api('deleteFaq', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('faq'); loadPage('faq'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deleteFaq', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('faq'); app.loadPage('faq'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ============ PROGRAM / KURIKULUM / KARTU INFO / PENGATURAN SITUS ============
@@ -717,14 +717,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updateProgram', id, data) : await api('addProgram', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('program'); loadPage('program');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('program'); app.loadPage('program');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editProgram(id) { const row = (state.cache.program || []).find(p => String(p.id) === String(id)); if (row) openProgramModal(row); }
   async function delProgram(id) {
     if (!confirm('Hapus program ini?')) return;
-    try { const res = await api('deleteProgram', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('program'); loadPage('program'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deleteProgram', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('program'); app.loadPage('program'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ---------- KURIKULUM ----------
@@ -765,14 +765,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updateKurikulum', id, data) : await api('addKurikulum', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('kurikulum'); loadPage('kurikulum');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('kurikulum'); app.loadPage('kurikulum');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editKurikulum(id) { const row = (state.cache.kurikulum || []).find(k => String(k.id) === String(id)); if (row) openKurModal(row); }
   async function delKurikulum(id) {
     if (!confirm('Hapus kurikulum ini?')) return;
-    try { const res = await api('deleteKurikulum', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('kurikulum'); loadPage('kurikulum'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deleteKurikulum', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('kurikulum'); app.loadPage('kurikulum'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ---------- KARTU INFO ----------
@@ -813,14 +813,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = id ? await api('updateKartu', id, data) : await api('addKartu', data);
       if (!res.success) { toast(res.message, 'err'); return; }
-      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('kartu'); loadPage('kartu');
+      closeModal(); toast(res.message || 'Tersimpan', 'ok'); invalidateCache('kartu'); app.loadPage('kartu');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   function editKartu(id) { const row = (state.cache.kartu || []).find(k => String(k.id) === String(id)); if (row) openKartuModal(row); }
   async function delKartu(id) {
     if (!confirm('Hapus kartu ini?')) return;
-    try { const res = await api('deleteKartu', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('kartu'); loadPage('kartu'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('deleteKartu', id); toast(res.message || 'Terhapus', 'ok'); invalidateCache('kartu'); app.loadPage('kartu'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   // ---------- PENGATURAN SITUS ----------
@@ -841,7 +841,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       invalidateCache('situs');
       state.cache.situs = nilai;        // tampilkan nilai terbaru tanpa menunggu server
       state.cacheTime.situs = Date.now();
-      loadPage('situs');
+      app.loadPage('situs');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -853,7 +853,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       const res = await api('saveChatApiKey', { kunci: kunci.trim() });
       if (!res || !res.success) { toast((res && res.message) || 'Gagal menyimpan kunci.', 'err'); return; }
       toast(res.message || 'Kunci API tersimpan di server.', 'ok');
-      invalidateCache('chatbot'); loadPage('chatbot');
+      invalidateCache('chatbot'); app.loadPage('chatbot');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -862,7 +862,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     try {
       const res = await api('hapusChatApiKey');
       toast(res.message || 'Kunci dihapus.', res && res.success ? 'ok' : 'err');
-      invalidateCache('chatbot'); loadPage('chatbot');
+      invalidateCache('chatbot'); app.loadPage('chatbot');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -897,7 +897,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       else toast(res.message || 'Urutan tersimpan.', 'ok');
     } catch (ex) { toast(ex.message, 'err'); }
     invalidateCache(kind);
-    loadPage(kind);
+    app.loadPage(kind);
   }
 
   function moveItem(kind, id, arah) {

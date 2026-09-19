@@ -64,32 +64,32 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
     if (!data.email) { toast('Email wajib diisi.', 'err'); return; }
     try {
       const res = await api('addUser', data);
-      closeModal(); toast(res.message || 'User ditambahkan.', 'ok'); loadPage('users');
+      closeModal(); toast(res.message || 'User ditambahkan.', 'ok'); app.loadPage('users');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function toggleUserStatus(email, status) {
     if (!confirm((status === 'Aktif' ? 'Nonaktifkan ' : 'Aktifkan kembali ') + email + '?')) return;
-    try { const res = await api('updateUser', email, { status: status === 'Aktif' ? 'Nonaktif' : 'Aktif' }); toast(res.message || 'OK', 'ok'); loadPage('users'); }
+    try { const res = await api('updateUser', email, { status: status === 'Aktif' ? 'Nonaktif' : 'Aktif' }); toast(res.message || 'OK', 'ok'); app.loadPage('users'); }
     catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function toggleUserRole(email, peran) {
     const target = peran === 'Admin' ? 'Guru' : 'Admin';
     if (!confirm('Ubah peran ' + email + ' menjadi ' + target + '?')) return;
-    try { const res = await api('updateUser', email, { peran: target }); toast(res.message || 'OK', 'ok'); loadPage('users'); }
+    try { const res = await api('updateUser', email, { peran: target }); toast(res.message || 'OK', 'ok'); app.loadPage('users'); }
     catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function toggleNotifEmail(email, currentStatus) {
     const newStatus = currentStatus === 'Aktif' ? 'Nonaktif' : 'Aktif';
-    try { const res = await api('updateUser', email, { notifEmail: newStatus }); toast(res.message || 'OK', 'ok'); loadPage('users'); }
+    try { const res = await api('updateUser', email, { notifEmail: newStatus }); toast(res.message || 'OK', 'ok'); app.loadPage('users'); }
     catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function toggleMyNotif(currentStatus) {
     const newStatus = currentStatus === 'Aktif' ? 'Nonaktif' : 'Aktif';
-    try { const res = await api('setMyNotifEmail', newStatus); toast(res.message || 'OK', 'ok'); invalidateCache('dashboard'); loadPage('dashboard'); }
+    try { const res = await api('setMyNotifEmail', newStatus); toast(res.message || 'OK', 'ok'); invalidateCache('dashboard'); app.loadPage('dashboard'); }
     catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -99,14 +99,14 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
       const res = await api('resetUserPassword', email);
       if (res && res.success) {
         toast(res.message || 'Password berhasil direset!', 'ok');
-        loadPage('users');
+        app.loadPage('users');
       } else { toast((res && res.message) || 'Gagal.', 'err'); }
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function delUser(email) {
     if (!confirm('Hapus user ' + email + '?')) return;
-    try { const res = await api('deleteUser', email); toast(res.message || 'Terhapus.', 'ok'); loadPage('users'); }
+    try { const res = await api('deleteUser', email); toast(res.message || 'Terhapus.', 'ok'); app.loadPage('users'); }
     catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -119,14 +119,14 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
         let msg = res.message || 'Berhasil!';
         if (res.username && res.password) msg += '\n\n🔑 Login orang tua — Username: ' + res.username + ' | Password: ' + res.password;
         toast(msg, 'ok');
-        invalidateCache('registrations'); loadPage('registrations');
+        invalidateCache('registrations'); app.loadPage('registrations');
       } else { toast(res.message || 'Gagal.', 'err'); }
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function rejectReg(id) {
     if (!confirm('Tolak pendaftaran ini?')) return;
-    try { const res = await api('rejectRegistration', id); toast(res.message || 'OK', 'ok'); loadPage('registrations'); }
+    try { const res = await api('rejectRegistration', id); toast(res.message || 'OK', 'ok'); app.loadPage('registrations'); }
     catch (ex) { toast(ex.message, 'err'); }
   }
 

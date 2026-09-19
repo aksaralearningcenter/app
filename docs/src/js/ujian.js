@@ -10,7 +10,7 @@
 //   • Kunci jawaban & pembahasan tidak pernah dikirim ke halaman ini.
 //   • Jawaban disimpan berkala ke localStorage agar refresh/HP mati tidak
 //     menghapus pekerjaan siswa.
-const DEFAULT_API = 'https://aksara-api-mocha.vercel.app/api';
+const DEFAULT_API = 'https://backend-aksara.vercel.app/api';
 
 const API_URL = (function () {
   try {

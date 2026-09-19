@@ -79,7 +79,7 @@ npm run build      # versi ter-minify → dist/ (opsional)
 ## Menghubungkan ke backend
 
 Secara bawaan frontend memakai API produksi:
-`https://aksara-api-mocha.vercel.app/api`
+`https://backend-aksara.vercel.app/api`
 
 Untuk mengarahkan ke backend lain (mis. server lokal), tambahkan parameter
 `?api=` pada URL — tidak perlu mengedit berkas:

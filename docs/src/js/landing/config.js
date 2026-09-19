@@ -1,8 +1,8 @@
 // ==================== KONFIGURASI ====================
 // Base URL REST API backend (Vercel) — lihat server/README.md
-//    Contoh: 'https://aksara-api.vercel.app/api'
+//    Contoh: 'https://backend-aksara.vercel.app/api'
 // Tombol "Masuk Sistem" mengarah ke aplikasi admin di folder sites/index.html.
-export const LP_API_DEFAULT = 'https://aksara-api-mocha.vercel.app/api';
+export const LP_API_DEFAULT = 'https://backend-aksara.vercel.app/api';
 
 // Tes lokal: buka index.html?api=http://localhost:3000/api
 // Tanpa parameter itu, selalu memakai LP_API_DEFAULT (produksi).

@@ -168,7 +168,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
   }
 
   let lhLimit = 100;
-  function setLhLimit(n) { lhLimit = n; loadPage('loginhistory'); }
+  function setLhLimit(n) { lhLimit = n; app.loadPage('loginhistory'); }
 
   // ---------- AKSI: LAPORAN ----------
   async function genReport(type, id) {
@@ -178,6 +178,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
       if (res && res.success && res.htmlContent) {
         const w = window.open('', '_blank');
         if (!w) { toast('Popup diblokir! Izinkan popup untuk membuka laporan.', 'err'); return; }
+        w.document.open();
         w.document.write(res.htmlContent);
         w.document.close();
         w.onload = function() { w.focus(); w.print(); };
@@ -211,13 +212,13 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
         api('saveReportSettings', emails),
         api('triggerInstallMonthly')
       ]);
-      toast((save.message || '') + ' ' + (inst.message || ''), 'ok'); loadPage('reports');
+      toast((save.message || '') + ' ' + (inst.message || ''), 'ok'); app.loadPage('reports');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function stopReports() {
     if (!confirm('Hentikan laporan otomatis bulanan?')) return;
-    try { const res = await api('triggerRemoveMonthly'); toast(res.message || 'OK', 'ok'); loadPage('reports'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('triggerRemoveMonthly'); toast(res.message || 'OK', 'ok'); app.loadPage('reports'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function testReport() {
@@ -230,7 +231,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
     const token = $('wa-token').value.trim();
     const enabled = $('wa-enabled').checked;
     if (!token && !confirm('Token kosong — tetap simpan (hanya ubah status aktif)?')) return;
-    try { const res = await api('saveWhatsAppSettings', token, enabled); toast(res.message || 'Tersimpan.', 'ok'); loadPage('settings'); } catch (ex) { toast(ex.message, 'err'); }
+    try { const res = await api('saveWhatsAppSettings', token, enabled); toast(res.message || 'Tersimpan.', 'ok'); app.loadPage('settings'); } catch (ex) { toast(ex.message, 'err'); }
   }
 
   async function testWA() {
@@ -254,7 +255,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
       const res = await api('seedSemuaData');
       toast(res.message || 'Seed selesai.', res && res.success ? 'ok' : 'err');
       ['students', 'classes', 'users', 'pricing', 'news', 'books', 'gallery', 'partners', 'testimoni', 'faq', 'program', 'kurikulum', 'kartu', 'situs', 'maintenance', 'dashboard'].forEach(k => invalidateCache(k));
-      loadPage('maintenance');
+      app.loadPage('maintenance');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
@@ -268,7 +269,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
       toast(res.message || 'Selesai.', 'ok');
       // Semua data bisa berubah → kosongkan cache halaman terkait.
       Object.keys(state.cacheTime).forEach(k => invalidateCache(k));
-      loadPage('maintenance');
+      app.loadPage('maintenance');
     } catch (ex) { toast(ex.message, 'err'); }
   }
 

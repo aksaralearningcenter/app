@@ -9,9 +9,11 @@
     "dev:web": "vite",
     "dev:api": "npm --prefix server run dev:local",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint docs/src/js"
   },
   "devDependencies": {
+    "eslint": "^9.39.5",
     "vite": "^8.3.0"
   }
 }
