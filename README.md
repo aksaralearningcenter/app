@@ -132,8 +132,13 @@ yang bisa dilipat, kotak cari menu, dan sidebar geser di tablet/ponsel.
 
 ## Deploy ke GitHub Pages
 
-Repo yang dipakai: **`aksaralearningcenter/frontend-aksara`**
-(situs uji: <https://aksaralearningcenter.github.io/frontend-aksara/>).
+Repo yang dipakai: **`aksaralearningcenter/app`**
+(situs: <https://aksaralearningcenter.github.io/app/>).
+
+> ℹ️ Path situs mengikuti nama repo, jadi panel admin ada di
+> **`https://aksaralearningcenter.github.io/app/sites/`**. Alamat lama
+> `/frontend-aksara/` berasal dari repo lama dan sudah tidak dipakai — backend
+> memakai `APP_BASE_URL` (default `/app/sites/`) untuk tautan di email.
 
 Bila ingin memakai repo lain:
 

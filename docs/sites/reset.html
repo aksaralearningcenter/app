@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <!-- Jangan bocorkan token reset (ada di URL) ke situs lain lewat Referer. -->
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="preconnect" href="https://backend-aksara.vercel.app" crossorigin>
+  <title>Atur Ulang Password — Aksara Learning Center</title>
+  <style>
+    :root { --biru:#102B4E; --biru2:#1A4073; --emas:#B8934A; --teks:#4A5568; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: linear-gradient(135deg, #102B4E, #1A4073); padding: 20px;
+    }
+    .card {
+      background: #fff; width: 100%; max-width: 420px; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .head { background: linear-gradient(135deg, var(--biru), var(--biru2)); color:#fff; padding: 26px 28px; text-align:center; }
+    .head .logo { font-size: 26px; }
+    .head h1 { font-family: Georgia, serif; margin: 6px 0 2px; font-size: 20px; letter-spacing: 2px; }
+    .head p { margin: 0; font-size: 11px; letter-spacing: 3px; color: #D4AF37; }
+    .body { padding: 26px 28px; color: var(--teks); }
+    h2 { margin: 0 0 8px; color: var(--biru); font-size: 17px; }
+    p.lead { font-size: 13.5px; line-height: 1.6; margin: 0 0 18px; }
+    label { display:block; font-size: 13px; font-weight: 600; color: var(--biru); margin-bottom: 6px; }
+    input {
+      width: 100%; padding: 11px 13px; border: 1px solid #D9DEE5; border-radius: 9px;
+      font-size: 15px; margin-bottom: 14px; font-family: inherit;
+    }
+    input:focus { outline: none; border-color: var(--biru2); box-shadow: 0 0 0 3px rgba(26,64,115,.12); }
+    button {
+      width: 100%; padding: 12px; border: 0; border-radius: 9px; background: var(--biru);
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .msg { padding: 12px 14px; border-radius: 9px; font-size: 13.5px; line-height: 1.55; margin-bottom: 16px; display: none; }
+    .msg.err { display:block; background: #FDECEA; border: 1px solid #F3CFC9; color: #B3261E; }
+    .msg.ok  { display:block; background: #E8F5E9; border: 1px solid #C8E6C9; color: #1B5E20; }
+    .msg.info{ display:block; background: #F8F6F0; border: 1px solid #EAE5D9; color: #6B6F76; }
+    .akun { font-size: 13px; color: #8A8F98; margin: 0 0 16px; }
+    .akun b { color: var(--biru); }
+    a.tombol-link {
+      display: inline-block; margin-top: 6px; color: var(--biru); font-weight: 700;
+      text-decoration: none; font-size: 14px;
+    }
+    .kaki { font-size: 11px; color: #B0B5BC; text-align: center; padding: 0 28px 22px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div class="logo">📖</div>
+      <h1>AKSARA</h1>
+      <p>LEARNING CENTER</p>
+    </div>
+    <div class="body">
+      <h2>Atur Ulang Password</h2>
+      <p class="lead">Buat password baru untuk akun Anda. Tautan ini hanya berlaku sekali.</p>
+
+      <div class="msg" id="msg"></div>
+
+      <!-- Status verifikasi -->
+      <div id="verifikasi">
+        <p class="lead" id="verif-teks">⏳ Memeriksa tautan…</p>
+      </div>
+
+      <!-- Formulir password baru -->
+      <form id="form" style="display:none;">
+        <p class="akun" id="akun"></p>
+        <div>
+          <label for="pw1">Password Baru</label>
+          <input id="pw1" type="password" autocomplete="new-password" minlength="6" maxlength="40" placeholder="Minimal 6 karakter" required>
+        </div>
+        <div>
+          <label for="pw2">Ulangi Password Baru</label>
+          <input id="pw2" type="password" autocomplete="new-password" minlength="6" maxlength="40" placeholder="Ketik ulang password" required>
+        </div>
+        <button id="simpan" type="submit">🔐 Simpan Password Baru</button>
+      </form>
+
+      <!-- Sukses -->
+      <div id="sukses" style="display:none;">
+        <p class="lead">✅ Password berhasil diatur ulang. Silakan masuk memakai password baru Anda.</p>
+        <a class="tombol-link" href="./">→ Buka Panel Admin</a>
+      </div>
+    </div>
+    <div class="kaki">Email otomatis — jangan balas. Butuh bantuan? Hubungi admin Aksara.</div>
+  </div>
+
+  <script type="module" src="../src/js/reset.js"></script>
+</body>
+</html>
