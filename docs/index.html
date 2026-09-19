@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 75 Q 35 65 50 75 Q 65 65 80 75 L 85 80 Q 65 70 50 82 Q 35 70 15 80 Z' fill='%23102B4E'/%3E%3Cpath d='M25 68 Q 38 60 50 68 Q 62 60 75 68 L 80 73 Q 62 65 50 75 Q 38 65 20 73 Z' fill='%231A4073'/%3E%3Cpath d='M50 15 L30 65 L40 65 L50 40 L60 65 L70 65 Z' fill='%23102B4E'/%3E%3Cpath d='M35 45 Q 50 25 65 50 Q 55 40 45 45 Z' fill='%23B8934A'/%3E%3Cpath d='M50 8 L52 14 L58 14 L53 18 L55 24 L50 20 L45 24 L47 18 L42 14 L48 14 Z' fill='%23B8934A'/%3E%3C/svg%3E">
+  <title>Aksara Learning Center | Dari Dasar hingga Akademik</title>
+  <meta name="description" content="Pusat pembelajaran & akademik terpadu: Calistung anak, bimbingan sekolah, pendampingan mahasiswa, penulisan karya ilmiah, hingga skripsi & tugas akhir.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/regular.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/brands.min.css">
+  <link rel="stylesheet" href="./src/styles/landing.css">
+</head>
+<body>
+  <!-- ================= NAVBAR ================= -->
+  <nav class="nav" id="nav">
+    <div class="container">
+      <div class="nav-inner">
+        <a class="logo" href="#home" data-nav="home">
+          <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 75 Q 35 65 50 75 Q 65 65 80 75 L 85 80 Q 65 70 50 82 Q 35 70 15 80 Z" fill="#102B4E"/>
+            <path d="M25 68 Q 38 60 50 68 Q 62 60 75 68 L 80 73 Q 62 65 50 75 Q 38 65 20 73 Z" fill="#1A4073"/>
+            <path d="M50 15 L30 65 L40 65 L50 40 L60 65 L70 65 Z" fill="#102B4E"/>
+            <path d="M35 45 Q 50 25 65 50 Q 55 40 45 45 Z" fill="#B8934A"/>
+            <path d="M50 8 L52 14 L58 14 L53 18 L55 24 L50 20 L45 24 L47 18 L42 14 L48 14 Z" fill="#B8934A"/>
+          </svg>
+          <div class="logo-text">
+            <span class="logo-title">AKSARA</span>
+            <span class="logo-sub">Learning Center</span>
+          </div>
+        </a>
+
+        <div class="nav-links">
+          <button class="nav-link active" data-nav="home">Beranda</button>
+          <button class="nav-link" data-nav="program">Program</button>
+          <button class="nav-link" data-nav="kurikulum">Kurikulum</button>
+          <button class="nav-link" data-nav="harga">Harga</button>
+          <button class="nav-link" data-nav="buku">Buku Panduan</button>
+          <button class="nav-link" data-nav="berita">Berita</button>
+          <button class="nav-link" data-nav="daftar">Daftar</button>
+          <a class="btn btn-navy btn-sm" href="sites/" rel="noopener">Masuk Sistem</a>
+        </div>
+
+        <button class="burger" id="burger" onclick="toggleMenu()" aria-label="Menu">
+          <i class="fa-solid fa-bars" id="burger-icon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobile-menu">
+      <button class="nav-link" data-nav="home">Beranda</button>
+      <button class="nav-link" data-nav="program">Program</button>
+      <button class="nav-link" data-nav="kurikulum">Kurikulum</button>
+      <button class="nav-link" data-nav="harga">Harga</button>
+      <button class="nav-link" data-nav="buku">Buku Panduan</button>
+      <button class="nav-link" data-nav="berita">Berita</button>
+      <button class="nav-link" data-nav="daftar">Daftar</button>
+      <a class="btn btn-navy" href="sites/" rel="noopener">Masuk Sistem</a>
+    </div>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero page-view active" id="home" data-page="home">
+    <div class="hero-glow g1"></div>
+    <div class="hero-glow g2"></div>
+    <div class="container">
+      <div class="hero-inner">
+        <div class="reveal">
+          <div class="badge"><span class="dot"></span> <span data-set="hero_badge">Pusat Pembelajaran &amp; Akademik</span></div>
+          <h1>Dari Dasar <br><span class="gradient-text" style="font-style:italic;" data-set="hero_judul">hingga Akademik.</span></h1>
+          <p class="hero-sub" data-set="hero_sub">Platform bimbingan belajar terpadu untuk setiap jenjang — mulai baca tulis anak,
+            pendampingan sekolah, hingga bimbingan tugas akhir mahasiswa.</p>
+          <div class="hero-ctas">
+            <button class="btn btn-navy" data-nav="program">Jelajahi Program</button>
+            <button class="btn btn-outline" data-nav="daftar">
+              <i class="fa-solid fa-pen-to-square"></i> Daftar Sekarang
+            </button>
+          </div>
+          <div class="hero-trust">
+            <div>
+              <div class="t-n" data-set="trust1_nilai">5</div>
+              <div class="t-l" data-set="trust1_label">Program Unggulan</div>
+            </div>
+            <div>
+              <div class="t-n" data-set="trust2_nilai">1-on-1</div>
+              <div class="t-l" data-set="trust2_label">&amp; Kelompok Kecil</div>
+            </div>
+            <div>
+              <div class="t-n" data-set="trust3_nilai">TK–S1</div>
+              <div class="t-l" data-set="trust3_label">Semua Jenjang</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal">
+          <div class="hero-photo">
+            <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=75"
+                 srcset="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=75 400w,
+                         https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=75 800w,
+                         https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=75 1200w"
+                 sizes="(max-width: 960px) 100vw, 50vw"
+                 width="800" height="450" loading="lazy" alt="Suasana belajar di Aksara Learning Center">
+          </div>
+          <div class="float-card">
+            <div class="fc-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div>
+              <h4>Tutor Ahli</h4>
+              <p>Berpengalaman &amp; Profesional</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STATS ================= -->
+  <section class="stats-band page-view active" data-page="home">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item reveal"><div class="sn" data-stat="1">0</div><div class="sl" data-stat-label="1">Siswa Terbantu</div></div>
+        <div class="stat-item reveal"><div class="sn" data-stat="2">0</div><div class="sl" data-stat-label="2">Program Belajar</div></div>
+        <div class="stat-item reveal"><div class="sn" data-stat="3">0</div><div class="sl" data-stat-label="3">Kepuasan Orang Tua</div></div>
+        <div class="stat-item reveal"><div class="sn" data-stat="4">0</div><div class="sl" data-stat-label="4">Tahun Pengalaman</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FEATURES ================= -->
+  <section class="section alt page-view active" id="tentang" data-page="home">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Mengapa Aksara?</div>
+        <h2 data-set="seksi_unggulan_judul">Lebih dari sekadar tempat belajar, kami mitra kesuksesan Anda.</h2>
+      </div>
+      <div class="feature-grid">
+        <div class="feature reveal">
+          <div class="f-icon"><i class="fa-solid fa-book-open"></i></div>
+          <h3>Kurikulum Adaptif</h3>
+          <p>Materi disesuaikan kebutuhan dan gaya belajar masing-masing siswa untuk hasil optimal.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="f-icon"><i class="fa-solid fa-users"></i></div>
+          <h3>Pendampingan Personal</h3>
+          <p>Pendekatan 1-on-1 atau kelompok kecil agar perkembangan siswa terpantau jelas.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="f-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <h3>Progres Terukur</h3>
+          <p>Laporan berkala nilai, kehadiran, dan capaian belajar yang dapat dipantau orang tua.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="f-icon"><i class="fa-solid fa-award"></i></div>
+          <h3>Kualitas Terjamin</h3>
+          <p>Membantu ratusan siswa mencapai target akademik dari jenjang dasar hingga kelulusan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PROGRAM ================= -->
+  <section class="section page-view" id="program" data-page="program">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Program Kami</div>
+        <h2 data-set="seksi_program_judul">Katalog Program Pembelajaran</h2>
+        <p data-set="seksi_program_sub">Pilih jenjang yang sesuai — setiap program dirancang dengan capaian belajar yang jelas.</p>
+      </div>
+
+      <div class="program-grid" id="program-utama"></div>
+
+      <div class="program-grid second" id="program-tambahan"></div>
+    </div>
+  </section>
+
+  <!-- ================= KURIKULUM / DOKUMENTASI ================= -->
+  <section class="section alt page-view" id="kurikulum" data-page="kurikulum">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Kurikulum &amp; Dokumentasi</div>
+        <h2 data-set="seksi_kurikulum_judul">Transparansi Program untuk Calon Siswa</h2>
+        <p data-set="seksi_kurikulum_sub">Lihat materi, alur belajar, dan capaian tiap program sebelum mendaftar.</p>
+      </div>
+
+      <div class="doc-wrap reveal" id="doc-wrap">
+        <div class="doc-tabs" role="tablist"></div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HARGA & PAKET ================= -->
+  <!-- Seksi ini disembunyikan sampai admin mengisi data (renderer yang menghilangkannya) -->
+  <section class="section page-view is-hidden" id="harga" data-page="harga">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Paket Harga &amp; Layanan</div>
+        <h2 data-set="seksi_harga_judul">Harga Transparan, Paket Bulanan</h2>
+        <p data-set="seksi_harga_sub">Harga dalam bentuk paket bulanan — bukan per pertemuan. Tersedia kelas online maupun private datang ke rumah, dengan penyesuaian jarak &amp; jenjang.</p>
+      </div>
+      <!-- Catatan: tab & tabel di bawah dirender dari data admin (menu Harga di aplikasi admin). -->
+
+      <!-- Tiga paket utama -->
+      <div class="plan-grid">
+        <div class="plan reveal">
+          <div class="plan-emoji">🌱</div>
+          <h3>Basic</h3>
+          <div class="plan-freq">4× Pembelajaran / Bulan</div>
+          <p>Untuk siswa yang hanya membutuhkan pendampingan tambahan.</p>
+          <div class="plan-price"><span class="lbl">Mulai dari</span><span class="val">Rp180.000<small>per bulan (TK–SD online)</small></span></div>
+        </div>
+        <div class="plan featured reveal">
+          <div class="plan-badge">Paling Populer</div>
+          <div class="plan-emoji">⭐</div>
+          <h3>Regular</h3>
+          <div class="plan-freq">8× Pembelajaran / Bulan</div>
+          <p>Untuk siswa yang ingin belajar rutin ±2× seminggu.</p>
+          <div class="plan-price"><span class="lbl">Mulai dari</span><span class="val">Rp340.000<small>per bulan (TK–SD online)</small></span></div>
+        </div>
+        <div class="plan reveal">
+          <div class="plan-emoji">🚀</div>
+          <h3>Intensive</h3>
+          <div class="plan-freq">12× Pembelajaran / Bulan</div>
+          <p>Pendampingan intensif, persiapan ujian, atau mengejar ketertinggalan.</p>
+          <div class="plan-price"><span class="lbl">Mulai dari</span><span class="val">Rp480.000<small>per bulan (TK–SD online)</small></span></div>
+        </div>
+      </div>
+
+      <!-- Tabel harga per program -->
+      <div class="pr-wrap reveal">
+        <div class="pr-tabs" role="tablist">
+          <button class="pr-tab active" data-pr="kids">Aksara Kids (TK–SD)</button>
+          <button class="pr-tab" data-pr="sd">School — SD</button>
+          <button class="pr-tab" data-pr="smp">School — SMP</button>
+          <button class="pr-tab" data-pr="sma">School — SMA</button>
+          <button class="pr-tab" data-pr="academic">Academic (Mahasiswa)</button>
+          <button class="pr-tab" data-pr="writing">Writing</button>
+          <button class="pr-tab" data-pr="final">Final Project</button>
+        </div>
+
+        <div class="pr-panel active" id="pr-kids">
+          <div class="pr-head">
+            <div class="pr-icon"><i class="fa-solid fa-child-reaching"></i></div>
+            <div><h3>Aksara Kids — TK–SD</h3><p>Calistung &amp; pendampingan belajar.</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Paket</th><th>Pertemuan</th><th>Online</th><th>Private Dekat*</th></tr></thead>
+              <tbody>
+                <tr><td>Basic</td><td>4× / bulan</td><td class="rp-strong">Rp180.000</td><td class="rp-strong">Rp200.000</td></tr>
+                <tr class="featured"><td>Regular</td><td>8× / bulan</td><td class="rp-strong">Rp340.000</td><td class="rp-strong">Rp400.000</td></tr>
+                <tr><td>Intensif</td><td>12× / bulan</td><td class="rp-strong">Rp480.000</td><td class="rp-strong">Rp570.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="price-note">*Private dekat = sekitar <b>0–3 km</b>. Durasi 60–90 menit/sesi menyesuaikan jenjang. Contoh Regular: 8 sesi × Rp50.000 = <b>Rp400.000/bulan</b> (private dekat).</p>
+        </div>
+
+        <div class="pr-panel" id="pr-sd">
+          <div class="pr-head">
+            <div class="pr-icon"><i class="fa-solid fa-book"></i></div>
+            <div><h3>Aksara School — SD</h3><p>Bimbingan mata pelajaran sekolah.</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Paket</th><th>Pertemuan</th><th>Online</th><th>Private Dekat</th></tr></thead>
+              <tbody>
+                <tr><td>Basic</td><td>4× / bulan</td><td class="rp-strong">Rp180.000</td><td class="rp-strong">Rp200.000</td></tr>
+                <tr class="featured"><td>Regular</td><td>8× / bulan</td><td class="rp-strong">Rp340.000</td><td class="rp-strong">Rp400.000</td></tr>
+                <tr><td>Intensif</td><td>12× / bulan</td><td class="rp-strong">Rp480.000</td><td class="rp-strong">Rp570.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="price-note">Durasi 60–90 menit/sesi. Harga private menyesuaikan jarak (lihat tabel zona jarak di bawah).</p>
+        </div>
+
+        <div class="pr-panel" id="pr-smp">
+          <div class="pr-head">
+            <div class="pr-icon"><i class="fa-solid fa-book-open"></i></div>
+            <div><h3>Aksara School — SMP</h3><p>Materi lebih kompleks, pendampingan lebih terarah.</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Paket</th><th>Pertemuan</th><th>Online</th><th>Private Dekat</th></tr></thead>
+              <tbody>
+                <tr><td>Basic</td><td>4× / bulan</td><td class="rp-strong">Rp220.000</td><td class="rp-strong">Rp240.000</td></tr>
+                <tr class="featured"><td>Regular</td><td>8× / bulan</td><td class="rp-strong">Rp420.000</td><td class="rp-strong">Rp480.000</td></tr>
+                <tr><td>Intensif</td><td>12× / bulan</td><td class="rp-strong">Rp600.000</td><td class="rp-strong">Rp690.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="price-note">Durasi 60–90 menit/sesi. Harga private menyesuaikan jarak (lihat tabel zona jarak di bawah).</p>
+        </div>
+
+        <div class="pr-panel" id="pr-sma">
+          <div class="pr-head">
+            <div class="pr-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div><h3>Aksara School — SMA</h3><p>Pendampingan mapel tingkat atas &amp; persiapan ujian.</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Paket</th><th>Pertemuan</th><th>Online</th><th>Private Dekat</th></tr></thead>
+              <tbody>
+                <tr><td>Basic</td><td>4× / bulan</td><td class="rp-strong">Rp250.000</td><td class="rp-strong">Rp280.000</td></tr>
+                <tr class="featured"><td>Regular</td><td>8× / bulan</td><td class="rp-strong">Rp480.000</td><td class="rp-strong">Rp560.000</td></tr>
+                <tr><td>Intensif</td><td>12× / bulan</td><td class="rp-strong">Rp690.000</td><td class="rp-strong">Rp810.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="price-note">Contoh SMA Regular private <b>Rp560.000/bulan</b>: 8 sesi × ±90 menit — tutor Rp480.000 + operasional/transport Rp80.000.</p>
+        </div>
+
+        <div class="pr-panel" id="pr-academic">
+          <div class="pr-head">
+            <div class="pr-icon"><i class="fa-solid fa-user-graduate"></i></div>
+            <div><h3>Aksara Academic — Mahasiswa</h3><p>Materi &amp; kebutuhan akademik lebih spesifik.</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Paket</th><th>Pertemuan</th><th>Online</th><th>Private Dekat</th></tr></thead>
+              <tbody>
+                <tr><td>Basic</td><td>4× / bulan</td><td class="rp-strong">Rp300.000</td><td class="rp-strong">Rp340.000</td></tr>
+                <tr class="featured"><td>Regular</td><td>8× / bulan</td><td class="rp-strong">Rp580.000</td><td class="rp-strong">Rp660.000</td></tr>
+                <tr><td>Intensif</td><td>12× / bulan</td><td class="rp-strong">Rp840.000</td><td class="rp-strong">Rp960.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="price-note">Regular Rp660.000 mencakup 8× pendampingan, konsultasi materi akademik, pembahasan tugas, review pekerjaan (±90 menit/sesi). Kebutuhan khusus (analisis data, statistik, coding) dikenakan harga khusus.</p>
+        </div>
+
+        <div class="pr-panel" id="pr-writing">
+          <div class="pr-head">
+            <div class="pr-icon"><i class="fa-solid fa-pen-nib"></i></div>
+            <div><h3>Aksara Writing</h3><p>Makalah • Artikel • Karya Ilmiah</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Paket</th><th class="t-left">Isi</th><th>Harga</th></tr></thead>
+              <tbody>
+                <tr><td>Starter</td><td class="t-left">Konsultasi + outline + 2× review</td><td class="rp-strong">Rp250.000</td></tr>
+                <tr class="featured"><td>Regular</td><td class="t-left">Pendampingan penulisan + 4× review</td><td class="rp-strong">Rp450.000</td></tr>
+                <tr><td>Intensive</td><td class="t-left">Pendampingan outline sampai final + 6× review</td><td class="rp-strong">Rp700.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="price-note">Regular mencakup konsultasi topik, penyusunan outline, pendampingan penulisan, review struktur &amp; bahasa, 4× revisi, dan konsultasi online. Layanan ini merupakan <b>pendampingan</b>, bukan pengerjaan karya akademik atas nama mahasiswa.</p>
+        </div>
+
+        <div class="pr-panel" id="pr-final">
+          <div class="pr-head">
+            <div class="pr-icon"><i class="fa-solid fa-scroll"></i></div>
+            <div><h3>Aksara Final Project</h3><p>Skripsi • Tugas Akhir • Pendampingan Akademik</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Paket</th><th class="t-left">Isi</th><th>Harga</th></tr></thead>
+              <tbody>
+                <tr><td>Starter</td><td class="t-left">Konsultasi + arahan penelitian</td><td class="rp-strong">Rp350.000</td></tr>
+                <tr class="featured"><td>Regular</td><td class="t-left">Pendampingan 8 sesi / bulan</td><td class="rp-strong">Rp750.000</td></tr>
+                <tr><td>Intensive</td><td class="t-left">Pendampingan 12 sesi / bulan</td><td class="rp-strong">Rp1.050.000</td></tr>
+                <tr><td>Premium</td><td class="t-left">Pendampingan intensif + review berkala</td><td class="rp-strong">Rp1.500.000<span class="rp-sub">per bulan</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="price-note">Regular Rp750.000 mencakup 8 sesi konsultasi, finalisasi topik, penyusunan kerangka, pendampingan metodologi, review progres &amp; draft, serta konsultasi revisi (±90 menit/sesi).</p>
+        </div>
+      </div>
+
+      <!-- Zona jarak & tarif per jenjang -->
+      <div class="price-tables-grid">
+        <div class="price-box reveal" id="price-zona-box">
+          <h3>Tarif Private — Berdasarkan Jarak</h3>
+          <p class="pb-sub">Tarif dasar jenjang SD. Tarif per sesi menyesuaikan jarak.</p>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Jarak dari tutor</th><th>Tarif / sesi</th><th>Paket 8×/bulan</th></tr></thead>
+              <tbody>
+                <tr><td>0–3 km</td><td>Rp50.000</td><td class="rp-strong">Rp400.000</td></tr>
+                <tr><td>&gt;3–6 km</td><td>Rp60.000</td><td class="rp-strong">Rp480.000</td></tr>
+                <tr><td>&gt;6–10 km</td><td>Rp70.000</td><td class="rp-strong">Rp560.000</td></tr>
+                <tr><td>&gt;10–15 km</td><td>Rp85.000</td><td class="rp-strong">Rp680.000</td></tr>
+                <tr><td>&gt;15 km</td><td>Mulai Rp100.000</td><td class="rp-strong">Mulai Rp800.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="price-box reveal" id="price-jenjang-box">
+          <h3>Tarif per Jenjang</h3>
+          <p class="pb-sub">Tambahan karena materi lebih kompleks (tarif / sesi).</p>
+          <div class="table-scroll">
+            <table class="price-table">
+              <thead><tr><th>Jenjang</th><th>0–3 km</th><th>3–6 km</th><th>6–10 km</th><th>10–15 km</th></tr></thead>
+              <tbody>
+                <tr><td>SD</td><td>Rp50k</td><td>Rp60k</td><td>Rp70k</td><td>Rp85k</td></tr>
+                <tr><td>SMP</td><td>Rp60k</td><td>Rp70k</td><td>Rp80k</td><td>Rp95k</td></tr>
+                <tr><td>SMA</td><td>Rp70k</td><td>Rp80k</td><td>Rp90k</td><td>Rp110k</td></tr>
+                <tr><td>Mahasiswa</td><td>Rp85k</td><td>Rp95k</td><td>Rp110k</td><td>Rp125k</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="price-note">Contoh: SMA private 8×/bulan, jarak 7 km → 8 × Rp90.000 = <b>Rp720.000/bulan</b>.</p>
+        </div>
+      </div>
+
+      <!-- Paket online -->
+      <div class="price-box reveal" id="price-online-box" style="margin-top:28px;">
+        <h3>Paket Online per Jenjang</h3>
+        <p class="pb-sub">Lebih hemat karena tanpa waktu &amp; biaya perjalanan.</p>
+        <div class="table-scroll">
+          <table class="price-table">
+            <thead><tr><th>Jenjang</th><th>4× / bulan</th><th>8× / bulan</th><th>12× / bulan</th></tr></thead>
+            <tbody>
+              <tr><td>TK–SD</td><td>Rp180.000</td><td class="rp-strong">Rp340.000</td><td>Rp480.000</td></tr>
+              <tr><td>SMP</td><td>Rp220.000</td><td class="rp-strong">Rp420.000</td><td>Rp600.000</td></tr>
+              <tr><td>SMA</td><td>Rp250.000</td><td class="rp-strong">Rp480.000</td><td>Rp690.000</td></tr>
+              <tr><td>Mahasiswa</td><td>Rp300.000</td><td class="rp-strong">Rp580.000</td><td>Rp840.000</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="perk-list">
+          <li><i class="fa-solid fa-circle-check"></i> 8× pembelajaran (±60 menit/sesi untuk TK–SD)</li>
+          <li><i class="fa-solid fa-circle-check"></i> Materi pembelajaran &amp; pendampingan tugas</li>
+          <li><i class="fa-solid fa-circle-check"></i> Evaluasi perkembangan &amp; konsultasi singkat via WhatsApp</li>
+        </ul>
+      </div>
+
+      <p class="price-note reveal" style="text-align:center; margin-top:26px;">
+        Pembayaran dilakukan di awal bulan. Harga private sudah memperhitungkan jarak. Butuh penyesuaian khusus?
+        <a href="https://wa.me/6281280169806?text=Halo%20Aksara,%20saya%20ingin%20konsultasi%20paket" target="_blank" rel="noopener" style="color:var(--gold); font-weight:700;">Hubungi kami</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= FLIPBOOK ================= -->
+  <!-- Seksi ini disembunyikan sampai admin menambahkan buku (renderer yang menghilangkannya) -->
+  <section class="section book-section page-view is-hidden" id="buku" data-page="buku">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow" style="color: var(--gold-light);">Buku Panduan Online</div>
+        <h2 data-set="seksi_buku_judul">Baca Booklet Aksara</h2>
+        <p data-set="seksi_buku_sub">Ringkasan profil, program, dan alur pendaftaran — balik halaman seperti membuka buku sungguhan, atau buka tampilan penuh agar lebih nyaman dibaca.</p>
+      </div>
+
+      <div class="book-shell reveal" id="book-shell">
+        <div class="book-tools">
+          <button class="book-tool" id="book-full" type="button" aria-pressed="false">
+            <i class="fa-solid fa-expand"></i> Tampilan Penuh
+          </button>
+          <span class="book-hint">Balik lembar dengan tombol ◀ ▶, geser di ponsel, atau panah ← → pada keyboard.</span>
+        </div>
+        <div class="book-spread" id="flipbook">
+          <div class="sp-base">
+            <div class="base-page left cover">
+              <div class="cover-mark"><i class="fa-solid fa-book-open-reader"></i></div>
+              <h3>AKSARA</h3>
+              <div class="cover-sub">Learning Center</div>
+              <p class="cover-note">Dari Dasar hingga Akademik — panduan singkat program &amp; layanan kami.</p>
+            </div>
+            <div class="base-page right">
+              <span class="ep-mark">AKSARA • LEARNING CENTER</span>
+            </div>
+          </div>
+          <div class="sp-spine"></div>
+
+          <div class="sp-leaves" id="book-leaves"></div>
+        </div>
+
+        <div class="book-controls">
+          <button class="book-btn" id="book-prev" aria-label="Halaman sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
+          <span class="book-progress" id="book-progress">1 / 4</span>
+          <button class="book-btn" id="book-next" aria-label="Halaman berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="book-dots" id="book-dots"></div>
+      </div>
+
+      <!-- Katalog buku/modul (dikelola admin) -->
+      <div id="book-catalog-wrap" style="margin-top:58px; display:none;">
+        <div class="section-head reveal" style="margin-bottom:34px;">
+          <div class="eyebrow">Katalog Buku &amp; Modul</div>
+          <h2 data-set="seksi_katalog_judul">Bahan Belajar Pilihan</h2>
+        </div>
+        <div class="bookcat-grid" id="book-catalog"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LAYANAN & FASILITAS ================= -->
+  <section class="section page-view active" data-page="home" id="layanan">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Layanan &amp; Fasilitas</div>
+        <h2 data-set="seksi_layanan_judul">Belajar dengan Cara Paling Nyaman</h2>
+        <p data-set="seksi_layanan_sub">Online dari rumah atau privat datang ke rumah — keduanya dengan pendampingan yang sama seriusnya.</p>
+      </div>
+      <div class="sv-grid" id="sv-grid"></div>
+    </div>
+  </section>
+
+  <!-- ================= ALUR BELAJAR ================= -->
+  <section class="section alt page-view active" data-page="home" id="alur">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Alur Belajar</div>
+        <h2 data-set="seksi_alur_judul">Empat Langkah Sederhana</h2>
+        <p data-set="seksi_alur_sub">Dari konsultasi pertama sampai laporan perkembangan — prosesnya jelas dan transparan.</p>
+      </div>
+      <div class="step-grid" id="step-grid"></div>
+    </div>
+  </section>
+
+  <!-- ================= JENJANG ================= -->
+  <section class="section page-view active" data-page="home" id="jenjang">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Jenjang yang Dilayani</div>
+        <h2 data-set="seksi_jenjang_judul">Dari Calistung Hingga Skripsi</h2>
+        <p data-set="seksi_jenjang_sub">Satu pusat belajar untuk seluruh tahap pendidikan, dengan pendekatan yang berbeda di setiap jenjang.</p>
+      </div>
+      <div class="level-grid" id="level-grid"></div>
+    </div>
+  </section>
+
+  <!-- ================= GALERI KEGIATAN ================= -->
+  <section class="section alt page-view active" data-page="home" id="galeri">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Galeri Kegiatan</div>
+        <h2 data-set="seksi_galeri_judul">Momen Belajar di Aksara</h2>
+        <p data-set="seksi_galeri_sub">Klik foto untuk melihat ukuran penuh — gunakan tombol panah atau tombol ← → pada keyboard.</p>
+      </div>
+      <div class="gal-grid reveal" id="gal-grid">
+        <figure class="gal-item wide" data-cap="Suasana kelas Aksara Kids — belajar sambil bermain">
+          <img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&amp;fit=crop&amp;w=1200&amp;q=75"
+               srcset="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&amp;fit=crop&amp;w=600&amp;q=70 600w,
+                       https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&amp;fit=crop&amp;w=1200&amp;q=75 1200w"
+               sizes="(max-width: 960px) 100vw, 50vw" width="1200" height="800" loading="lazy"
+               alt="Suasana kelas Aksara Kids">
+          <span class="gal-zoom"><i class="fa-solid fa-expand"></i></span>
+          <figcaption>Suasana kelas Aksara Kids — belajar sambil bermain</figcaption>
+        </figure>
+        <figure class="gal-item" data-cap="Pendampingan privat 1-on-1 bersama tutor">
+          <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&amp;fit=crop&amp;w=800&amp;q=75"
+               srcset="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&amp;fit=crop&amp;w=400&amp;q=70 400w,
+                       https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&amp;fit=crop&amp;w=800&amp;q=75 800w"
+               sizes="(max-width: 960px) 50vw, 25vw" width="800" height="533" loading="lazy"
+               alt="Pendampingan privat satu lawan satu">
+          <span class="gal-zoom"><i class="fa-solid fa-expand"></i></span>
+          <figcaption>Pendampingan privat 1-on-1</figcaption>
+        </figure>
+        <figure class="gal-item" data-cap="Diskusi kelompok kecil yang tetap terpantau">
+          <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&amp;fit=crop&amp;w=800&amp;q=75"
+               srcset="https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&amp;fit=crop&amp;w=400&amp;q=70 400w,
+                       https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&amp;fit=crop&amp;w=800&amp;q=75 800w"
+               sizes="(max-width: 960px) 50vw, 25vw" width="800" height="533" loading="lazy"
+               alt="Diskusi kelompok kecil">
+          <span class="gal-zoom"><i class="fa-solid fa-expand"></i></span>
+          <figcaption>Diskusi kelompok kecil</figcaption>
+        </figure>
+        <figure class="gal-item wide" data-cap="Latihan calistung bertahap untuk jenjang TK–SD">
+          <img src="https://images.unsplash.com/photo-1544717297-fa95b6ee9643?auto=format&amp;fit=crop&amp;w=1200&amp;q=75"
+               srcset="https://images.unsplash.com/photo-1544717297-fa95b6ee9643?auto=format&amp;fit=crop&amp;w=600&amp;q=70 600w,
+                       https://images.unsplash.com/photo-1544717297-fa95b6ee9643?auto=format&amp;fit=crop&amp;w=1200&amp;q=75 1200w"
+               sizes="(max-width: 960px) 100vw, 50vw" width="1200" height="800" loading="lazy"
+               alt="Latihan calistung anak">
+          <span class="gal-zoom"><i class="fa-solid fa-expand"></i></span>
+          <figcaption>Latihan calistung bertahap</figcaption>
+        </figure>
+        <figure class="gal-item" data-cap="Kelas online interaktif dengan papan tulis digital">
+          <img src="https://images.unsplash.com/photo-1596495578065-6e0763fa1178?auto=format&amp;fit=crop&amp;w=800&amp;q=75"
+               srcset="https://images.unsplash.com/photo-1596495578065-6e0763fa1178?auto=format&amp;fit=crop&amp;w=400&amp;q=70 400w,
+                       https://images.unsplash.com/photo-1596495578065-6e0763fa1178?auto=format&amp;fit=crop&amp;w=800&amp;q=75 800w"
+               sizes="(max-width: 960px) 50vw, 25vw" width="800" height="533" loading="lazy"
+               alt="Kelas online interaktif">
+          <span class="gal-zoom"><i class="fa-solid fa-expand"></i></span>
+          <figcaption>Kelas online interaktif</figcaption>
+        </figure>
+        <figure class="gal-item" data-cap="Pendampingan penulisan &amp; tugas akhir mahasiswa">
+          <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&amp;fit=crop&amp;w=800&amp;q=75"
+               srcset="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&amp;fit=crop&amp;w=400&amp;q=70 400w,
+                       https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&amp;fit=crop&amp;w=800&amp;q=75 800w"
+               sizes="(max-width: 960px) 50vw, 25vw" width="800" height="533" loading="lazy"
+               alt="Pendampingan penulisan tugas akhir">
+          <span class="gal-zoom"><i class="fa-solid fa-expand"></i></span>
+          <figcaption>Pendampingan tugas akhir</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LOGO MITRA ================= -->
+  <!-- Ganti isi tiap .pt-logo dengan logo mitra asli bila tersedia, contoh:
+       <div class="pt-logo"><img src="logo-sekolah.png" alt="Nama Mitra" style="max-width:100%; max-height:56px;"></div> -->
+  <section class="partners page-view active" data-page="home" id="mitra">
+    <div class="container">
+      <div class="pt-head reveal" data-set="seksi_mitra_judul">Dipercaya Sekolah, Kampus &amp; Komunitas Mitra</div>
+      <div class="pt-grid reveal" id="pt-grid"></div>
+    </div>
+  </section>
+
+  <!-- ================= PAKET POPULER ================= -->
+  <section class="section page-view active" data-page="home" id="paket-ringkas">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Paket Populer</div>
+        <h2 data-set="seksi_paket_judul">Tiga Pilihan Paket Bulanan</h2>
+        <p data-set="seksi_paket_sub">Harga sudah dalam bentuk paket bulanan — bukan per pertemuan. Rincian lengkap per jenjang ada di halaman Harga.</p>
+      </div>
+      <div class="plan-grid"></div>
+    </div>
+  </section>
+
+  <!-- ================= TESTIMONIALS ================= -->
+  <section class="section alt page-view active" data-page="home">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Testimoni</div>
+        <h2 data-set="seksi_testimoni_judul">Kata Mereka Tentang Aksara</h2>
+      </div>
+      <div class="testi-grid" id="testi-grid"></div>
+    </div>
+  </section>
+
+  <!-- ================= BERITA (PRATINJAU DI BERANDA) ================= -->
+  <section class="section page-view active is-hidden" data-page="home" id="berita-preview-wrap">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Kabar Terbaru</div>
+        <h2 data-set="seksi_berita_judul">Berita &amp; Kegiatan Terbaru</h2>
+      </div>
+      <div class="news-grid" id="news-preview"></div>
+      <p style="text-align:center; margin-top:30px;"><button class="btn btn-outline" data-nav="berita">Lihat Semua Berita <i class="fa-solid fa-arrow-right"></i></button></p>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section alt page-view active" data-page="home" id="faq">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Pertanyaan Umum</div>
+        <h2 data-set="seksi_faq_judul">Hal yang Sering Ditanyakan</h2>
+        <p data-set="seksi_faq_sub">Belum menemukan jawabannya? Hubungi kami via WhatsApp — kami balas di jam kerja.</p>
+      </div>
+      <div class="faq-list" id="faq-list"></div>
+    </div>
+  </section>
+
+  <!-- ================= CTA BAND ================= -->
+  <section class="section page-view active" data-page="home">
+    <div class="container">
+      <div class="cta-band reveal">
+        <div>
+          <h2 data-set="cta_judul">Belum yakin mulai dari program mana?</h2>
+          <p data-set="cta_teks">Konsultasi gratis 15 menit — kami bantu menentukan program, jenjang, dan paket yang paling sesuai dengan kebutuhan belajar Anda.</p>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a class="btn btn-gold" href="https://wa.me/6281280169806?text=Halo%20Aksara,%20saya%20ingin%20konsultasi%20program" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Konsultasi WhatsApp</a>
+          <a class="btn btn-outline" href="#daftar" data-nav="daftar">Isi Form Pendaftaran</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BERITA (HALAMAN) ================= -->
+  <section class="section page-view" id="berita" data-page="berita">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Berita &amp; Artikel</div>
+        <h2 data-set="seksi_berita_page_judul">Kabar dari Aksara Learning Center</h2>
+        <p data-set="seksi_berita_page_sub">Informasi kegiatan, tips belajar, dan pengumuman terbaru.</p>
+      </div>
+      <div class="news-grid" id="news-list"></div>
+    </div>
+  </section>
+
+  <!-- ================= PENDAFTARAN ================= -->
+  <section class="section alt page-view" id="daftar" data-page="daftar">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Pendaftaran</div>
+        <h2 data-set="seksi_daftar_judul">Daftarkan Putra-Putri Anda</h2>
+      </div>
+      <div class="reg-grid">
+        <div class="reg-info reveal">
+          <h3>Prosesnya Mudah, 3 Langkah</h3>
+          <p>Isi form pendaftaran di samping, tim kami akan menghubungi Anda untuk jadwal kelas coba &amp; penempatan kelas yang sesuai.</p>
+          <ul class="reg-steps">
+            <li><span class="step-num">1</span><span>Isi form pendaftaran online</span></li>
+            <li><span class="step-num">2</span><span>Tim kami konfirmasi via email (1×24 jam)</span></li>
+            <li><span class="step-num">3</span><span>Kelas coba &amp; aktivasi rekening tabungan belajar</span></li>
+          </ul>
+        </div>
+        <div class="reg-card reveal">
+          <h3>📝 Form Pendaftaran Murid Baru</h3>
+          <div class="form-msg" id="reg-msg"></div>
+          <form id="reg-form" onsubmit="submitRegistration(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nama Calon Murid <span class="req">*</span></label>
+                <input class="input" type="text" id="reg-nama" required maxlength="60" placeholder="Nama lengkap anak">
+              </div>
+              <div class="form-group">
+                <label>Tanggal Lahir</label>
+                <input class="input" type="date" id="reg-lahir">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Program <span class="req">*</span></label>
+                <select class="input" id="reg-program" required>
+                  <option value="">-- Pilih Program --</option>
+                  <option value="Aksara Kids (TK-SD)">Aksara Kids (TK-SD)</option>
+                  <option value="Aksara School (SD-SMA)">Aksara School (SD-SMA)</option>
+                  <option value="Aksara Academic (Mahasiswa)">Aksara Academic (Mahasiswa)</option>
+                  <option value="Aksara Writing">Aksara Writing</option>
+                  <option value="Aksara Final Project">Aksara Final Project</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Nama Orang Tua</label>
+                <input class="input" type="text" id="reg-ortu" maxlength="60" placeholder="Nama ayah/ibu">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>No HP / WhatsApp <span class="req">*</span></label>
+                <input class="input" type="tel" id="reg-hp" required maxlength="16" placeholder="08xxxxxxxxxx">
+              </div>
+              <div class="form-group">
+                <label>Email <span class="req">*</span></label>
+                <input class="input" type="email" id="reg-email" required placeholder="email@contoh.com">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Catatan (opsional)</label>
+              <textarea class="input" id="reg-catatan" placeholder="Contoh: ingin kelas coba hari Sabtu"></textarea>
+            </div>
+            <button type="submit" class="btn btn-navy btn-block" id="reg-btn">📨 Kirim Pendaftaran</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA ================= -->
+  <section class="cta page-view" data-page="daftar">
+    <div class="cta-blob b1"></div>
+    <div class="cta-blob b2"></div>
+    <div class="cta-inner reveal">
+      <h2>"Your learning journey starts here."</h2>
+      <p>Jangan biarkan kesulitan belajar menghambat potensi Anda. Tim ahli Aksara siap mendampingi Anda mencapai target akademik.</p>
+      <button class="btn btn-gold" data-nav="daftar">
+        Daftar Sekarang <i class="fa-solid fa-arrow-right"></i>
+      </button>
+      <div class="contact-badges">
+        <a class="contact-badge" href="https://wa.me/6281280169806" target="_blank" rel="noopener">
+          <i class="fa-brands fa-whatsapp"></i> <span data-set="telepon">0812-8016-9806</span>
+        </a>
+        <a class="contact-badge" href="https://www.instagram.com/aksaracenter.id" target="_blank" rel="noopener">
+          <i class="fa-brands fa-instagram"></i> @askaracenter.id
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a class="logo" href="#home" data-nav="home">
+            <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 75 Q 35 65 50 75 Q 65 65 80 75 L 85 80 Q 65 70 50 82 Q 35 70 15 80 Z" fill="#102B4E"/>
+              <path d="M25 68 Q 38 60 50 68 Q 62 60 75 68 L 80 73 Q 62 65 50 75 Q 38 65 20 73 Z" fill="#1A4073"/>
+              <path d="M50 15 L30 65 L40 65 L50 40 L60 65 L70 65 Z" fill="#102B4E"/>
+              <path d="M35 45 Q 50 25 65 50 Q 55 40 45 45 Z" fill="#B8934A"/>
+              <path d="M50 8 L52 14 L58 14 L53 18 L55 24 L50 20 L45 24 L47 18 L42 14 L48 14 Z" fill="#B8934A"/>
+            </svg>
+            <span class="logo-title" style="font-size:1.08rem;">AKSARA</span>
+          </a>
+          <p class="footer-desc" data-set="footer_tagline">Pusat pembelajaran dan akademik terpadu yang menemani langkah sukses pendidikan Anda dari usia dini hingga perguruan tinggi.</p>
+          <div class="socials">
+            <a class="social" href="https://www.instagram.com/aksaracenter.id" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a class="social" href="https://wa.me/6281280169806" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          </div>
+        </div>
+
+        <div>
+          <h4>Tautan Cepat</h4>
+          <ul>
+            <li><a href="#home" data-nav="home">Beranda</a></li>
+            <li><a href="#program" data-nav="program">Program</a></li>
+            <li><a href="#kurikulum" data-nav="kurikulum">Kurikulum</a></li>
+            <li><a href="#harga" data-nav="harga">Harga &amp; Paket</a></li>
+            <li><a href="#buku" data-nav="buku">Buku Panduan</a></li>
+            <li><a href="#berita" data-nav="berita">Berita</a></li>
+            <li><a href="sites/" rel="noopener">Masuk Sistem</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Program Kami</h4>
+          <ul>
+            <li><a href="https://wa.me/6281280169806?text=Halo%20Aksara,%20saya%20ingin%20info%20tentang%20Aksara%20Kids" target="_blank" rel="noopener">Aksara Kids (TK-SD)</a></li>
+            <li><a href="https://wa.me/6281280169806?text=Halo%20Aksara,%20saya%20ingin%20info%20tentang%20Aksara%20School" target="_blank" rel="noopener">Aksara School (SD-SMA)</a></li>
+            <li><a href="https://wa.me/6281280169806?text=Halo%20Aksara,%20saya%20ingin%20info%20tentang%20Aksara%20Academic" target="_blank" rel="noopener">Aksara Academic (Mahasiswa)</a></li>
+            <li><a href="https://wa.me/6281280169806?text=Halo%20Aksara,%20saya%20ingin%20konsultasi%20skripsi" target="_blank" rel="noopener">Konsultasi Skripsi/Tugas Akhir</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Hubungi Kami</h4>
+          <ul class="footer-contact">
+            <li><i class="fa-solid fa-phone"></i><a data-set="telepon" href="tel:6281280169806">0812-8016-9806</a></li>
+            <li><i class="fa-brands fa-instagram"></i><span>@askaracenter.id</span></li>
+            <li><i class="fa-solid fa-clock"></i><span data-set="jam_operasional">Senin - Sabtu<br>08:00 - 17:00 WIB</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="copyright">
+        &copy; <span id="year">2026</span> Aksara Learning Center.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= CHATBOT AKSARA ================= -->
+  <!-- Muncul hanya bila admin mengaktifkan chatbot & kunci API sudah disimpan        di server. Pesan dikirim ke backend (POST /public/chat) — kunci API tidak pernah
+       ada di halaman ini. -->
+  <div id="chat" hidden>
+    <section class="chat-panel" id="chat-panel" role="dialog" aria-label="Asisten Aksara" hidden>
+      <header class="chat-head">
+        <div class="chat-id">
+          <span class="chat-avatar"><i class="fa-solid fa-graduation-cap"></i></span>
+          <span>
+            <b id="chat-nama">Tanya Aksara</b>
+            <small>Asisten Aksara Learning Center</small>
+          </span>
+        </div>
+        <button class="chat-x" id="chat-x" type="button" aria-label="Tutup chat"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="chat-body" id="chat-body" aria-live="polite"></div>
+      <div class="chat-saran" id="chat-saran"></div>
+      <form class="chat-form" id="chat-form" autocomplete="off">
+        <textarea id="chat-input" rows="1" placeholder="Tulis pertanyaan Anda…" aria-label="Tulis pesan"></textarea>
+        <button type="submit" id="chat-kirim" aria-label="Kirim pesan"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+      <p class="chat-note" id="chat-note"></p>
+    </section>
+
+    <button class="chat-fab" id="chat-fab" type="button" aria-expanded="false" aria-controls="chat-panel">
+      <i class="fa-solid fa-comments"></i> <span id="chat-fab-label">Tanya Aksara</span>
+      <span class="chat-dot" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <!-- ================= LIGHTBOX GALERI ================= -->
+  <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Galeri foto kegiatan">
+    <button class="lb-btn lb-x" id="lb-x" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+    <button class="lb-btn lb-prev" id="lb-prev" aria-label="Foto sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="lb-btn lb-next" id="lb-next" aria-label="Foto berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
+    <img id="lb-img" src="" alt="Foto kegiatan Aksara Learning Center">
+    <div class="lb-cap" id="lb-cap"></div>
+  </div>
+
+  <script type="module" src="./src/js/landing/main.js"></script>
+</body>
+</html>

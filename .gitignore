@@ -1,0 +1,23 @@
+# Dependensi
+node_modules/
+
+# Backend punya repo sendiri (Saepul-alam/backend-nodejs)
+# — jangan ikut ke repo frontend ini.
+/server/
+
+# Hasil build Vite (tidak perlu di-commit)
+dist/
+
+# Arsip lokal & alat audit mandiri (tidak ikut dipublikasikan)
+_backup/
+legacy/
+.audit/
+.audit-src/
+.audit*.json
+
+# Rahasia — JANGAN pernah di-commit
+server/.env
+server/.env.local
+
+# OS
+.DS_Store

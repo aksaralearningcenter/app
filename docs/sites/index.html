@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 75 Q 35 65 50 75 Q 65 65 80 75 L 85 80 Q 65 70 50 82 Q 35 70 15 80 Z' fill='%23102B4E'/%3E%3Cpath d='M25 68 Q 38 60 50 68 Q 62 60 75 68 L 80 73 Q 62 65 50 75 Q 38 65 20 73 Z' fill='%231A4073'/%3E%3Cpath d='M50 15 L30 65 L40 65 L50 40 L60 65 L70 65 Z' fill='%23102B4E'/%3E%3Cpath d='M35 45 Q 50 25 65 50 Q 55 40 45 45 Z' fill='%23B8934A'/%3E%3Cpath d='M50 8 L52 14 L58 14 L53 18 L55 24 L50 20 L45 24 L47 18 L42 14 L48 14 Z' fill='%23B8934A'/%3E%3C/svg%3E">
+  <title>Aksara Learning Center — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../src/styles/admin.css">
+  <!-- Anti-kedip: dipasang SEBELUM modul JS jalan supaya
+       (1) layar login tidak sempat muncul saat halaman di-refresh, dan
+       (2) tema + bahasa pilihan pengguna langsung terpakai — tanpa ini tema
+           gelap akan berkedip putih dulu di setiap pemuatan halaman. -->
+  <script>
+    try {
+      if (localStorage.getItem('aksara_token') && localStorage.getItem('aksara_user')) {
+        document.documentElement.classList.add('ada-sesi');
+      }
+      var tema = localStorage.getItem('aksara_tema') || 'terang';
+      document.documentElement.setAttribute('data-theme', tema === 'gelap' ? 'dark' : 'light');
+      var bahasa = localStorage.getItem('aksara_bahasa') || 'id';
+      document.documentElement.setAttribute('lang', bahasa === 'en' ? 'en' : 'id');
+    } catch (e) { /* localStorage diblokir → tampilkan login seperti biasa */ }
+  </script>
+</head>
+<body>
+
+  <!-- ================= LOGIN ================= -->
+  <div class="login" id="login">
+    <div class="login-box">
+      <div class="login-head">
+        <h1>AKSARA</h1>
+        <p>Learning Center — Sistem Internal</p>
+      </div>
+      <div class="login-body">
+        <div class="login-err" id="login-err"></div>
+        <form onsubmit="doLogin(event)">
+          <div class="fg"><label>Username atau Email</label><input id="lg-user" required autocomplete="username" placeholder="username / email"></div>
+          <div class="fg"><label>Password</label><input id="lg-pass" type="password" required autocomplete="current-password" placeholder="password"></div>
+          <button class="btn btn-n" style="width:100%; justify-content:center;" id="lg-btn">🔐 Masuk</button>
+        </form>
+        <p style="text-align:center; margin-top:14px;"><a href="#" onclick="forgotPass(); return false;" style="font-size:0.83rem; color:var(--navy2);">Lupa password?</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= APP ================= -->
+  <div class="shell" id="shell">
+    <!-- Sidebar: brand + navigasi + akun -->
+    <aside class="sidebar">
+      <div class="brand">
+        <svg width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 75 Q 35 65 50 75 Q 65 65 80 75 L 85 80 Q 65 70 50 82 Q 35 70 15 80 Z" fill="#fff"/>
+          <path d="M50 15 L30 65 L40 65 L50 40 L60 65 L70 65 Z" fill="#fff"/>
+          <path d="M35 45 Q 50 25 65 50 Q 55 40 45 45 Z" fill="#D4AF37"/>
+          <path d="M50 8 L52 14 L58 14 L53 18 L55 24 L50 20 L45 24 L47 18 L42 14 L48 14 Z" fill="#D4AF37"/>
+        </svg>
+        <div><b>AKSARA</b><small>Sistem Manajemen</small></div>
+      </div>
+
+      <!-- Kotak cari menu: dengan ±33 menu, mengetik 2–3 huruf jauh lebih
+           cepat daripada menyapu daftar. Grup otomatis terbuka saat mencari. -->
+      <div class="nav-search">
+        <input id="nav-cari" type="search" placeholder="Cari menu…" autocomplete="off" aria-label="Cari menu">
+      </div>
+
+      <nav class="nav" id="nav">
+        <div class="nav-group" data-group="Utama">
+          <button class="side-label" type="button" data-lipat="Utama">Utama <i class="chev">▾</i></button>
+          <div class="nav-items">
+            <button data-page="dashboard" data-title="Dashboard" class="active">📊 Dashboard</button>
+          </div>
+        </div>
+        <div class="nav-group" data-group="Akademik">
+          <button class="side-label" type="button" data-lipat="Akademik">Akademik <i class="chev">▾</i></button>
+          <div class="nav-items">
+            <button data-page="students" data-title="Data Murid">👨‍🎓 Murid</button>
+            <button data-page="classes" data-title="Kelas">🏫 Kelas</button>
+            <button data-page="attendance" data-title="Absensi">📝 Absensi</button>
+            <button data-page="progress" data-title="Progres Belajar">📈 Progres</button>
+            <button data-page="asesmen" data-title="Asesmen">🧪 Asesmen</button>
+          </div>
+        </div>
+        <div class="nav-group" data-group="Keuangan">
+          <button class="side-label" type="button" data-lipat="Keuangan">Keuangan <i class="chev">▾</i></button>
+          <div class="nav-items">
+            <button data-page="savings" data-title="Tabungan">💰 Tabungan</button>
+            <button data-page="transactions" data-title="Transaksi">🧾 Transaksi</button>
+            <button data-page="reports" data-title="Laporan">📄 Laporan</button>
+            <button data-page="stats" data-title="Statistik">📊 Statistik</button>
+          </div>
+        </div>
+        <div class="nav-group" data-group="Konten Landing">
+          <button class="side-label" type="button" data-lipat="Konten Landing">Konten Landing <i class="chev">▾</i></button>
+          <div class="nav-items">
+            <button data-page="pricing" data-title="Harga &amp; Paket">🏷️ Harga</button>
+            <button data-page="news" data-title="Berita">📰 Berita</button>
+            <button data-page="books" data-title="Buku">📚 Buku</button>
+            <button data-page="gallery" data-title="Galeri Kegiatan">📷 Galeri</button>
+            <button data-page="partners" data-title="Mitra &amp; Logo">🤝 Mitra</button>
+            <button data-page="testimoni" data-title="Testimoni">⭐ Testimoni</button>
+            <button data-page="faq" data-title="FAQ">❓ FAQ</button>
+            <button data-page="program" data-title="Program">🎓 Program</button>
+            <button data-page="kurikulum" data-title="Kurikulum">📘 Kurikulum</button>
+            <button data-page="kartu" data-title="Kartu Info Beranda">🗂️ Kartu Info</button>
+            <button data-page="situs" data-title="Pengaturan Situs">⚙️ Pengaturan Situs</button>
+            <button data-page="chatbot" data-title="Chatbot Aksara">🤖 Chatbot</button>
+          </div>
+        </div>
+        <div class="nav-group" data-group="Sistem">
+          <button class="side-label" type="button" data-lipat="Sistem">Sistem <i class="chev">▾</i></button>
+          <div class="nav-items">
+            <button data-page="users" data-title="Users">👥 Users</button>
+            <button data-page="registrations" data-title="Pendaftar">📥 Pendaftar</button>
+            <button data-page="activitylog" data-title="Log Aktivitas">📜 Log</button>
+            <button data-page="loginhistory" data-title="Riwayat Login">🕘 Riwayat Login</button>
+            <button data-page="settings" data-title="Pengaturan WhatsApp">💬 WhatsApp</button>
+            <button data-page="maintenance" data-title="Pemeliharaan Data">🛠️ Pemeliharaan Data</button>
+          </div>
+        </div>
+        <div class="nav-kosong">Tidak ada menu yang cocok.</div>
+      </nav>
+
+      <div class="sidebar-foot">
+        <span id="who-label"></span>
+        <button class="tbtn" id="btn-cp" onclick="openChangePass()">🔑 Ganti Password</button>
+        <button class="tbtn" onclick="doLogout()">🚪 Keluar</button>
+      </div>
+    </aside>
+
+    <!-- Area konten -->
+    <div class="main">
+      <header class="topbar">
+        <button class="icon-btn hanya-mobile" id="btn-nav" type="button" aria-label="Buka menu" aria-controls="nav" aria-expanded="false">☰</button>
+        <div class="tb-title">
+          <div class="crumb">Aksara Learning Center · Panel Admin</div>
+          <h2 id="pg-title">Dashboard</h2>
+        </div>
+        <div class="tb-right">
+          <button class="icon-btn" id="btn-tema" type="button" title="Terang / Gelap" aria-label="Ganti tema terang atau gelap">🌙</button>
+          <div class="lang-switch" id="lang-switch" role="group" aria-label="Pilihan bahasa">
+            <button type="button" data-bahasa="id">ID</button>
+            <button type="button" data-bahasa="en">EN</button>
+          </div>
+          <a class="tbtn tbtn-dark" href="../" target="_blank" rel="noopener">🌐 Buka Situs</a>
+        </div>
+      </header>
+      <div class="wrap"><div id="page"></div></div>
+    </div>
+  </div>
+
+  <!-- Latar gelap di belakang laci menu (tablet & ponsel); mengetuknya menutup. -->
+  <div class="nav-overlay" id="nav-overlay"></div>
+
+  <div class="modal-bg" id="modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <div class="mh"><h3 id="m-title"></h3><button class="btn-o btn btn-sm" onclick="closeModal()">✕</button></div>
+      <div class="mb" id="m-body"></div>
+      <div class="mf" id="m-foot"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <!-- qrcode-generator v1.4.4 (MIT, Kazuhiko Arase) — global window.qrcode -->
+  <script src="../src/js/admin/vendor/qrcode.js"></script>
+  <script type="module" src="../src/js/admin/main.js"></script>
+</body>
+</html>

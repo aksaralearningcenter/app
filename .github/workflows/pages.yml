@@ -1,0 +1,47 @@
+# ==================== TERBITKAN KE GITHUB PAGES ====================
+# Situs ada di folder docs/ (statis murni — tidak ada langkah build).
+#
+# Workflow ini sengaja dipakai sebagai ganti penyetelan manual di
+# Settings → Pages: langkah "configure-pages" di bawah mengaktifkan Pages
+# sendiri (enablement: true), jadi tidak perlu memilih branch/folder apa pun.
+name: Deploy ke GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Cukup satu penerbitan berjalan; kiriman baru membatalkan yang belum selesai.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.terbit.outputs.page_url }}
+    steps:
+      - name: Ambil isi repo
+        uses: actions/checkout@v4
+
+      # Mengaktifkan GitHub Pages bila belum aktif (build_type: workflow).
+      - name: Siapkan Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Kemas folder docs/
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Publikasikan
+        id: terbit
+        uses: actions/deploy-pages@v4
