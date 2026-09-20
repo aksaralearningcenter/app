@@ -667,3 +667,32 @@
     html[data-theme="dark"] .ab-tb.b-warn.on { background: #8A6A2E; }
     html[data-theme="dark"] .ab-tb.b-err.on { background: #A72319; }
     html[data-theme="dark"] .ab-tb.b-info.on { background: #1A4073; }
+
+/* Panel Orang Tua/Murid: tab anak, KPI, akordeon, kartu buku. */
+.ortu-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 4px; }
+.ortu-tab { border: 1px solid var(--border); background: #fff; color: var(--navy); border-radius: 999px; padding: 8px 16px; font-weight: 700; font-size: .82rem; cursor: pointer; transition: var(--transisi); font-family: inherit; }
+.ortu-tab:hover { border-color: var(--gold); }
+.ortu-tab.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+.ortu-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.ortu-notif { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: .82rem; margin-top: 12px; }
+details.ortu-sec { background: #fff; border: 1px solid var(--border); border-radius: 14px; margin-top: 12px; box-shadow: 0 12px 28px -24px rgba(16,43,78,.5); overflow: hidden; }
+details.ortu-sec > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; font-weight: 800; font-size: .92rem; color: var(--navy); cursor: pointer; }
+details.ortu-sec > summary::-webkit-details-marker { display: none; }
+details.ortu-sec > summary:hover { color: var(--navy2); }
+.ortu-caret { transition: transform .2s; color: var(--gold); }
+details.ortu-sec[open] .ortu-caret { transform: rotate(180deg); }
+.ortu-sec-isi { padding: 0 18px 16px; }
+.ortu-books { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.ortu-book { display: flex; gap: 12px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--surface-2); }
+.ortu-book-cover { width: 56px; height: 76px; flex: none; border-radius: 8px; background-size: cover; background-position: center; background-color: var(--navy); }
+.ortu-book-cover.kosong { display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1.3rem; }
+.ortu-book-info { min-width: 0; }
+.ortu-book-info b { font-size: .85rem; display: block; }
+.ortu-book-aksi { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+html[data-theme="dark"] .ortu-tab { background: var(--d-surface); border-color: var(--d-border); color: var(--d-ink); }
+html[data-theme="dark"] .ortu-tab.on { background: var(--gold); border-color: var(--gold); color: #0B1524; }
+html[data-theme="dark"] details.ortu-sec { background: var(--d-surface); border-color: var(--d-border); box-shadow: none; }
+html[data-theme="dark"] details.ortu-sec > summary { color: var(--d-ink); }
+html[data-theme="dark"] .ortu-notif { background: var(--d-surface-2); border-color: var(--d-border); }
+html[data-theme="dark"] .ortu-book { background: var(--d-surface-2); border-color: var(--d-border); }

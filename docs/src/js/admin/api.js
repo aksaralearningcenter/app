@@ -169,6 +169,9 @@ const API_MAP = {
   reorderPartners:  { ent: 'partners', act: 'reorder' },  reorderTestimoni: { ent: 'testimoni', act: 'reorder' },
   reorderFaq:       { ent: 'faq', act: 'reorder' },       reorderProgram: { ent: 'program', act: 'reorder' },
   reorderKurikulum: { ent: 'kurikulum', act: 'reorder' }, reorderKartu: { ent: 'kartu', act: 'reorder' },
+  // Penugasan buku khusus ke kelas/murid (Guru/Admin).
+  getBookOptions:      { m: 'GET', p: 'content/books/options' },
+  assignBook:          { m: 'POST', p: a => 'content/books/assign/' + a[0], b: a => a[1] },
   // --- PENGATURAN & LAIN-LAIN ---
   getSiteSettings:        { m: 'GET', p: 'site-settings' },
   saveSiteSettings:       { m: 'POST', p: 'site-settings', b: a => a[0] },

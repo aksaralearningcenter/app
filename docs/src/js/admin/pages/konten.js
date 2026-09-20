@@ -71,22 +71,36 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
         const jenjang = b.jenjang ? '<span class="badge b-warn">' + esc(b.jenjang) + '</span> ' : '';
         return jenis + jenjang + (baris ? '<div style="font-size:.75rem;">' + esc(baris) + '</div>' : '<div style="font-size:.75rem; opacity:.6;">Belum diisi</div>');
       };
+      // Penugasan khusus: buku terlihat di panel ortu/murid hanya bila
+      // ditugaskan ke kelas/muridnya. Tanpa penugasan = umum (landing saja).
+      const namaKelas = {};
+      (state.cache.classes || []).forEach(c => { namaKelas[c.id] = c.nama; });
+      const namaMurid = {};
+      (state.cache.students || state.students || []).forEach(s => { namaMurid[s.id] = s.nama; });
+      const tugas = b => {
+        const k = String(b.kelas_id || ''), m = String(b.student_id || '');
+        let h = '';
+        if (k) h += '<span class="badge b-warn">🎯 ' + esc(namaKelas[k] || k) + '</span> ';
+        if (m) h += '<span class="badge b-info">👤 ' + esc(namaMurid[m] || m) + '</span>';
+        return h || '<span style="font-size:.75rem; opacity:.6;">Umum</span>';
+      };
       const body = rows.map(b =>
         '<tr><td>' + cover(b) + '</td>' +
         '<td><span class="badge ' + (b.tipe === 'flipbook' ? 'b-info' : 'b-warn') + '">' + esc(b.tipe || 'katalog') + '</span></td>' +
         '<td><b>' + esc(b.judul) + '</b><div style="font-size:.75rem;">' + esc((b.deskripsi || '').substring(0, 90)) + '</div></td>' +
         '<td>' + pustaka(b) + '</td>' +
         '<td>' + badgeBerkas(b) + '</td>' +
+        '<td>' + tugas(b) + '</td>' +
         '<td class="col-sm-hide">' + (b.urutan || 0) + '</td>' +
         '<td><span class="badge ' + ((b.status || 'Aktif') === 'Aktif' ? 'b-ok' : 'b-warn') + '">' + esc(b.status || 'Aktif') + '</span></td>' +
         '<td style="white-space:nowrap;"><button class="btn btn-o btn-sm" data-action="edit-book" data-id="' + esc(b.id) + '">✏️</button> ' +
         '<button class="btn btn-d btn-sm" data-action="del-book" data-id="' + esc(b.id) + '">🗑️</button></td></tr>').join('');
       $('page').innerHTML =
         '<div class="card-head" style="margin-bottom:16px;"><h2>📚 Buku</h2><button class="btn btn-n btn-sm" data-action="add-book">➕ Tambah Buku</button></div>' +
-        '<p style="font-size:.78rem; margin-bottom:12px;">Semua buku tampil di <b>katalog &amp; daftar pustaka</b> landing (bisa dicari &amp; difilter). Isi <b>Penulis / Penerbit / Tahun / Jenis / Jenjang</b> agar kartunya lengkap; isi <b>Isi</b> agar bisa dibaca langsung. Cover &amp; berkas (PDF/Word/Excel) bisa <b>diunggah langsung</b> dari modal Tambah/Edit Buku. Tipe <b>booklet</b> diurutkan lewat kartu di atas.</p>' +
+        '<p style="font-size:.78rem; margin-bottom:12px;">Semua buku tampil di <b>katalog &amp; daftar pustaka</b> landing (bisa dicari &amp; difilter). Isi <b>Penulis / Penerbit / Tahun / Jenis / Jenjang</b> agar kartunya lengkap; isi <b>Isi</b> agar bisa dibaca langsung. Cover &amp; berkas (PDF/Word/Excel) bisa <b>diunggah langsung</b> dari modal Tambah/Edit Buku. Tipe <b>booklet</b> diurutkan lewat kartu di atas. Kolom <b>Penugasan</b>: buku hanya muncul di panel ortu/murid bila ditugaskan ke kelas/muridnya — tanpa penugasan, buku hanya tampil di landing.</p>' +
         sorter +
-        '<div class="card"><div class="table-wrap"><table><thead><tr><th>Cover</th><th>Tipe</th><th>Judul</th><th>Pustaka</th><th>Link</th><th class="col-sm-hide">Urutan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
-        (body || '<tr><td colspan="8" style="text-align:center;">Belum ada buku.</td></tr>') + '</tbody></table></div></div>';
+        '<div class="card"><div class="table-wrap"><table><thead><tr><th>Cover</th><th>Tipe</th><th>Judul</th><th>Pustaka</th><th>Link</th><th>Penugasan</th><th class="col-sm-hide">Urutan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
+        (body || '<tr><td colspan="9" style="text-align:center;">Belum ada buku.</td></tr>') + '</tbody></table></div></div>';
     },
 
     gallery: function(rows) {
@@ -447,12 +461,26 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
   }
 
   // ============ KONTEN LANDING: BUKU ============
-  function openBookModal(row) {
+  async function openBookModal(row) {
     row = row || {};
     const tipe = row.tipe || 'katalog';
     // Pilihan jenjang standar agar nilai konsisten dengan filter di landing.
     const opsiJenjang = ['', 'PAUD', 'SD', 'SMP', 'SMA', 'Mahasiswa', 'Umum']
       .map(v => '<option value="' + v + '"' + (String(row.jenjang || '') === v ? ' selected' : '') + '>' + (v || '— Tidak ditentukan —') + '</option>').join('');
+    // Penugasan khusus: buku tampil di panel ortu/murid hanya bila ditugaskan.
+    // Daftar kelas & murid diambil segar agar selalu lengkap.
+    let kelasList = [], muridList = [];
+    try { kelasList = await api('getClasses').catch(() => []); } catch (_e) { kelasList = []; }
+    try { muridList = await api('getStudents').catch(() => []); } catch (_e) { muridList = []; }
+    const kelasId = String(row.kelas_id || '');
+    const muridId = String(row.student_id || '');
+    const opsiKelas = ['<option value="">— Umum (hanya landing) —</option>']
+      .concat(kelasList.map(c => '<option value="' + esc(c.id) + '"' + (String(c.id) === kelasId ? ' selected' : '') + '>' + esc(c.nama || c.id) + '</option>')).join('');
+    const opsiMurid = function (kid) {
+      const cocok = muridList.filter(s => !kid || String(s.kelasId || s.kelas_id || '') === String(kid));
+      return ['<option value="">— Semua murid kelas —</option>']
+        .concat(cocok.map(s => '<option value="' + esc(s.id) + '"' + (String(s.id) === muridId ? ' selected' : '') + '>' + esc(s.nama || s.id) + '</option>')).join('');
+    };
     modal((row.id ? '✏️ Edit' : '➕ Tambah') + ' Buku',
       '<div class="frow"><div class="fg"><label>Tipe</label><select id="b-tipe"><option value="katalog"' + (tipe === 'katalog' ? ' selected' : '') + '>Katalog (unduhan)</option><option value="flipbook"' + (tipe === 'flipbook' ? ' selected' : '') + '>Flipbook (halaman)</option></select></div>' +
       '<div class="fg"><label>Urutan (bisa juga drag di daftar)</label><input type="number" id="b-urutan" value="' + (row.urutan || 0) + '"></div></div>' +
@@ -464,6 +492,9 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       '<div class="frow"><div class="fg"><label>Tahun</label><input id="b-tahun" value="' + esc(row.tahun || '') + '" placeholder="mis. 2025"></div>' +
       '<div class="fg"><label>Jenis / Kategori</label><input id="b-jenis" value="' + esc(row.jenis || '') + '" placeholder="mis. Modul, Panduan, Karya Ilmiah"></div></div>' +
       '<div class="fg"><label>Jenjang</label><select id="b-jenjang">' + opsiJenjang + '</select></div>' +
+      '<div class="frow"><div class="fg"><label>Tugaskan ke Kelas</label><select id="b-kelas">' + opsiKelas + '</select></div>' +
+      '<div class="fg"><label>Tugaskan ke Murid (opsional)</label><select id="b-murid">' + opsiMurid(kelasId) + '</select></div></div>' +
+      '<p style="font-size:.75rem; opacity:.75; margin:-4px 0 12px;">Tanpa penugasan, buku hanya tampil di landing. Ditugaskan ke kelas = terlihat oleh semua ortu anak kelas itu; ditugaskan ke murid = hanya anak itu (bisa digabung).</p>' +
       '<div class="frow">' + uploadField('Cover Buku', 'b-cover', row.cover, 'https://... atau klik Unggah',
         'Tampil sebagai cover di kartu katalog & halaman detail buku.') +
       dokumenField('URL Link / Berkas', 'b-link', row.link, 'https://... atau unggah PDF/Word/Excel',
@@ -472,14 +503,28 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       '<button class="btn btn-o btn-sm" onclick="closeModal()">Batal</button><button class="btn btn-n btn-sm" onclick="saveBook(' + (row.id ? "'" + esc(row.id) + "'" : 'null') + ')">💾 Simpan</button>');
     pratinjauGambar('b-cover');
     pratinjauDokumen('b-link');
+    // Daftar murid mengikuti kelas yang dipilih (murid lintas kelas tetap bisa
+    // dipilih: pilih dulu muridnya, atau kosongkan kelas bila hanya per murid).
+    const selKelas = $('b-kelas'), selMurid = $('b-murid');
+    if (selKelas && selMurid) selKelas.addEventListener('change', function () {
+      const simpan = selMurid.value;
+      selMurid.innerHTML = opsiMurid(selKelas.value);
+      if (muridList.some(s => String(s.id) === String(simpan))) selMurid.value = simpan;
+    });
   }
 
   async function saveBook(id) {
     const data = { tipe: $('b-tipe').value, judul: $('b-judul').value.trim(), deskripsi: $('b-deskripsi').value, isi: $('b-isi').value, cover: $('b-cover').value.trim(), link: $('b-link').value.trim(), urutan: parseInt($('b-urutan').value, 10) || 0, status: $('b-status').value, berkas: ($('b-link-nama') ? $('b-link-nama').value.trim() : ''), penulis: $('b-penulis').value.trim(), penerbit: $('b-penerbit').value.trim(), tahun: $('b-tahun').value.trim(), jenis: $('b-jenis').value.trim() };
+    // Kirim penugasan hanya bila terisi, atau bila nilai lama memang sudah ada
+    // (agar bisa dikosongkan). Mencegah error bila kolom belum dimigrasi.
+    const lama = id ? (state.cache.books || []).filter(b => String(b.id) === String(id))[0] : null;
+    const kelasBaru = $('b-kelas') ? $('b-kelas').value : '';
+    const muridBaru = $('b-murid') ? $('b-murid').value : '';
+    if (kelasBaru || (lama && lama.kelas_id)) data.kelas_id = kelasBaru;
+    if (muridBaru || (lama && lama.student_id)) data.student_id = muridBaru;
     // Kirim jenjang hanya bila terisi, atau bila nilai lama memang sudah ada
     // (agar bisa dikosongkan). Mencegah error bila kolom belum dimigrasi.
     const jenjangBaru = $('b-jenjang') ? $('b-jenjang').value : '';
-    const lama = id ? (state.cache.books || []).filter(b => String(b.id) === String(id))[0] : null;
     if (jenjangBaru || (lama && lama.jenjang)) data.jenjang = jenjangBaru;
     if (!data.judul) { toast('Judul wajib diisi.', 'err'); return; }
     try {

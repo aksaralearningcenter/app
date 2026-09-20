@@ -260,17 +260,26 @@ function segarkanHitunganAbsen() {
   }
 
   async function openEditStudent(id) {
-    const [s, classes] = await Promise.all([
+    const [s, classes, bukuOpts] = await Promise.all([
       api('getStudent', id),
-      api('getClasses').catch(function() { return []; })
+      api('getClasses').catch(function() { return []; }),
+      api('getBookOptions').catch(function() { return []; })
     ]);
     const opts = (classes || []).map(c => '<option value="' + c.id + '"' + (c.id === s.kelasId ? ' selected' : '') + '>' + esc(c.nama) + '</option>').join('');
+    // Buku khusus untuk murid ini (Guru/Admin menugaskan dari sini; penugasan
+    // per kelas diatur di menu Buku). Hanya buku aktif yang ditawarkan.
+    const bukuHtml = (bukuOpts || []).map(b =>
+      '<label style="display:flex; gap:8px; align-items:center; font-size:.82rem; padding:4px 0;">' +
+      '<input type="checkbox" class="e-buku" value="' + esc(b.id) + '"' + (String(b.student_id || '') === String(id) ? ' checked' : '') + ' style="width:auto;"> ' +
+      esc(b.judul || b.id) + (b.kelas_id ? ' <span class="badge b-warn">kelas</span>' : '') + '</label>').join('');
     modal('✏️ Edit Murid — ' + esc(s.nama),
       '<div class="fg"><label>Nama *</label><input id="e-nama" value="' + esc(s.nama) + '"></div>' +
       '<div class="frow"><div class="fg"><label>Kelas</label><select id="e-kelas"><option value="">-- Pilih --</option>' + opts + '</select></div>' +
       '<div class="fg"><label>Status</label><select id="e-status">' + ['Aktif', 'Cuti', 'Lulus'].map(x => '<option' + (x === s.status ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></div></div>' +
       '<div class="frow"><div class="fg"><label>Email</label><input id="e-email" value="' + esc(s.email || '') + '"></div>' +
-      '<div class="fg"><label>No HP</label><input id="e-hp" value="' + esc(s.noHP || '') + '"></div></div>',
+      '<div class="fg"><label>No HP</label><input id="e-hp" value="' + esc(s.noHP || '') + '"></div></div>' +
+      '<div class="fg"><label>📚 Buku khusus untuk murid ini</label><div id="e-buku" style="max-height:150px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:8px 10px;">' +
+      (bukuHtml || '<span style="font-size:.8rem; opacity:.6;">Belum ada buku aktif.</span>') + '</div></div>',
       '<button class="btn btn-o btn-sm" onclick="closeModal()">Batal</button><button class="btn btn-n btn-sm" onclick="saveEditStudent(\'' + id + '\')">💾 Simpan</button>');
   }
 
@@ -278,6 +287,16 @@ function segarkanHitunganAbsen() {
     const data = { id, nama: $('e-nama').value, kelasId: $('e-kelas').value, email: $('e-email').value, noHP: $('e-hp').value, status: $('e-status').value };
     try {
       const res = await api('updateStudent', id, data);
+      if (!res.success) { toast(res.message, 'err'); return; }
+      // Sinkronkan penugasan buku khusus (centang = tugaskan ke murid ini).
+      const ingin = {};
+      Array.prototype.forEach.call(document.querySelectorAll('#e-buku .e-buku'), function (c) { ingin[c.value] = c.checked; });
+      const daftar = await api('getBookOptions').catch(function () { return []; });
+      for (const b of (daftar || [])) {
+        const punya = String(b.student_id || '') === String(id);
+        if (ingin[b.id] && !punya) await api('assignBook', b.id, { kelas_id: b.kelas_id || '', student_id: id });
+        else if (!ingin[b.id] && punya) await api('assignBook', b.id, { kelas_id: b.kelas_id || '', student_id: '' });
+      }
       closeModal(); toast(res.message || 'Tersimpan.', 'ok'); invalidateCache('students'); app.loadPage('students');
     } catch (ex) { toast(ex.message, 'err'); }
   }
