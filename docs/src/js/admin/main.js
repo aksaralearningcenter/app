@@ -91,12 +91,38 @@ function handleAction(action, id, name, extra) {
     });
   }
 
+  // ============ ALAMAT HALAMAN (#/murid, #/dashboard, …) ============
+  // Panel ini satu berkas HTML. Tanpa alamat, refresh (F5) selalu kembali ke
+  // Dashboard dan halaman tidak bisa di-bookmark. Dengan rute hash, alamat ikut
+  // berubah saat berpindah halaman dan refresh membuka halaman yang sama.
+  function dariAlamat() {
+    const h = String(location.hash || '').replace(/^#\/?/, '').trim();
+    return (h && RENDER[h]) ? h : '';
+  }
+
+  // `ganti` memakai replaceState (dipakai saat boot) supaya membuka tautan
+  // langsung tidak menumpuk riwayat; navigasi biasa lewat location.hash agar
+  // tombol maju/mundur peramban berfungsi.
+  function tulisAlamat(page, ganti) {
+    const alamat = '#/' + page;
+    if (location.hash === alamat) return;
+    // Saat panel baru dimuat (alamat belum punya hash) alamat ditulis dengan
+    // replaceState supaya tidak menambah riwayat — tombol “mundur” tetap keluar
+    // dari panel, bukan memutar ulang halaman di dalamnya.
+    const gantikan = ganti || !location.hash;
+    try {
+      if (gantikan) history.replaceState(null, '', alamat);
+      else location.hash = alamat;
+    } catch (_e) { location.hash = alamat; }
+  }
+
   // Halaman yang tidak punya menu sendiri tetap menyorot menu induknya
   // (mis. halaman “soal” masih bagian dari menu Asesmen).
   const NAV_INDUK = { soal: 'asesmen', hasil: 'asesmen' };
 
   function setActiveNav(page) {
     simpanHalaman(page);   // diingat agar refresh kembali ke halaman ini
+    tulisAlamat(page);     // …sekaligus dicatat di alamat halaman
     const menu = NAV_INDUK[page] || page;
     let tombolAktif = null;
     document.querySelectorAll('#nav button[data-page]').forEach(b => {
@@ -131,12 +157,24 @@ function handleAction(action, id, name, extra) {
   // Halaman yang dibuka saat pertama tampil: lanjutkan halaman terakhir, asalkan
   // halaman itu memang ada dan menunya tidak disembunyikan untuk peran ini.
   function halamanAwal() {
-    const p = state.currentPage;
+    // Alamat halaman menang atas halaman terakhir (localStorage): tautan
+    // …/sites/#/murid harus membuka Data Murid walau sesi terakhir di Dashboard.
+    const p = dariAlamat() || state.currentPage;
     if (!p || !RENDER[p]) return 'dashboard';
     const tombol = document.querySelector('#nav button[data-page="' + p + '"]');
     if (tombol && tombol.offsetParent === null) return 'dashboard';   // tidak berhak / tidak ada
     return p;
   }
+
+  // Tombol maju/mundur peramban: pindah halaman tanpa memuat ulang berkas.
+  // Diabaikan sebelum masuk (layar login) dan saat halaman sudah tampil.
+  window.addEventListener('hashchange', function () {
+    const p = dariAlamat();
+    if (!p || p === state.currentPage) return;
+    const shell = $('shell');
+    if (!shell || !shell.classList.contains('on')) return;
+    loadPage(p);
+  });
 
   // Server tidak bisa dihubungi saat refresh. Sesi TIDAK dibuang — panel tetap
   // tampil dengan identitas terakhir dan tombol untuk mencoba lagi.

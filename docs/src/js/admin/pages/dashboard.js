@@ -2,6 +2,7 @@
 import { state, invalidateCache } from '../state.js';
 import { $, esc, rp } from '../ui.js';
 import { app, modal } from '../helpers.js';
+import { buatFlipbook } from '../../shared/flipbook.js';
 
   // Buku pelajaran/modul untuk akun Orang Tua (diisi ulang tiap render).
   let bukuOrangTua = [];
@@ -13,22 +14,87 @@ import { app, modal } from '../helpers.js';
     return m ? (peta[m[1].toLowerCase()] || '') : '';
   }
 
-  // Baca buku: teks penuh (isi) ditampilkan di modal; bila hanya ada berkas,
-  // tautannya dibuka di tab baru. Tombol unduh selalu tersedia bila ada link.
+  // Baca buku untuk Orang Tua/murid: buku dibuka sebagai FLIPBOOK dua halaman
+  // (modul bersama src/js/shared/flipbook.js — mesin yang sama dengan tombol
+  // Baca di landing), jadi tidak ada lagi modal teks biasa. Bila buku hanya
+  // punya berkas tanpa isi teks, tautannya langsung dibuka di tab baru.
+  let flipBuku = null;      // instance flipbook modal (dibuat ulang tiap buku)
+  let flipAkar = null;      // root DOM flipbook yang sedang aktif
+  let papanTikSiap = false; // listener panah keyboard cukup dipasang sekali
+
+  // Muka satu halaman buku (dipakai modul flipbook lewat callback).
+  function mukaBuku(hal, face, num, b) {
+    const paras = String(hal || '').split(/\n+/).map(s => s.trim()).filter(Boolean)
+      .map(p => '<p>' + esc(p) + '</p>').join('');
+    const kepala = num === 1
+      ? '<div class="ak-kicker">' + esc(b.jenis || 'Buku Pelajaran') + '</div><h4>' + esc(b.judul) + '</h4>'
+      : '';
+    return '<div class="ak-face ' + face + '">' + kepala + paras + '<span class="ak-num">' + num + '</span></div>';
+  }
+
+  // Panah ←/→ membalik halaman selama modal buku terbuka (sekali pasang saja).
+  function pasangPapanTik() {
+    if (papanTikSiap) return;
+    papanTikSiap = true;
+    document.addEventListener('keydown', function (e) {
+      if (!flipBuku || !flipAkar || !document.contains(flipAkar)) return;
+      const bg = $('modal');
+      if (!bg || !bg.classList.contains('on')) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); flipBuku.maju(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); flipBuku.mundur(); }
+    });
+  }
+
+  // Buka buku sebagai flipbook di dalam modal.
   function bacaBuku(id) {
     const b = bukuOrangTua.filter(function (x) { return String(x.id) === String(id); })[0];
     if (!b) return;
     if (!String(b.isi || '').trim() && b.link) { window.open(b.link, '_blank', 'noopener'); return; }
     const meta = [b.penulis, b.penerbit, b.tahun].map(v => String(v || '').trim()).filter(Boolean).join(' · ');
-    const paras = String(b.isi || '').split(/\n+/).filter(Boolean).map(p => '<p style="font-size:.9rem; line-height:1.8;">' + esc(p) + '</p>').join('');
-    const cover = b.cover ? '<img src="' + esc(b.cover) + '" alt="" style="width:110px; border-radius:8px; float:left; margin:0 16px 10px 0;">' : '';
     const jenis = jenisBerkas(b);
-    const unduh = b.link ? '<a class="btn btn-o btn-sm" href="' + esc(b.link) + '" target="_blank" rel="noopener">⬇️ ' + (jenis ? 'Unduh ' + jenis : 'Unduh berkas') + '</a>' : '';
-    modal('📖 ' + b.judul,
-      '<div style="overflow:hidden;">' + cover +
-        '<p style="font-size:.78rem; font-weight:700; color:var(--redup);">' + esc(b.jenis || 'Buku') + (meta ? ' · ' + esc(meta) : '') + '</p></div>' +
-      '<div style="clear:both; margin-top:10px;">' + (paras || '<p>Isi buku belum tersedia — silakan unduh berkasnya.</p>') + '</div>' +
-      (unduh ? '<div style="margin-top:16px;">' + unduh + '</div>' : ''));
+    const unduh = b.link
+      ? '<a class="btn btn-o btn-sm" href="' + esc(b.link) + '" target="_blank" rel="noopener">⬇️ ' + (jenis ? 'Unduh ' + jenis : 'Unduh berkas') + '</a>'
+      : '';
+    const isi =
+      // .flip-wrap = kolom flex: di ponsel area buku mengambil seluruh sisa
+      // ruang modal, dan tinggi itu dipakai modul flipbook untuk memenggal isi
+      // supaya tiap halaman pas (tanpa menggulir). Baris pustaka ikut di dalam
+      // pembungkus supaya tingginya diperhitungkan (kalau di luar, modal jadi
+      // sedikit tergulir).
+      '<div class="flip-wrap">' +
+        (meta ? '<p class="ak-pustaka">' + esc(meta) + '</p>' : '') +
+        '<div class="ak-stage">' +
+          '<div class="ak-base">' +
+            '<div class="ak-base-page cover"><span class="ak-mark">AKSARA</span><b>' + esc(b.judul) + '</b>' +
+              '<small>' + esc(b.jenis || 'Buku Pelajaran') + '</small></div>' +
+            '<div class="ak-base-page right"><span class="ak-ep">AKSARA • LEARNING CENTER</span></div>' +
+          '</div>' +
+          '<div class="ak-spine"></div>' +
+          '<div class="ak-leaves" id="bkflip-leaves"></div>' +
+        '</div>' +
+        // Label panjang disembunyikan di ponsel lewat CSS (.nav-teks) — tinggal
+        // panahnya saja supaya baris navigasi tidak meluber di layar sempit.
+        '<div class="ak-nav">' +
+          '<button class="btn btn-o btn-sm" id="bkflip-prev" type="button" aria-label="Halaman sebelumnya"><span aria-hidden="true">◀</span><span class="nav-teks"> Sebelumnya</span></button>' +
+          '<span class="ak-count" id="bkflip-count"></span>' +
+          '<button class="btn btn-o btn-sm" id="bkflip-next" type="button" aria-label="Halaman berikutnya"><span class="nav-teks">Berikutnya </span><span aria-hidden="true">▶</span></button>' +
+        '</div>' +
+      '</div>';
+    modal('📖 ' + b.judul, isi,
+      unduh + '<button class="btn btn-o btn-sm" onclick="closeModal()">Tutup</button>', { lebar: true });
+    // Root flipbook = isi modal, karena tombol ‹ › dan penghitung halaman ada
+    // di luar area buku (modul mencari semua elemennya dari dalam root ini).
+    const wrap = $('m-body');
+    if (!wrap) return;
+    flipAkar = wrap;
+    flipBuku = buatFlipbook(wrap, {
+      leavesSel: '#bkflip-leaves', prevSel: '#bkflip-prev', nextSel: '#bkflip-next',
+      countSel: '#bkflip-count', leafClass: 'ak-leaf',
+      kosong: 'Isi buku ini belum tersedia — silakan unduh berkasnya.'
+    });
+    flipBuku.pasang();
+    flipBuku.bangun(b.isi, function (hal, face, num) { return mukaBuku(hal, face, num, b); });
+    pasangPapanTik();
   }
 
 

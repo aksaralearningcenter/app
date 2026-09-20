@@ -22,10 +22,12 @@ export const app = {};
   }
 
   // ============ MODAL HELPERS ============
-  function modal(title, body, foot) {
+  // `opsi.lebar` → modal melebar (dipakai pembaca buku dua halaman/flipbook).
+  function modal(title, body, foot, opsi) {
     $('m-title').textContent = title;
     $('m-body').innerHTML = body;
     $('m-foot').innerHTML = foot || '<button class="btn btn-o btn-sm" onclick="closeModal()">Tutup</button>';
+    $('modal').classList.toggle('lebar', !!(opsi && opsi.lebar));
     $('modal').classList.add('on');
     document.body.classList.add('modal-open'); // latar tidak ikut tergulir saat modal terbuka
     const mb = $('m-body');

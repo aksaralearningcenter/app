@@ -3,6 +3,7 @@
 // & jenjang, pengurutan, grid kartu buku, halaman detail (metadata daftar
 // pustaka), lalu pembaca halaman + tombol unduh.
 import { cTxt, cEsc, byUrutan, elById, tampilkan } from './util.js';
+import { buatFlipbook } from '../../shared/flipbook.js';
 
 // Jenis berkas unduhan dari nama berkas hasil unggahan admin (kolom "Berkas"),
 // atau dari ekstensi pada URL yang ditempel.
@@ -24,135 +25,214 @@ function barisPustaka(b) {
 }
 
 // ---------- PEMBACA BUKU (FLIPBOOK) ----------
-// Tombol Baca membuka buku sebagai flipbook dua halaman: lembar dibalik dengan
-// tombol, geser (ponsel), atau panah keyboard. Di layar ponsel buku tampil satu
-// halaman per layar seperti e-reader.
-const pembaca = { aktif: false, buku: null, halaman: [], leaves: [], turned: 0, N: 0, animating: false, ponsel: 0 };
-const mqlPonsel = (window.matchMedia ? window.matchMedia('(max-width: 700px)') : { matches: false });
+// Tombol Baca membuka buku sebagai flipbook dua halaman lewat modul bersama
+// ../../shared/flipbook.js. Susunannya mengikuti urutan buku cetak: sampul →
+// halaman hak cipta → isi → daftar pustaka → penutup. Lembar dibalik dengan
+// tombol panah, klik halaman, geser (ponsel), atau panah keyboard; di layar
+// ponsel buku tampil satu halaman per layar.
+const pembaca = { aktif: false, buku: null, depan: 0, zoom: 1 };
+let flip = null;
+const ZOOM = [0.85, 1, 1.15, 1.3, 1.5];
 
-// Pecah teks isi buku menjadi halaman-halaman yang nyaman dibaca.
-function pecahHalaman(teks) {
-  const paras = cTxt(teks).split(/\n{1,}/).map(function (p) { return p.trim(); }).filter(Boolean);
-  if (!paras.length) return [];
-  const halaman = [];
-  let buf = '';
-  paras.forEach(function (p) {
-    if (buf && (buf.length + p.length) > 900) { halaman.push(buf); buf = p; }
-    else buf = buf ? buf + '\n' + p : p;
-  });
-  if (buf) halaman.push(buf);
-  return halaman;
+// Angka Romawi untuk halaman pembuka (sampul = i, hak cipta = ii, …).
+function romawi(n) {
+  const peta = [[10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']];
+  let s = '', x = Math.max(1, Math.round(n) || 1);
+  peta.forEach(function (p) { while (x >= p[0]) { s += p[1]; x -= p[0]; } });
+  return s;
 }
 
-// Satu halaman flipbook (muka lembar).
-function faceHtml(hal, face, num, buku) {
-  const paras = cTxt(hal).split(/\n+/).filter(Boolean)
-    .map(function (p) { return '<p>' + cEsc(p) + '</p>'; }).join('');
-  // Judul besar hanya di halaman pertama; halaman lain cukup kicker jenis buku.
-  const kepala = (num === 1)
-    ? '<h3>' + cEsc(buku.judul) + '</h3>' +
-      (cTxt(buku.cover) ? '<img src="' + cEsc(buku.cover) + '" alt="' + cEsc(buku.judul) + '" style="width:100%; border-radius:8px; margin:6px 0 12px;">' : '')
-    : '';
-  return '<div class="face ' + face + '">' +
-    '<div class="page-kicker">' + cEsc(buku.jenis || buku.deskripsi || 'Buku') + '</div>' +
-    kepala + paras +
-    '<div class="page-num">' + num + '</div></div>';
+// Nomor halaman yang tampil: halaman pembuka pakai angka Romawi, isi buku mulai
+// dari 1 supaya penomoran terasa seperti buku cetak.
+function nomorTampil(n) {
+  return n <= pembaca.depan ? romawi(n) : String(n - pembaca.depan);
 }
 
-// Bangun lembar-lembar flipbook dari isi buku yang sedang dibuka.
-function flipBangun() {
-  const leaves = elById('reader-leaves');
-  if (!leaves) return;
-  let pages = pembaca.halaman.slice();
-  if (!pages.length) pages = ['Isi buku ini belum diunggah. Silakan unduh berkasnya bila tersedia.'];
-  if (pages.length % 2) pages.push('');          // jumlah genap = pasangan lembar
-  pembaca.N = pages.length / 2;
-  let html = '';
-  for (let i = 0; i < pembaca.N; i++) {
-    html += '<div class="sp-leaf">' +
-      faceHtml(pages[i * 2], 'front', i * 2 + 1, pembaca.buku) +
-      faceHtml(pages[i * 2 + 1], 'back', i * 2 + 2, pembaca.buku) + '</div>';
-  }
-  leaves.innerHTML = html;
-  pembaca.leaves = Array.prototype.slice.call(leaves.querySelectorAll('.sp-leaf'));
-  pembaca.turned = 0;
-  pembaca.ponsel = 0;
-  pembaca.animating = false;
-  pembaca.leaves.forEach(function (l) { l.classList.remove('flipped', 'flipping', 'm-aktif', 'm-belakang'); });
-  flipZ();
-  flipUpdate();
-}
-
-// Tumpukan: lembar belum-dibalik (kanan) selalu di atas lembar terbalik (kiri).
-function flipZ() {
-  pembaca.leaves.forEach(function (leaf, k) {
-    leaf.style.zIndex = String(k < pembaca.turned ? (100 + k + 1) : (200 + (pembaca.N - k)));
-  });
-}
-
-function totalPonsel() { return pembaca.N * 2; }
-
-function flipUpdate() {
-  const prev = elById('reader-prev');
-  const next = elById('reader-next');
-  const count = elById('reader-count');
-  if (mqlPonsel.matches) {
-    const hal = pembaca.ponsel;
-    pembaca.leaves.forEach(function (leaf, k) {
-      const aktif = k === Math.floor(hal / 2);
-      leaf.classList.toggle('m-aktif', aktif);
-      leaf.classList.toggle('m-belakang', aktif && (hal % 2 === 1));
+// Instance flipbook untuk overlay pembaca (dibuat sekali, dipakai ulang).
+// `padaUbah` menjaga buku tetap terpusat selama masih tertutup (hanya sampul
+// yang tampak) dan menutup Daftar Isi begitu halaman berpindah.
+function flipInstance() {
+  if (!flip) {
+    flip = buatFlipbook(elById('book-reader'), {
+      leavesSel: '#reader-leaves', prevSel: '#reader-prev',
+      nextSel: '#reader-next', countSel: '#reader-count', leafClass: 'sp-leaf',
+      kosong: 'Isi buku ini belum diunggah. Silakan unduh berkasnya bila tersedia.',
+      padaUbah: function (s) {
+        const spread = elById('reader-spread');
+        if (spread) spread.classList.toggle('terbuka', !!s.ponsel || s.turned > 0);
+        if (tocBuka()) tutupToc();
+      }
     });
-    if (prev) prev.disabled = hal <= 0;
-    if (next) next.disabled = hal >= totalPonsel() - 1;
-    if (count) count.textContent = 'Halaman ' + (hal + 1) + ' / ' + totalPonsel();
-    return;
+    flip.pasang();
   }
-  if (prev) prev.disabled = pembaca.turned <= 0;
-  if (next) next.disabled = pembaca.turned >= pembaca.N;
-  if (count) count.textContent = 'Buku ' + (pembaca.turned + 1) + ' / ' + (pembaca.N + 1);
+  return flip;
 }
 
-function flipMaju() {
-  if (mqlPonsel.matches) {
-    if (pembaca.ponsel < totalPonsel() - 1) { pembaca.ponsel++; flipUpdate(); }
-    return;
-  }
-  if (pembaca.animating || pembaca.turned >= pembaca.N) return;
-  const leaf = pembaca.leaves[pembaca.turned];
-  if (!leaf) return;
-  pembaca.animating = true;
-  leaf.style.zIndex = '500';
-  leaf.classList.add('flipping');
-  leaf.classList.add('flipped');
-  setTimeout(function () {
-    leaf.classList.remove('flipping');
-    pembaca.turned++;
-    pembaca.animating = false;
-    flipZ();
-    flipUpdate();
-  }, 900);
+// Satu halaman isi buku (muka lembar).
+function faceHtml(hal, face, num) {
+  const paras = cTxt(hal).split(/\n+/).map(function (p) { return p.trim(); }).filter(Boolean);
+  const isi = paras.map(function (p, i) {
+    // Drop cap hanya di halaman pertama isi, bukan di setiap halaman.
+    const awal = (num === pembaca.depan + 1 && i === 0) ? ' class="p-awal"' : '';
+    return '<p' + awal + '>' + cEsc(p) + '</p>';
+  }).join('');
+  return '<div class="face ' + face + '">' + isi +
+    '<div class="page-num">' + cEsc(nomorTampil(num)) + '</div></div>';
 }
 
-function flipMundur() {
-  if (mqlPonsel.matches) {
-    if (pembaca.ponsel > 0) { pembaca.ponsel--; flipUpdate(); }
-    return;
+// --- Halaman khusus di luar isi ---
+function halSampul(b) {
+  return {
+    label: 'Sampul',
+    html: function (face) {
+      return '<div class="face ' + face + ' cover"><div class="lp-cover">' +
+        '<span class="lp-kicker">' + cEsc(cTxt(b.jenis) || 'Koleksi Aksara') + (cTxt(b.jenjang) ? ' · ' + cEsc(b.jenjang) : '') + '</span>' +
+        (cTxt(b.cover)
+          ? '<img class="lp-cover-img" src="' + cEsc(b.cover) + '" alt="Sampul ' + cEsc(b.judul) + '">'
+          : '<div class="lp-garis"></div>') +
+        '<h2>' + cEsc(cTxt(b.judul) || 'Tanpa Judul') + '</h2>' +
+        '<div class="lp-garis"></div>' +
+        '<div class="lp-bawah">' +
+          (cTxt(b.penulis) ? '<span class="lp-penulis">' + cEsc(b.penulis) + '</span>' : '') +
+          '<span class="lp-merek">Aksara Learning Center</span>' +
+        '</div>' +
+      '</div></div>';
+    }
+  };
+}
+
+function halHakCipta(b) {
+  const baris = [['Judul', b.judul], ['Penulis', b.penulis], ['Penerbit', b.penerbit],
+    ['Tahun', b.tahun], ['Jenis', b.jenis], ['Jenjang', b.jenjang]];
+  const ada = baris.filter(function (r) { return cTxt(r[1]).trim(); });
+  return {
+    label: 'Hak Cipta',
+    html: function (face, num) {
+      return '<div class="face ' + face + '"><div class="lp-copy">' +
+        '<span class="lp-mark">AKSARA</span><div class="lp-garis"></div>' +
+        '<p>' + cEsc(cTxt(b.judul)) + '<br>Edisi digital — Aksara Learning Center</p>' +
+        (ada.length
+          ? '<dl>' + ada.map(function (r) {
+              return '<div class="lp-row"><dt>' + cEsc(r[0]) + '</dt><dd>' + cEsc(r[1]) + '</dd></div>';
+            }).join('') + '</dl>'
+          : '') +
+        '<p style="margin-top:14px">Buku ini disediakan untuk keperluan pembelajaran. ' +
+          'Mohon tidak memperbanyak atau memperjualbelikannya tanpa izin.</p>' +
+        '<div class="page-num">' + cEsc(nomorTampil(num)) + '</div>' +
+      '</div></div>';
+    }
+  };
+}
+
+function halPustaka(b) {
+  const tahun = cTxt(b.tahun).trim();
+  const sitasi = cTxt(b.penulis).trim()
+    ? cEsc(b.penulis) + (tahun ? '. (' + cEsc(tahun) + ')' : '') + '. <em>' + cEsc(b.judul) + '</em>' +
+      (cTxt(b.penerbit).trim() ? '. ' + cEsc(b.penerbit) : '') + '.'
+    : '';
+  return {
+    label: 'Daftar Pustaka',
+    html: function (face, num) {
+      const isi = [];
+      if (sitasi) isi.push(sitasi);
+      isi.push('<span class="lp-sitasi">Aksara Learning Center. (' + cEsc(tahun || new Date().getFullYear()) +
+        '). <em>' + cEsc(cTxt(b.judul)) + '</em> [Buku digital]. Aksara Learning Center.</span>');
+      if (cTxt(b.jenjang).trim()) isi.push('<span class="lp-sitasi">Jenjang: ' + cEsc(b.jenjang) +
+        (cTxt(b.jenis).trim() ? ' · Jenis: ' + cEsc(b.jenis) : '') + '.</span>');
+      return '<div class="face ' + face + '">' +
+        '<h3 class="lp-judul">Daftar Pustaka</h3>' +
+        '<ul class="lp-daftar">' + isi.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
+        '<div class="page-num">' + cEsc(nomorTampil(num)) + '</div></div>';
+    }
+  };
+}
+
+function halPenutup(b) {
+  const link = cTxt(b.link);
+  return {
+    label: 'Penutup',
+    html: function (face, num) {
+      return '<div class="face ' + face + '"><div class="lp"><div class="lp-akhir">' +
+        '<i class="fa-solid fa-circle-info lp-ikon"></i>' +
+        '<h4>Akhir dari buku ini</h4>' +
+        '<p>Terima kasih telah membaca <b>' + cEsc(cTxt(b.judul)) + '</b>. ' +
+          'Koleksi lainnya tersedia di Perpustakaan Digital Aksara Learning Center.</p>' +
+        '<div class="lp-aksi">' +
+          (link ? '<a class="btn btn-primary btn-sm" href="' + cEsc(link) + '" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> Unduh berkas</a>' : '') +
+          '<button class="btn btn-outline btn-sm" type="button" data-tutup="1"><i class="fa-solid fa-list-ul"></i> Kembali ke katalog</button>' +
+        '</div>' +
+      '</div></div>' +
+      '<div class="page-num">' + cEsc(nomorTampil(num)) + '</div></div>';
+    }
+  };
+}
+
+// --- Panel Daftar Isi ---
+function tocBuka() {
+  const toc = elById('reader-toc');
+  return !!(toc && toc.classList.contains('terbuka'));
+}
+
+function tutupToc() {
+  const toc = elById('reader-toc');
+  const btn = elById('reader-daftar');
+  if (toc) { toc.classList.remove('terbuka'); toc.setAttribute('aria-hidden', 'true'); }
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+function bukaToc() {
+  const toc = elById('reader-toc');
+  const btn = elById('reader-daftar');
+  if (!toc) return;
+  if (toc.classList.contains('terbuka')) { tutupToc(); return; }
+  toc.classList.add('terbuka');
+  toc.setAttribute('aria-hidden', 'false');
+  if (btn) btn.setAttribute('aria-expanded', 'true');
+}
+
+// Daftar Isi disusun dari halaman yang benar-benar dibuat mesin flipbook, jadi
+// nomornya selalu cocok walau jumlah halaman berubah karena ukuran layar.
+function renderToc() {
+  const list = elById('reader-toc-list');
+  if (!list) return;
+  const halaman = flipInstance().daftarHalaman();
+  if (!halaman.length) { list.innerHTML = '<li class="rd-toc-kosong">Belum ada halaman.</li>'; return; }
+  list.innerHTML = halaman.map(function (h) {
+    const label = cTxt(h.label).trim() || ('Halaman ' + h.nomor);
+    return '<li' + (h.jenis === 'khusus' ? ' class="khusus"' : '') + '>' +
+      '<button type="button" data-hal="' + h.nomor + '">' +
+      '<span class="toc-teks">' + cEsc(label) + '</span>' +
+      '<span class="toc-hal">' + cEsc(nomorTampil(h.nomor)) + '</span></button></li>';
+  }).join('');
+}
+
+// --- Ukuran tulisan & layar penuh ---
+function terapkanZoom() {
+  const panel = elById('reader-panel');
+  if (panel) panel.style.setProperty('--rd-skala', String(pembaca.zoom));
+  flipInstance().segarkan();
+}
+
+function ubahZoom(naik) {
+  const i = ZOOM.indexOf(pembaca.zoom);
+  const kini = i === -1 ? ZOOM.indexOf(1) : i;
+  const berikut = Math.min(Math.max(kini + (naik ? 1 : -1), 0), ZOOM.length - 1);
+  if (ZOOM[berikut] === pembaca.zoom) return;
+  pembaca.zoom = ZOOM[berikut];
+  terapkanZoom();
+}
+
+function layarPenuh() {
+  const panel = elById('reader-panel');
+  if (!panel) return;
+  const aktif = document.fullscreenElement || document.webkitFullscreenElement;
+  if (!aktif) {
+    const pinta = panel.requestFullscreen || panel.webkitRequestFullscreen;
+    if (pinta) pinta.call(panel);
+  } else {
+    const keluar = document.exitFullscreen || document.webkitExitFullscreen;
+    if (keluar) keluar.call(document);
   }
-  if (pembaca.animating || pembaca.turned <= 0) return;
-  const leaf = pembaca.leaves[pembaca.turned - 1];
-  if (!leaf) return;
-  pembaca.animating = true;
-  leaf.style.zIndex = '500';
-  leaf.classList.add('flipping');
-  leaf.classList.remove('flipped');
-  setTimeout(function () {
-    leaf.classList.remove('flipping');
-    pembaca.turned--;
-    pembaca.animating = false;
-    flipZ();
-    flipUpdate();
-  }, 900);
 }
 
 function bukaPembaca(id) {
@@ -161,43 +241,47 @@ function bukaPembaca(id) {
   const link = cTxt(b.link);
   // Tanpa isi tapi ada tautan berkas → langsung buka berkasnya.
   if (!cTxt(b.isi).trim() && link) { window.open(link, '_blank', 'noopener'); return; }
-  pembaca.aktif = true;
-  pembaca.buku = b;
-  pembaca.halaman = pecahHalaman(b.isi);
   const reader = elById('book-reader');
   if (!reader) return;
-  // Sampul dalam flipbook menampilkan judul & jenis buku yang dibuka.
-  const ct = elById('reader-cover-title');
-  if (ct) ct.textContent = cTxt(b.judul).substring(0, 42) || 'AKSARA';
-  const cs = elById('reader-cover-sub');
-  if (cs) cs.textContent = cTxt(b.jenis) || (cTxt(b.tipe) === 'flipbook' ? 'Booklet' : 'Katalog');
-  const cover = elById('reader-cover');
-  if (cover) cover.style.backgroundImage = cTxt(b.cover) ? 'url(' + cEsc(b.cover) + ')' : '';
-  const kicker = elById('reader-kicker');
-  if (kicker) kicker.textContent = cTxt(b.jenis) || (cTxt(b.tipe) === 'flipbook' ? 'Booklet' : 'Katalog');
+  pembaca.aktif = true;
+  pembaca.buku = b;
   const judul = elById('reader-judul');
   if (judul) judul.textContent = cTxt(b.judul);
-  const pustaka = elById('reader-pustaka');
-  if (pustaka) pustaka.textContent = barisPustaka(b) || cTxt(b.deskripsi);
+  const penulis = elById('reader-penulis');
+  if (penulis) penulis.textContent = cTxt(b.penulis).trim() || barisPustaka(b) || 'Aksara Learning Center';
+  const jenis = jenisKatalog(b);
   const actions = elById('reader-actions');
   if (actions) {
-    const jenis = jenisKatalog(b);
-    actions.innerHTML = (link
-      ? '<a class="btn btn-primary btn-sm" href="' + cEsc(link) + '" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> ' +
-        (jenis ? 'Unduh ' + jenis : 'Unduh berkas') + '</a>'
-      : '') +
-      (cTxt(b.deskripsi) ? '<span class="reader-desc">' + cEsc(b.deskripsi) + '</span>' : '');
+    actions.innerHTML =
+      (link
+        ? '<a class="rd-btn utama" href="' + cEsc(link) + '" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> <span>' +
+          (jenis ? 'Unduh ' + jenis : 'Unduh') + '</span></a>'
+        : '') +
+      '<button class="rd-btn" id="reader-full" type="button"><i class="fa-solid fa-expand" id="reader-full-ikon"></i> <span id="reader-full-teks">Layar Penuh</span></button>';
+    const full = elById('reader-full');
+    if (full && full.dataset.siap !== '1') {
+      full.dataset.siap = '1';
+      full.addEventListener('click', layarPenuh);
+    }
   }
+  // Sampul & hak cipta di depan, daftar pustaka & penutup di belakang.
+  const depan = [halSampul(b), halHakCipta(b)];
+  const belakang = [halPustaka(b), halPenutup(b)];
+  pembaca.depan = depan.length;
+  terapkanZoom();
   reader.classList.add('open');
   reader.setAttribute('aria-hidden', 'false');
   document.body.classList.add('reader-open');
-  flipBangun();
+  tutupToc();
+  flipInstance().bangun(b.isi, faceHtml, { depan: depan, belakang: belakang });
+  renderToc();
 }
 
 function tutupPembaca() {
   const reader = elById('book-reader');
   if (!reader) return;
   pembaca.aktif = false;
+  tutupToc();
   reader.classList.remove('open');
   reader.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('reader-open');
@@ -433,9 +517,37 @@ function pasangOverlay() {
     reader.dataset.siap = '1';
     const t = elById('reader-close'); if (t) t.addEventListener('click', tutupPembaca);
     const back = elById('reader-back'); if (back) back.addEventListener('click', tutupPembaca);
-    const prev = elById('reader-prev'); if (prev) prev.addEventListener('click', function () { flipMundur(); });
-    const next = elById('reader-next'); if (next) next.addEventListener('click', function () { flipMaju(); });
-    // Geser untuk membalik lembar (perangkat sentuh).
+    // Ukuran tulisan, Daftar Isi, dan lompat ke halaman dari Daftar Isi.
+    const kecil = elById('reader-kecil'); if (kecil) kecil.addEventListener('click', function () { ubahZoom(false); });
+    const besar = elById('reader-besar'); if (besar) besar.addEventListener('click', function () { ubahZoom(true); });
+    const daftar = elById('reader-daftar'); if (daftar) daftar.addEventListener('click', bukaToc);
+    const tocTutup = elById('reader-toc-tutup'); if (tocTutup) tocTutup.addEventListener('click', tutupToc);
+    const tocList = elById('reader-toc-list');
+    if (tocList) {
+      tocList.addEventListener('click', function (e) {
+        const btn = e.target.closest ? e.target.closest('[data-hal]') : null;
+        if (!btn) return;
+        const n = parseInt(btn.getAttribute('data-hal'), 10) || 1;
+        tocList.querySelectorAll('button').forEach(function (x) { x.classList.remove('aktif'); });
+        btn.classList.add('aktif');
+        flipInstance().keHalaman(n);
+      });
+    }
+    // Klik halaman = membalik buku, seperti versi cetaknya: halaman yang sudah
+    // dibalik dibuka kembali (mundur), sisanya dibalik ke depan (maju).
+    const leaves = elById('reader-leaves');
+    if (leaves) {
+      leaves.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('[data-tutup]')) { tutupPembaca(); return; }
+        if (e.target.closest && e.target.closest('a, button')) return;
+        const leaf = e.target.closest ? e.target.closest('.sp-leaf') : null;
+        if (!leaf) return;
+        if (leaf.classList.contains('flipped')) flipInstance().mundur();
+        else flipInstance().maju();
+      });
+    }
+    // Geser untuk membalik lembar (perangkat sentuh). Tombol prev/next sudah
+    // ditangani modul flipbook bersama (flip.pasang()).
     const spread = elById('reader-spread');
     if (spread) {
       let x0 = 0, y0 = 0;
@@ -447,7 +559,7 @@ function pasangOverlay() {
         const dx = t.clientX - x0, dy = t.clientY - y0;
         x0 = 0;
         if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy)) return;
-        if (dx < 0) flipMaju(); else flipMundur();
+        if (dx < 0) flipInstance().maju(); else flipInstance().mundur();
       }, { passive: true });
     }
   }
@@ -462,24 +574,31 @@ function pasangOverlay() {
       if (baca) { e.preventDefault(); bukaPembaca(baca.getAttribute('data-baca')); }
     });
   }
+  // Label tombol layar penuh ikut berubah saat mode layar penuh dinyalakan.
+  if (document.body.dataset.rdFull !== '1') {
+    document.body.dataset.rdFull = '1';
+    document.addEventListener('fullscreenchange', function () {
+      const aktif = !!document.fullscreenElement;
+      const teks = elById('reader-full-teks');
+      const ikon = elById('reader-full-ikon');
+      if (teks) teks.textContent = aktif ? 'Keluar Layar Penuh' : 'Layar Penuh';
+      if (ikon) ikon.className = aktif ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+    });
+  }
   if (document.body.dataset.bkKeys !== '1') {
     document.body.dataset.bkKeys = '1';
     document.addEventListener('keydown', function (e) {
       // Saat flipbook terbuka: panah membalik lembar, Esc menutup.
       if (pembaca.aktif) {
         if (e.key === 'Escape') { tutupPembaca(); return; }
-        if (e.key === 'ArrowRight') { flipMaju(); return; }
-        if (e.key === 'ArrowLeft') { flipMundur(); return; }
+        if (e.key === 'ArrowRight') { flipInstance().maju(); return; }
+        if (e.key === 'ArrowLeft') { flipInstance().mundur(); return; }
         return;
       }
       if (e.key !== 'Escape') return;
       const d = elById('book-detail');
       if (d && d.classList.contains('open')) tutupDetail();
     });
-    // Ganti mode desktop ↔ ponsel → gambar ulang posisi halaman.
-    const gantiMode = function () { if (pembaca.aktif) { pembaca.ponsel = 0; flipUpdate(); } };
-    if (mqlPonsel.addEventListener) mqlPonsel.addEventListener('change', gantiMode);
-    else if (mqlPonsel.addListener) mqlPonsel.addListener(gantiMode);
   }
 }
 

@@ -42,7 +42,7 @@
           <button class="nav-link" data-nav="program">Program</button>
           <button class="nav-link" data-nav="kurikulum">Kurikulum</button>
           <button class="nav-link" data-nav="harga">Harga</button>
-          <button class="nav-link" data-nav="buku">Buku Panduan</button>
+          <button class="nav-link" data-nav="buku">Perpustakaan</button>
           <button class="nav-link" data-nav="berita">Berita</button>
           <button class="nav-link" data-nav="daftar">Daftar</button>
           <a class="btn btn-navy btn-sm" href="sites/" rel="noopener">Masuk Sistem</a>
@@ -59,7 +59,7 @@
       <button class="nav-link" data-nav="program">Program</button>
       <button class="nav-link" data-nav="kurikulum">Kurikulum</button>
       <button class="nav-link" data-nav="harga">Harga</button>
-      <button class="nav-link" data-nav="buku">Buku Panduan</button>
+      <button class="nav-link" data-nav="buku">Perpustakaan</button>
       <button class="nav-link" data-nav="berita">Berita</button>
       <button class="nav-link" data-nav="daftar">Daftar</button>
       <a class="btn btn-navy" href="sites/" rel="noopener">Masuk Sistem</a>
@@ -454,7 +454,7 @@
           <div class="bk-hero-body">
             <span class="bk-hero-eyebrow"><i class="fa-solid fa-book-open-reader"></i> Perpustakaan Digital</span>
             <h2 data-set="seksi_katalog_judul">Katalog Buku &amp; Modul Aksara</h2>
-            <p data-set="seksi_katalog_sub">Temukan bahan belajar resmi Aksara — modul latihan, panduan program, dan karya ilmiah. Baca langsung di situs atau unduh berkasnya, gratis.</p>
+            <p data-set="seksi_katalog_sub">Temukan bahan belajar resmi Aksara — modul latihan, buku ajar, dan karya ilmiah. Baca langsung di perpustakaan digital ini atau unduh berkasnya, gratis.</p>
             <div class="bk-hero-stats">
               <div class="bk-stat"><b id="bk-stat-buku">0</b><span>Koleksi Buku</span></div>
               <div class="bk-stat"><b id="bk-stat-kategori">0</b><span>Kategori</span></div>
@@ -522,35 +522,51 @@
   <!-- ================= PEMBACA BUKU (KATALOG) ================= -->
   <div class="reader" id="book-reader" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Pembaca buku">
     <div class="reader-back" id="reader-back"></div>
-    <div class="reader-panel" role="document">
-      <button class="reader-close" id="reader-close" type="button" aria-label="Tutup pembaca"><i class="fa-solid fa-xmark"></i></button>
-      <div class="reader-meta">
-        <div class="reader-cover" id="reader-cover"><i class="fa-solid fa-book-open"></i></div>
-        <div class="reader-meta-text">
-          <span class="reader-kicker" id="reader-kicker"></span>
-          <h3 id="reader-judul"></h3>
-          <p class="reader-pustaka" id="reader-pustaka"></p>
-          <div class="reader-actions" id="reader-actions"></div>
+    <div class="reader-panel" id="reader-panel" role="document">
+      <!-- 1. Bilah atas: kembali, identitas buku, aksi -->
+      <header class="rd-top">
+        <button class="rd-kembali" id="reader-close" type="button"><i class="fa-solid fa-arrow-left"></i> <span>Kembali ke Katalog</span></button>
+        <div class="rd-identitas">
+          <h3 id="reader-judul">Buku</h3>
+          <p class="rd-oleh">Oleh <b id="reader-penulis">Aksara Learning Center</b></p>
+        </div>
+        <div class="rd-aksi" id="reader-actions"></div>
+      </header>
+
+      <!-- 2. Kontrol pembaca: penghitung halaman, ukuran tulisan, daftar isi -->
+      <div class="rd-kontrol">
+        <span class="rd-count" id="reader-count">Halaman 1 dari 1</span>
+        <div class="rd-tools">
+          <button class="rd-ikon" id="reader-kecil" type="button" aria-label="Perkecil ukuran tulisan"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+          <button class="rd-ikon" id="reader-besar" type="button" aria-label="Perbesar ukuran tulisan"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+          <button class="rd-ikon" id="reader-daftar" type="button" aria-expanded="false" aria-controls="reader-toc"><i class="fa-solid fa-list-ul"></i> <span>Daftar Isi</span></button>
         </div>
       </div>
+
+      <!-- 3. Panggung buku -->
       <div class="reader-body" id="reader-body">
         <div class="book-spread" id="reader-spread">
-          <div class="sp-base">
-            <div class="base-page left cover">
-              <div class="cover-mark"><i class="fa-solid fa-book-open-reader"></i></div>
-              <h3 id="reader-cover-title">AKSARA</h3>
-              <div class="cover-sub" id="reader-cover-sub">Learning Center</div>
+          <div class="book-inner" id="reader-inner">
+            <div class="sp-base">
+              <div class="base-page left endpaper"><span class="ep-mark">AKSARA • LEARNING CENTER</span></div>
+              <div class="base-page right"></div>
             </div>
-            <div class="base-page right"><span class="ep-mark">AKSARA • LEARNING CENTER</span></div>
+            <div class="sp-spine"></div>
+            <div class="sp-leaves" id="reader-leaves"></div>
           </div>
-          <div class="sp-spine"></div>
-          <div class="sp-leaves" id="reader-leaves"></div>
+          <button class="rd-panah kiri" id="reader-prev" type="button" aria-label="Halaman sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="rd-panah kanan" id="reader-next" type="button" aria-label="Halaman berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
-      </div>
-      <div class="reader-nav">
-        <button class="btn btn-outline btn-sm" id="reader-prev" type="button">◀ Halaman sebelumnya</button>
-        <span class="reader-count" id="reader-count">1 / 1</span>
-        <button class="btn btn-outline btn-sm" id="reader-next" type="button">Halaman berikutnya ▶</button>
+        <p class="rd-petunjuk"><i class="fa-regular fa-hand-pointer"></i> Klik halaman atau gunakan tombol panah untuk membalik. Tekan <b>Esc</b> untuk menutup.</p>
+
+        <!-- 4. Panel Daftar Isi -->
+        <div class="rd-toc" id="reader-toc" aria-hidden="true">
+          <div class="rd-toc-head">
+            <b><i class="fa-solid fa-list-ul"></i> Daftar Isi</b>
+            <button class="rd-toc-tutup" id="reader-toc-tutup" type="button" aria-label="Tutup daftar isi"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <ol class="rd-toc-list" id="reader-toc-list"></ol>
+        </div>
       </div>
     </div>
   </div>
@@ -862,7 +878,7 @@
             <li><a href="#program" data-nav="program">Program</a></li>
             <li><a href="#kurikulum" data-nav="kurikulum">Kurikulum</a></li>
             <li><a href="#harga" data-nav="harga">Harga &amp; Paket</a></li>
-            <li><a href="#buku" data-nav="buku">Buku Panduan</a></li>
+            <li><a href="#buku" data-nav="buku">Perpustakaan</a></li>
             <li><a href="#berita" data-nav="berita">Berita</a></li>
             <li><a href="sites/" rel="noopener">Masuk Sistem</a></li>
           </ul>
