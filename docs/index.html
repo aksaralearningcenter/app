@@ -438,50 +438,12 @@
     </div>
   </section>
 
-  <!-- ================= FLIPBOOK ================= -->
+  <!-- ================= KATALOG BUKU ================= -->
   <!-- Seksi ini disembunyikan sampai admin menambahkan buku (renderer yang menghilangkannya) -->
   <section class="section book-section page-view is-hidden" id="buku" data-page="buku">
     <div class="container">
-      <div class="section-head reveal">
-        <div class="eyebrow" style="color: var(--gold-light);">Buku Panduan Online</div>
-        <h2 data-set="seksi_buku_judul">Baca Booklet Aksara</h2>
-        <p data-set="seksi_buku_sub">Ringkasan profil, program, dan alur pendaftaran — balik halaman seperti membuka buku sungguhan, atau buka tampilan penuh agar lebih nyaman dibaca.</p>
-      </div>
-
-      <div class="book-shell reveal" id="book-shell">
-        <div class="book-tools">
-          <button class="book-tool" id="book-full" type="button" aria-pressed="false">
-            <i class="fa-solid fa-expand"></i> Tampilan Penuh
-          </button>
-          <span class="book-hint">Balik lembar dengan tombol ◀ ▶, geser di ponsel, atau panah ← → pada keyboard.</span>
-        </div>
-        <div class="book-spread" id="flipbook">
-          <div class="sp-base">
-            <div class="base-page left cover">
-              <div class="cover-mark"><i class="fa-solid fa-book-open-reader"></i></div>
-              <h3>AKSARA</h3>
-              <div class="cover-sub">Learning Center</div>
-              <p class="cover-note">Dari Dasar hingga Akademik — panduan singkat program &amp; layanan kami.</p>
-            </div>
-            <div class="base-page right">
-              <span class="ep-mark">AKSARA • LEARNING CENTER</span>
-            </div>
-          </div>
-          <div class="sp-spine"></div>
-
-          <div class="sp-leaves" id="book-leaves"></div>
-        </div>
-
-        <div class="book-controls">
-          <button class="book-btn" id="book-prev" aria-label="Halaman sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
-          <span class="book-progress" id="book-progress">1 / 4</span>
-          <button class="book-btn" id="book-next" aria-label="Halaman berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
-        <div class="book-dots" id="book-dots"></div>
-      </div>
-
-      <!-- Katalog & daftar pustaka buku (dikelola admin) -->
-      <div id="book-catalog-wrap" style="margin-top:58px; display:none;">
+      <!-- Banner hero + katalog & daftar pustaka buku (dikelola admin) -->
+      <div id="book-catalog-wrap" style="display:none;">
         <!-- Banner hero portal perbukuan (sekaligus judul seksi) -->
         <div class="bk-hero reveal">
           <div class="bk-hero-art" aria-hidden="true">

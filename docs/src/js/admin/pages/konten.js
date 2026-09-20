@@ -52,12 +52,12 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       rows = rows || [];
       const flip = urutkanBy(rows.filter(b => b.tipe === 'flipbook'));
       const sorter = sorterHtml('books', flip, {
-        judul: '📖 Urutan Halaman Flipbook',
-        satuan: ' halaman',
-        badge: flip.length + ' halaman · ' + Math.ceil(flip.length / 2) + ' lembar',
-        atas: 'Geser kartu (drag) atau pakai tombol ↑ ↓ untuk mengubah urutan halaman booklet di landing. Urutan tersimpan otomatis — tidak perlu klik Simpan.',
+        judul: '📖 Urutan Buku Booklet',
+        satuan: ' buku',
+        badge: flip.length + ' buku',
+        atas: 'Geser kartu (drag) atau pakai tombol ↑ ↓ untuk mengubah urutan buku bertipe booklet di katalog landing. Urutan tersimpan otomatis — tidak perlu klik Simpan.',
         label: b => b.judul,
-        sub: (b, i) => 'Lembar ' + (Math.floor(i / 2) + 1) + ' · halaman ' + (i % 2 === 0 ? 'kanan' : 'kiri') + (b.deskripsi ? ' · ' + esc(b.deskripsi) : ''),
+        sub: (b) => (b.jenis ? esc(b.jenis) + ' · ' : '') + (b.deskripsi ? esc(b.deskripsi) : 'Booklet'),
         thumb: b => b.cover
           ? '<span class="sort-thumb" style="background-image:url(\'' + esc(b.cover) + '\')"></span>'
           : '<span class="sort-thumb"><i class="fa-solid fa-file-lines"></i></span>'
@@ -83,7 +83,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
         '<button class="btn btn-d btn-sm" data-action="del-book" data-id="' + esc(b.id) + '">🗑️</button></td></tr>').join('');
       $('page').innerHTML =
         '<div class="card-head" style="margin-bottom:16px;"><h2>📚 Buku</h2><button class="btn btn-n btn-sm" data-action="add-book">➕ Tambah Buku</button></div>' +
-        '<p style="font-size:.78rem; margin-bottom:12px;">Tipe <b>flipbook</b> = halaman buku panduan di landing (atur urutannya di kartu di atas). Tipe <b>katalog</b> = buku/modul unduhan. Isi <b>Penulis / Penerbit / Tahun / Jenis</b> agar tampil sebagai <b>katalog &amp; daftar pustaka</b> di landing — pengunjung bisa memilih buku mana yang dibaca (tombol <b>Baca</b>) atau mengunduh berkasnya. Cover &amp; berkas (PDF/Word/Excel) bisa <b>diunggah langsung</b> dari modal Tambah/Edit Buku.</p>' +
+        '<p style="font-size:.78rem; margin-bottom:12px;">Semua buku tampil di <b>katalog &amp; daftar pustaka</b> landing (bisa dicari &amp; difilter). Isi <b>Penulis / Penerbit / Tahun / Jenis / Jenjang</b> agar kartunya lengkap; isi <b>Isi</b> agar bisa dibaca langsung. Cover &amp; berkas (PDF/Word/Excel) bisa <b>diunggah langsung</b> dari modal Tambah/Edit Buku. Tipe <b>booklet</b> diurutkan lewat kartu di atas.</p>' +
         sorter +
         '<div class="card"><div class="table-wrap"><table><thead><tr><th>Cover</th><th>Tipe</th><th>Judul</th><th>Pustaka</th><th>Link</th><th class="col-sm-hide">Urutan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
         (body || '<tr><td colspan="8" style="text-align:center;">Belum ada buku.</td></tr>') + '</tbody></table></div></div>';
@@ -458,14 +458,14 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       '<div class="fg"><label>Urutan (bisa juga drag di daftar)</label><input type="number" id="b-urutan" value="' + (row.urutan || 0) + '"></div></div>' +
       '<div class="fg"><label>Judul *</label><input id="b-judul" value="' + esc(row.judul || '') + '"></div>' +
       '<div class="fg"><label>Deskripsi</label><textarea id="b-deskripsi" rows="2">' + esc(row.deskripsi || '') + '</textarea></div>' +
-      '<div class="fg"><label>Isi (untuk flipbook)</label><textarea id="b-isi" rows="4">' + esc(row.isi || '') + '</textarea></div>' +
+      '<div class="fg"><label>Isi / Teks Buku (tampil di pembaca katalog)</label><textarea id="b-isi" rows="4">' + esc(row.isi || '') + '</textarea></div>' +
       '<div class="frow"><div class="fg"><label>Penulis</label><input id="b-penulis" value="' + esc(row.penulis || '') + '" placeholder="mis. Tim Aksara Learning Center"></div>' +
       '<div class="fg"><label>Penerbit</label><input id="b-penerbit" value="' + esc(row.penerbit || '') + '" placeholder="mis. Aksara Learning Center"></div></div>' +
       '<div class="frow"><div class="fg"><label>Tahun</label><input id="b-tahun" value="' + esc(row.tahun || '') + '" placeholder="mis. 2025"></div>' +
       '<div class="fg"><label>Jenis / Kategori</label><input id="b-jenis" value="' + esc(row.jenis || '') + '" placeholder="mis. Modul, Panduan, Karya Ilmiah"></div></div>' +
       '<div class="fg"><label>Jenjang</label><select id="b-jenjang">' + opsiJenjang + '</select></div>' +
       '<div class="frow">' + uploadField('Cover Buku', 'b-cover', row.cover, 'https://... atau klik Unggah',
-        'Tampil sebagai cover di katalog buku (tipe katalog) atau di halaman booklet (tipe flipbook).') +
+        'Tampil sebagai cover di kartu katalog & halaman detail buku.') +
       dokumenField('URL Link / Berkas', 'b-link', row.link, 'https://... atau unggah PDF/Word/Excel',
         'Dipakai tombol “Unduh / Baca” pada kartu katalog buku — bisa PDF, Word, Excel, atau PowerPoint (maks 10 MB). Badge jenis berkasnya tampil di kolom <b>Link</b> daftar buku.', row.berkas) + '</div>' +
       '<div class="fg"><label>Status</label><select id="b-status"><option' + ((!row.status || row.status === 'Aktif') ? ' selected' : '') + '>Aktif</option><option' + (row.status === 'Nonaktif' ? ' selected' : '') + '>Nonaktif</option></select></div>',

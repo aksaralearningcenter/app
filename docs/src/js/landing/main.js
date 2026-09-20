@@ -1,11 +1,10 @@
 // ==================== ENTRY POINT — LANDING PAGE ====================
 // Urutan impor dijaga: modul penyedia jembatan window (pasangStatistikDari,
-// pilihDocTab, refreshFlipbook) harus jalan sebelum konten dinamis merender,
-// dan chatbot dimuat setelah konten karena membaca window.__lpTerakhir.
+// pilihDocTab) harus jalan sebelum konten dinamis merender, dan chatbot dimuat
+// setelah konten karena membaca window.__lpTerakhir.
 import { toggleMenu } from './ui.js';
 import './statistik.js';
 import './tabs.js';
-import './flipbook.js';
 import './galeri.js';
 import './konten/index.js';
 import './chatbot.js';

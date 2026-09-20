@@ -499,126 +499,13 @@
     .reader-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 30px; border-top: 1px solid var(--border); background: #FAF8F4; }
     .reader-count { font-size: .8rem; font-weight: 700; color: var(--navy); }
 
-    /* ---------- FLIPBOOK ---------- */
+    /* ---------- SEKSI KATALOG (latar) ---------- */
     .book-section { background: linear-gradient(135deg, #0d1f38, var(--navy) 60%, var(--navy-light)); position: relative; overflow: hidden; }
     .book-section::before {
       content: ''; position: absolute; inset: 0;
       background-image: radial-gradient(rgba(255,255,255,.1) 1px, transparent 1px); background-size: 28px 28px;
     }
-    .book-section .section-head { position: relative; }
-    .book-section .section-head h2 { color: #fff; }
-    .book-section .section-head p { color: #BFD3EA; }
-    .book-shell { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
-    /* Buku terbuka dua halaman (kiri + kanan) */
-    /* width 100% + max-width, bukan 94vw: dengan 94vw buku ikut melebihi lebar
-       kontainer di ponsel sehingga halaman bisa digeser ke samping. */
-    .book-spread { position: relative; width: 100%; max-width: 900px; height: 540px; perspective: 3000px; }
-    /* Halaman dasar: samput dalam (kiri) & kertas end (kanan) saat separuh buku kosong */
-    .sp-base {
-      position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr;
-      border-radius: 10px 18px 18px 10px; overflow: hidden; z-index: 1;
-      background: linear-gradient(135deg, #efeadd, #f8f5ee);
-      box-shadow: 0 44px 90px -34px rgba(0, 0, 0, .75), 0 0 0 1px rgba(16, 43, 78, .07);
-    }
-    .sp-base .base-page {
-      position: relative; padding: 42px 40px; background: #fff; overflow: hidden;
-      background-image: linear-gradient(rgba(184,147,74,.045) 1px, transparent 1px); background-size: 100% 34px;
-    }
-    .sp-base .base-page.left { border-radius: 10px 0 0 10px; }
-    .sp-base .base-page.right {
-      border-radius: 0 18px 18px 0; display: flex; align-items: center; justify-content: center; text-align: center;
-      background-image: radial-gradient(rgba(184,147,74,.16) 1px, transparent 1px); background-size: 22px 22px;
-    }
-    .sp-base .base-page.right .ep-mark { font-family: 'Playfair Display', serif; letter-spacing: .28em; font-size: .72rem; color: var(--navy); opacity: .45; }
-    /* Lekukan punggung buku di tengah */
-    .sp-spine {
-      position: absolute; left: 50%; top: 0; bottom: 0; width: 46px; transform: translateX(-50%);
-      z-index: 2; pointer-events: none;
-      background: linear-gradient(to right, rgba(16,43,78,0) 0%, rgba(16,43,78,.16) 42%, rgba(16,43,78,.28) 50%, rgba(16,43,78,.16) 58%, rgba(16,43,78,0) 100%);
-    }
-    /* Tumpukan lembar di separuh kanan; poros putar di punggung buku */
-    .sp-leaves { position: absolute; left: 50%; top: 0; width: 50%; height: 100%; transform-style: preserve-3d; z-index: 3; }
-    .sp-leaf {
-      position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d;
-      transition: transform .95s cubic-bezier(.55, .06, .32, 1); will-change: transform;
-    }
-    .sp-leaf.flipped { transform: rotateY(-180deg); }
-    /* Tiap lembar punya muka depan (halaman kanan) & muka belakang (halaman kiri) */
-    .face {
-      position: absolute; inset: 0; padding: 42px 40px; background: #fff;
-      background-image: linear-gradient(rgba(184,147,74,.045) 1px, transparent 1px); background-size: 100% 34px;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden;
-    }
-    .face.front { border-radius: 0 18px 18px 0; box-shadow: inset 16px 0 28px -24px rgba(16,43,78,.7); }
-    .face.back { transform: rotateY(180deg); border-radius: 10px 0 0 10px; box-shadow: inset -16px 0 28px -24px rgba(16,43,78,.7); }
-    /* Kilau/bayangan saat kertas dibalik */
-    .face::after {
-      content: ''; position: absolute; inset: 0; opacity: 0; pointer-events: none;
-      background: linear-gradient(to left, rgba(16,43,78,.26), rgba(16,43,78,.05) 50%, rgba(16,43,78,0));
-    }
-    .sp-leaf.flipping .face::after { animation: shadePulse .95s ease; }
-    @keyframes shadePulse { 0% { opacity: 0; } 45% { opacity: .8; } 100% { opacity: 0; } }
-
-    /* Sampul (halaman dasar kiri) */
-    .base-page.cover { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-      background-image: linear-gradient(150deg, var(--navy), #0d1f38); background-size: auto; }
-    .base-page.cover * { color: #fff; }
-    .base-page.cover h3 { color: #fff; font-size: 1.8rem; letter-spacing: .08em; }
-    .base-page.cover .cover-mark { color: var(--gold-light); font-size: 2.5rem; margin-bottom: 15px; }
-    .base-page.cover .cover-sub { color: var(--gold-light); font-size: .64rem; letter-spacing: .32em; text-transform: uppercase; margin-top: 10px; }
-    .base-page.cover .cover-note { color: #BFD3EA; font-size: .8rem; margin-top: 22px; max-width: 230px; }
-
-    .page-kicker { font-size: .64rem; text-transform: uppercase; letter-spacing: .2em; color: var(--gold); font-weight: 700; margin-bottom: 12px; }
-    .face h3, .sp-base .base-page h3 { font-size: 1.4rem; margin-bottom: 12px; }
-    .face p, .sp-base .base-page p { font-size: .88rem; line-height: 1.8; margin-bottom: 12px; }
-    .face ul, .sp-base .base-page ul { list-style: none; margin: 6px 0 10px; }
-    .face li, .sp-base .base-page li { font-size: .86rem; padding: 6px 0 6px 22px; position: relative; }
-    .face li::before, .sp-base .base-page li::before { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: var(--gold); position: absolute; left: 0; font-size: .74rem; }
-    .page-num { position: absolute; bottom: 16px; font-size: .7rem; color: var(--muted); font-weight: 700; }
-    .face.front .page-num { right: 22px; }
-    .face.back .page-num { left: 22px; }
-    .book-controls { display: flex; align-items: center; gap: 22px; margin-top: 28px; position: relative; }
-    .book-btn {
-      width: 52px; height: 52px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.1);
-      color: #fff; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background .2s ease, transform .2s ease;
-    }
-    .book-btn:hover:not([disabled]) { background: var(--gold); transform: translateY(-2px); }
-    .book-btn[disabled] { opacity: .35; cursor: not-allowed; }
-    .book-progress { color: #fff; font-size: .82rem; font-weight: 700; min-width: 110px; text-align: center; }
-    .book-dots { display: flex; gap: 9px; margin-top: 20px; position: relative; }
-    .book-dot { width: 9px; height: 9px; border-radius: 50%; border: none; background: rgba(255,255,255,.3); cursor: pointer; transition: all .2s ease; }
-    .book-dot.active { background: var(--gold-light); transform: scale(1.35); }
-
-    /* ---------- TAMPILAN PENUH BOOKLET ---------- */
-    .book-tools { display: flex; align-items: center; justify-content: center; gap: 10px 14px; flex-wrap: wrap; margin: 0 0 20px; position: relative; z-index: 2; }
-    .book-tool {
-      display: inline-flex; align-items: center; gap: 8px; font-family: inherit; cursor: pointer;
-      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); color: #fff;
-      padding: 10px 17px; border-radius: 999px; font-size: .8rem; font-weight: 700;
-      transition: background .2s ease, transform .2s ease;
-    }
-    .book-tool:hover { background: var(--gold); border-color: transparent; transform: translateY(-1px); }
-    .book-tool[aria-pressed="true"] { background: var(--gold); border-color: transparent; }
-    .book-hint { color: rgba(255,255,255,.62); font-size: .72rem; text-align: center; }
-    /* Saat aktif: buku mengisi jendela & latar tidak ikut tergulir */
-    body.book-fs { overflow: hidden; }
-    .book-shell.fs {
-      position: fixed; inset: 0; z-index: 500; margin: 0; padding: 14px 12px 18px; gap: 10px;
-      background: rgba(8, 17, 30, .975); justify-content: center; overflow-y: auto; overscroll-behavior: contain;
-    }
-    .book-shell.fs .book-tools { position: sticky; top: 0; margin-bottom: 2px; }
-    .book-shell.fs .book-extra { display: none; }
-    /* Rasio buku dijaga 1.6 : 1 dan selalu muat di tinggi layar */
-    .book-shell.fs .book-spread {
-      width: min(1240px, 96vw, calc(64vh * 1.6));
-      height: calc(min(1240px, 96vw, calc(64vh * 1.6)) / 1.6);
-    }
-    .book-shell.fs .book-controls { margin-top: 12px; }
-    .book-shell.fs .book-dots { margin-top: 10px; }
-    .book-shell.fs .face, .book-shell.fs .sp-base .base-page { padding: clamp(18px, 2.6vw, 54px) clamp(16px, 2.6vw, 50px); }
-    .book-shell.fs .face h3, .book-shell.fs .sp-base .base-page h3 { font-size: clamp(1.05rem, 1.75vw, 1.8rem); }
-    .book-shell.fs .face p, .book-shell.fs .face li, .book-shell.fs .sp-base .base-page p, .book-shell.fs .sp-base .base-page li { font-size: clamp(.76rem, 1vw, 1rem); }
-    .book-shell.fs .book-btn { width: 58px; height: 58px; }
+    .book-section .container { position: relative; z-index: 1; }
 
     /* ---------- TESTIMONIALS ---------- */
     .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
@@ -854,8 +741,6 @@
       .reg-grid { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr 1fr; }
       .stats-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
-      .book-spread { height: 500px; }
-      .face, .sp-base .base-page { padding: 30px 24px; }
       .plan-grid { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; }
       .price-tables-grid { grid-template-columns: 1fr; }
       .news-grid { grid-template-columns: 1fr; }
@@ -876,11 +761,6 @@
       .cta { padding: 70px 0; }
       .reg-card { padding: 24px 20px; }
       .doc-panel { padding: 26px 20px; }
-      .book-spread { height: 520px; }
-      .face, .sp-base .base-page { padding: 22px 16px; }
-      .face h3, .sp-base .base-page h3 { font-size: 1.05rem; margin-bottom: 8px; }
-      .face p, .face li, .sp-base .base-page p, .sp-base .base-page li { font-size: .72rem; }
-      .page-kicker { font-size: .54rem; margin-bottom: 8px; }
       .pr-panel { padding: 22px 16px 26px; }
       .sv-grid, .step-grid, .level-grid { grid-template-columns: 1fr; }
       .gal-grid { grid-template-columns: 1fr; grid-auto-rows: 210px; }
@@ -1027,13 +907,9 @@
       .eyebrow { font-size: .78rem; }
       .hero-trust .t-l,
       .stat-item .sl { font-size: .78rem; }
-      .page-kicker { font-size: .7rem; }
       .plan .plan-price .lbl { font-size: .74rem; }
       .plan .plan-badge { font-size: .72rem; }
-      .base-page.cover .cover-sub { font-size: .72rem; }
       .p-tag { font-size: .74rem; }
-      .book-hint,
-      .ep-mark { font-size: .78rem; }
 
       /* ---- 3. Target sentuh: minimal ~44px agar nyaman ditekan ibu jari ---- */
       .burger { width: 44px; height: 44px; padding: 0; font-size: 1.3rem; }
@@ -1043,9 +919,6 @@
       .news-more { font-size: .8rem; min-height: 44px; padding: 12px 0; }
       .doc-tab,
       .pr-tab { padding: 11px 14px; }
-      .book-dot { width: 12px; height: 12px; }
-      .book-dots { gap: 13px; }
-      .book-btn { width: 48px; height: 48px; }
       .socials a { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
       .contact-badge { padding: 14px 20px; }
 
@@ -1060,50 +933,7 @@
       .doc-tabs,
       .pr-tabs { -webkit-overflow-scrolling: touch; }
 
-      /* ---- 6. FLIPBOOK di ponsel: mode halaman tunggal (portrait) ---- */
-      /* Layar ponsel sempit & tinggi — buku dua-halaman-lanskap menyebabkan
-         halaman terpotong (tinggi 540px lebih dari tinggi layar) dan teks
-         tumpang tindih saat dibalik. Solusinya: di ponsel buku ditampilkan
-         SATU halaman penuh per layar (seperti e-reader), isi bisa digulir. */
-      .book-spread { height: auto; min-height: 0; max-width: none; }
-      .book-shell.fs .book-spread { width: 100%; height: auto; }  /* mode penuh di ponsel tetap portrait */
-      .book-spread .sp-base { display: none; }        /* halaman dasar & punggung buku tak diperlukan */
-      .book-spread .sp-spine { display: none; }
-      .sp-leaves {
-        position: static; width: 100%; height: auto;
-        display: grid; grid-template-columns: 1fr;    /* tiap lembar jadi kartu tersendiri */
-        gap: 14px; transform-style: flat; perspective: none;
-      }
-      .sp-leaf {
-        position: static; inset: auto; height: auto; min-height: 0;
-        transform: none !important;                    /* matikan animasi balik 3D */
-        transform-style: flat;
-      }
-      /* Muka belakang: tampil hanya saat halaman genap (kelas 'm-belakang'). */
-      .sp-leaf .face.back { display: none; transform: none; }
-      .sp-leaf.m-belakang .face.back { display: block; }
-      .sp-leaf.m-belakang .face.front { display: none; }
-      /* Satu halaman per layar: hanya lembar aktif (dari JS) yang tampil. */
-      .sp-leaf { display: none; }
-      .sp-leaf.m-aktif { display: block; }
-      .face, .sp-base .base-page { padding: 22px 18px 46px; }
-      .face { height: auto; max-height: none; overflow-y: auto; position: static; backface-visibility: visible; }
-      .face.front { border-radius: 14px; box-shadow: 0 18px 44px -20px rgba(0,0,0,.55); }
-      .face h3 { font-size: 1.18rem; }
-      .face p, .sp-base .base-page p { font-size: .9rem; line-height: 1.75; }
-      .page-num { position: static; display: block; margin-top: 14px; text-align: right; }
-      .book-dl { margin-top: 6px; }
-      /* Kontrol: tombol prev/next menempel di bawah layar, mudah dijangkau ibu jari. */
-      .book-controls {
-        position: sticky; bottom: 0; margin-top: 12px; padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
-        justify-content: center; gap: 26px;
-        background: linear-gradient(to top, rgba(13,31,56,.95) 65%, rgba(13,31,56,0));
-      }
-      .book-progress { min-width: 90px; }
-      .book-dots { margin-top: 4px; flex-wrap: wrap; justify-content: center; }
-      .book-hint { display: none; }                    /* hint keyboard tak relevan di ponsel */
-
-      /* ---- 7. Katalog, detail, & pembaca buku di ponsel ---- */
+      /* ---- 6. Katalog, detail, & pembaca buku di ponsel ---- */
       .bk-hero { padding: 28px 22px; }
       .bk-hero-art { display: none; }
       .bk-hero h2 { font-size: 1.35rem; }

@@ -370,7 +370,7 @@ const KAMUS = {
   'semua': 'all',
   'kecuali akun Admin yang sedang dipakai': 'except the Admin account in use',
   'Menjalankan seed… halaman ini mungkin sibuk beberapa detik.': 'Running seed… the page may be busy for a few seconds.',
-  'Tampil sebagai cover di katalog buku (tipe katalog) atau di halaman booklet (tipe flipbook).': 'Shown as the cover in the book catalog (catalog type) or on the booklet page (flipbook type).',
+  'Tampil sebagai cover di kartu katalog & halaman detail buku.': 'Shown as the cover on catalog cards and the book detail page.',
   'Tampil sebagai thumbnail kartu berita di Beranda & halaman Berita (sebaiknya rasio 16:9).': 'Shown as the news card thumbnail on the Home & News page (16:9 ratio recommended).',
   'Teks kecil di atas judul Beranda.': 'Small text above the Home title.',
   'Bagian yang dicetak miring berwarna (setelah “Dari Dasar”).': 'The italic colored part (after “Dari Dasar”).',

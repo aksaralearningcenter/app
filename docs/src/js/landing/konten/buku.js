@@ -1,7 +1,7 @@
 // ==================== KONTEN DINAMIS — KATALOG BUKU (Gaya Perbukuan) ====================
-// Meniru pola portal perbukuan (SIBI): katalog dengan pencarian, filter kategori,
-// pengurutan, grid kartu buku, halaman detail (metadata daftar pustaka), lalu
-// pembaca halaman + tombol unduh. Booklet flipbook tetap tersedia di atasnya.
+// Meniru pola portal perbukuan (SIBI): katalog dengan pencarian, filter kategori
+// & jenjang, pengurutan, grid kartu buku, halaman detail (metadata daftar
+// pustaka), lalu pembaca halaman + tombol unduh.
 import { cTxt, cEsc, byUrutan, elById, tampilkan } from './util.js';
 
 // Jenis berkas unduhan dari nama berkas hasil unggahan admin (kolom "Berkas"),
@@ -21,48 +21,6 @@ function jenisKatalog(b) {
 function barisPustaka(b) {
   return [b.penulis, b.penerbit, b.tahun]
     .map(cTxt).map(function (v) { return v.trim(); }).filter(Boolean).join(' · ');
-}
-
-// ---------- FLIPBOOK BOOKLET ----------
-function pageFace(b, num, face) {
-  const paras = cTxt(b.isi).split(/\n+/).filter(Boolean)
-    .map(function (p) { return '<p>' + cEsc(p) + '</p>'; }).join('');
-  const cover = cTxt(b.cover)
-    ? '<img src="' + cEsc(b.cover) + '" alt="' + cEsc(b.judul) + '" style="width:100%; border-radius:8px; margin:6px 0 12px;">'
-    : '';
-  const unduh = cTxt(b.link)
-    ? '<a class="btn btn-outline btn-sm book-dl" href="' + cEsc(b.link) + '" target="_blank" rel="noopener">' +
-      '<i class="fa-solid fa-download"></i> ' + (jenisKatalog(b) ? 'Unduh ' + jenisKatalog(b) : 'Unduh berkas') + '</a>'
-    : '';
-  return '<div class="face ' + face + '">' +
-    '<div class="page-kicker">' + cEsc(b.jenis || b.deskripsi || 'Buku') + '</div>' +
-    '<h3>' + cEsc(b.judul) + '</h3>' + cover + paras + unduh +
-    '<div class="page-num">' + num + '</div></div>';
-}
-
-function renderBooklet(list) {
-  const flip = list.filter(function (b) { return cTxt(b.tipe) === 'flipbook'; }).sort(byUrutan);
-  const leaves = elById('book-leaves');
-  const shell = elById('book-shell');
-  if (flip.length >= 1 && leaves) {
-    if (shell) shell.style.display = '';
-    const pages = flip.slice();
-    if (pages.length % 2) {
-      pages.push({ judul: 'Terima Kasih', jenis: 'Aksara Learning Center',
-        isi: 'Terima kasih telah menjelajahi booklet Aksara Learning Center.\nDaftarkan diri Anda hari ini dan mulai perjalanan belajar bersama kami.' });
-    }
-    let html = '';
-    for (let i = 0; i < pages.length; i += 2) {
-      html += '<div class="sp-leaf">' + pageFace(pages[i], i + 1, 'front') +
-        pageFace(pages[i + 1], i + 2, 'back') + '</div>';
-    }
-    leaves.innerHTML = html;
-    if (typeof window.refreshFlipbook === 'function') window.refreshFlipbook();
-  } else {
-    if (leaves) leaves.innerHTML = '';
-    if (shell) shell.style.display = 'none';
-  }
-  return flip.length > 0;
 }
 
 // ---------- PEMBACA BUKU ----------
@@ -415,7 +373,6 @@ export function renderBooks(list) {
   list = list || [];
   katalogState.semua = list.filter(function (b) { return (b.status || 'Aktif') !== 'Nonaktif'; });
   pasangOverlay();
-  const adaBooklet = renderBooklet(list);
   const wrap = elById('book-catalog-wrap');
   const adaKatalog = katalogState.semua.length > 0;
   if (wrap) wrap.style.display = adaKatalog ? 'block' : 'none';
@@ -425,6 +382,6 @@ export function renderBooks(list) {
     perbaruiStatHero();
     terapkanKatalog();
   }
-  // Sembunyikan seluruh seksi hanya bila tidak ada buku sama sekali.
-  tampilkan(elById('buku'), adaBooklet || adaKatalog);
+  // Sembunyikan seluruh seksi bila admin belum menambahkan buku sama sekali.
+  tampilkan(elById('buku'), adaKatalog);
 }
