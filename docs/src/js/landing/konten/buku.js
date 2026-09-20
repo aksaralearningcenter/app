@@ -153,7 +153,7 @@ function flipInstance() {
       tutupDaftarSel: '#reader-toc-tutup', listDaftarSel: '#reader-toc-list',
       stageSel: '#reader-spread', panelSel: '#reader-panel', skalaSel: '#reader-panel',
       layarSel: '#reader-full', ikonLayarSel: '#reader-full-ikon', teksLayarSel: '#reader-full-teks',
-      // Tombol "Kembali ke katalog" di halaman penutup menutup buku.
+      // Tombol "Kembali ke detail" di halaman penutup menutup buku.
       tutupSel: '[data-tutup]', padaTutup: tutupPembaca,
       leafClass: 'sp-leaf'
     });
@@ -212,7 +212,7 @@ function bukaPembaca(id) {
       aksiHtml: (link
         ? '<a class="btn btn-primary btn-sm" href="' + cEsc(link) + '" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> Unduh berkas</a>'
         : '') +
-      '<button class="btn btn-outline btn-sm" type="button" data-tutup="1"><i class="fa-solid fa-list-ul"></i> Kembali ke katalog</button>'
+      '<button class="btn btn-outline btn-sm" type="button" data-tutup="1"><i class="fa-solid fa-list-ul"></i> Kembali ke detail</button>'
     })
   ];
   pembaca.depan = jumlahDepan;

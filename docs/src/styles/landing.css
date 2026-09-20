@@ -514,7 +514,7 @@
 
     /* ---------- PEMBACA BUKU (OVERLAY) ---------- */
     body.reader-open { overflow: hidden; }
-    .reader { position: fixed; inset: 0; z-index: 800; display: none; }
+    .reader { position: fixed; inset: 0; z-index: 820; display: none; }
     .reader.open { display: flex; align-items: center; justify-content: center; }
     .reader-back { position: absolute; inset: 0; background: rgba(8,17,30,.72); }
     .reader-panel {
