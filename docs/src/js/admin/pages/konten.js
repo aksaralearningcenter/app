@@ -68,7 +68,8 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       const pustaka = b => {
         const baris = [b.penulis, b.penerbit, b.tahun].map(v => String(v || '').trim()).filter(Boolean).join(' · ');
         const jenis = b.jenis ? '<span class="badge b-info">' + esc(b.jenis) + '</span> ' : '';
-        return jenis + (baris ? '<div style="font-size:.75rem;">' + esc(baris) + '</div>' : '<div style="font-size:.75rem; opacity:.6;">Belum diisi</div>');
+        const jenjang = b.jenjang ? '<span class="badge b-warn">' + esc(b.jenjang) + '</span> ' : '';
+        return jenis + jenjang + (baris ? '<div style="font-size:.75rem;">' + esc(baris) + '</div>' : '<div style="font-size:.75rem; opacity:.6;">Belum diisi</div>');
       };
       const body = rows.map(b =>
         '<tr><td>' + cover(b) + '</td>' +
@@ -449,6 +450,9 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
   function openBookModal(row) {
     row = row || {};
     const tipe = row.tipe || 'katalog';
+    // Pilihan jenjang standar agar nilai konsisten dengan filter di landing.
+    const opsiJenjang = ['', 'PAUD', 'SD', 'SMP', 'SMA', 'Mahasiswa', 'Umum']
+      .map(v => '<option value="' + v + '"' + (String(row.jenjang || '') === v ? ' selected' : '') + '>' + (v || '— Tidak ditentukan —') + '</option>').join('');
     modal((row.id ? '✏️ Edit' : '➕ Tambah') + ' Buku',
       '<div class="frow"><div class="fg"><label>Tipe</label><select id="b-tipe"><option value="katalog"' + (tipe === 'katalog' ? ' selected' : '') + '>Katalog (unduhan)</option><option value="flipbook"' + (tipe === 'flipbook' ? ' selected' : '') + '>Flipbook (halaman)</option></select></div>' +
       '<div class="fg"><label>Urutan (bisa juga drag di daftar)</label><input type="number" id="b-urutan" value="' + (row.urutan || 0) + '"></div></div>' +
@@ -459,6 +463,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       '<div class="fg"><label>Penerbit</label><input id="b-penerbit" value="' + esc(row.penerbit || '') + '" placeholder="mis. Aksara Learning Center"></div></div>' +
       '<div class="frow"><div class="fg"><label>Tahun</label><input id="b-tahun" value="' + esc(row.tahun || '') + '" placeholder="mis. 2025"></div>' +
       '<div class="fg"><label>Jenis / Kategori</label><input id="b-jenis" value="' + esc(row.jenis || '') + '" placeholder="mis. Modul, Panduan, Karya Ilmiah"></div></div>' +
+      '<div class="fg"><label>Jenjang</label><select id="b-jenjang">' + opsiJenjang + '</select></div>' +
       '<div class="frow">' + uploadField('Cover Buku', 'b-cover', row.cover, 'https://... atau klik Unggah',
         'Tampil sebagai cover di katalog buku (tipe katalog) atau di halaman booklet (tipe flipbook).') +
       dokumenField('URL Link / Berkas', 'b-link', row.link, 'https://... atau unggah PDF/Word/Excel',
@@ -471,6 +476,11 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
 
   async function saveBook(id) {
     const data = { tipe: $('b-tipe').value, judul: $('b-judul').value.trim(), deskripsi: $('b-deskripsi').value, isi: $('b-isi').value, cover: $('b-cover').value.trim(), link: $('b-link').value.trim(), urutan: parseInt($('b-urutan').value, 10) || 0, status: $('b-status').value, berkas: ($('b-link-nama') ? $('b-link-nama').value.trim() : ''), penulis: $('b-penulis').value.trim(), penerbit: $('b-penerbit').value.trim(), tahun: $('b-tahun').value.trim(), jenis: $('b-jenis').value.trim() };
+    // Kirim jenjang hanya bila terisi, atau bila nilai lama memang sudah ada
+    // (agar bisa dikosongkan). Mencegah error bila kolom belum dimigrasi.
+    const jenjangBaru = $('b-jenjang') ? $('b-jenjang').value : '';
+    const lama = id ? (state.cache.books || []).filter(b => String(b.id) === String(id))[0] : null;
+    if (jenjangBaru || (lama && lama.jenjang)) data.jenjang = jenjangBaru;
     if (!data.judul) { toast('Judul wajib diisi.', 'err'); return; }
     try {
       const res = id ? await api('updateBook', id, data) : await api('addBook', data);

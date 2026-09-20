@@ -482,15 +482,86 @@
 
       <!-- Katalog & daftar pustaka buku (dikelola admin) -->
       <div id="book-catalog-wrap" style="margin-top:58px; display:none;">
-        <div class="section-head reveal" style="margin-bottom:34px;">
+        <div class="section-head reveal" style="margin-bottom:28px;">
           <div class="eyebrow">Katalog &amp; Daftar Pustaka</div>
           <h2 data-set="seksi_katalog_judul">Bahan Belajar Pilihan</h2>
           <p data-set="seksi_katalog_sub">Pilih buku atau modul yang ingin dibaca — setiap judul menyediakan tombol Baca dan Unduh.</p>
         </div>
-        <div class="book-list" id="book-catalog"></div>
+
+        <!-- Banner hero portal perbukuan -->
+        <div class="bk-hero reveal">
+          <div class="bk-hero-art" aria-hidden="true">
+            <span class="bk-hero-book b1"><i class="fa-solid fa-book"></i></span>
+            <span class="bk-hero-book b2"><i class="fa-solid fa-book-open"></i></span>
+            <span class="bk-hero-book b3"><i class="fa-solid fa-graduation-cap"></i></span>
+          </div>
+          <div class="bk-hero-body">
+            <span class="bk-hero-eyebrow"><i class="fa-solid fa-book-open-reader"></i> Perpustakaan Digital</span>
+            <h3>Katalog Buku &amp; Modul Aksara</h3>
+            <p>Temukan bahan belajar resmi Aksara — modul latihan, panduan program, dan karya ilmiah. Baca langsung di situs atau unduh berkasnya, gratis.</p>
+            <div class="bk-hero-stats">
+              <div class="bk-stat"><b id="bk-stat-buku">0</b><span>Koleksi Buku</span></div>
+              <div class="bk-stat"><b id="bk-stat-kategori">0</b><span>Kategori</span></div>
+              <div class="bk-stat"><b id="bk-stat-unduh">0</b><span>Siap Diunduh</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bilah pencarian & pengurutan -->
+        <div class="bk-toolbar reveal">
+          <label class="bk-search" for="book-q">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="search" id="book-q" placeholder="Cari judul, penulis, atau penerbit…" autocomplete="off" aria-label="Cari buku">
+          </label>
+          <div class="bk-sort">
+            <i class="fa-solid fa-arrow-down-wide-short"></i>
+            <select id="book-sort" aria-label="Urutkan buku">
+              <option value="urutan">Urutan default</option>
+              <option value="judul">Judul A–Z</option>
+              <option value="tahun">Tahun terbaru</option>
+            </select>
+          </div>
+        </div>
+        <!-- Filter kategori (jenis buku) & jenjang -->
+        <div class="bk-filter">
+          <span class="bk-flabel">Kategori</span>
+          <div class="bk-chips" id="book-chips"></div>
+        </div>
+        <div class="bk-filter is-hidden" id="book-jenjang-wrap">
+          <span class="bk-flabel">Jenjang</span>
+          <div class="bk-chips" id="book-jenjang"></div>
+        </div>
+        <div class="bk-count" id="book-count"></div>
+
+        <!-- Grid katalog -->
+        <div class="bk-grid" id="book-catalog"></div>
+        <div class="bk-empty is-hidden" id="book-empty">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <p>Buku tidak ditemukan. Coba kata kunci atau kategori lain.</p>
+        </div>
       </div>
     </div>
   </section>
+
+  <!-- ================= DETAIL BUKU (KATALOG) ================= -->
+  <div class="bd" id="book-detail" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Detail buku">
+    <div class="bd-back" id="bd-back"></div>
+    <div class="bd-panel" role="document">
+      <button class="bd-close" id="bd-close" type="button" aria-label="Tutup detail"><i class="fa-solid fa-xmark"></i></button>
+      <div class="bd-head">
+        <div class="bd-cover" id="bd-cover"><i class="fa-solid fa-book-open"></i></div>
+        <div class="bd-headinfo">
+          <span class="bd-badge" id="bd-badge"></span>
+          <h3 id="bd-judul"></h3>
+          <div class="bd-actions" id="bd-actions"></div>
+        </div>
+      </div>
+      <div class="bd-body">
+        <dl class="bd-meta" id="bd-meta"></dl>
+        <p class="bd-desc" id="bd-desc"></p>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= PEMBACA BUKU (KATALOG) ================= -->
   <div class="reader" id="book-reader" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Pembaca buku">
