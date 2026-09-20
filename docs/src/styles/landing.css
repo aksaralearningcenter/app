@@ -346,7 +346,7 @@
       display: inline-flex; align-items: center; gap: 9px; font-size: .68rem; font-weight: 800;
       letter-spacing: .18em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 14px;
     }
-    .bk-hero h3 { color: #fff; font-size: clamp(1.45rem, 2.5vw, 2.05rem); line-height: 1.25; margin-bottom: 12px; }
+    .bk-hero h2 { color: #fff; font-size: clamp(1.45rem, 2.5vw, 2.05rem); line-height: 1.25; margin-bottom: 12px; }
     .bk-hero p { color: #BCD0E6; font-size: .92rem; line-height: 1.72; max-width: 540px; margin-bottom: 24px; }
     .bk-hero-stats { display: flex; gap: 30px; flex-wrap: wrap; }
     .bk-stat { display: flex; flex-direction: column; }
@@ -1106,6 +1106,7 @@
       /* ---- 7. Katalog, detail, & pembaca buku di ponsel ---- */
       .bk-hero { padding: 28px 22px; }
       .bk-hero-art { display: none; }
+      .bk-hero h2 { font-size: 1.35rem; }
       .bk-hero p { margin-bottom: 20px; }
       .bk-hero-stats { gap: 20px; }
       .bk-stat + .bk-stat { padding-left: 20px; }
