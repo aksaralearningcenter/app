@@ -907,6 +907,49 @@
       .table-scroll,
       .doc-tabs,
       .pr-tabs { -webkit-overflow-scrolling: touch; }
+
+      /* ---- 6. FLIPBOOK di ponsel: mode halaman tunggal (portrait) ---- */
+      /* Layar ponsel sempit & tinggi — buku dua-halaman-lanskap menyebabkan
+         halaman terpotong (tinggi 540px lebih dari tinggi layar) dan teks
+         tumpang tindih saat dibalik. Solusinya: di ponsel buku ditampilkan
+         SATU halaman penuh per layar (seperti e-reader), isi bisa digulir. */
+      .book-spread { height: auto; min-height: 0; max-width: none; }
+      .book-shell.fs .book-spread { width: 100%; height: auto; }  /* mode penuh di ponsel tetap portrait */
+      .book-spread .sp-base { display: none; }        /* halaman dasar & punggung buku tak diperlukan */
+      .book-spread .sp-spine { display: none; }
+      .sp-leaves {
+        position: static; width: 100%; height: auto;
+        display: grid; grid-template-columns: 1fr;    /* tiap lembar jadi kartu tersendiri */
+        gap: 14px; transform-style: flat; perspective: none;
+      }
+      .sp-leaf {
+        position: static; inset: auto; height: auto; min-height: 0;
+        transform: none !important;                    /* matikan animasi balik 3D */
+        transform-style: flat;
+      }
+      /* Muka belakang: tampil hanya saat halaman genap (kelas 'm-belakang'). */
+      .sp-leaf .face.back { display: none; transform: none; }
+      .sp-leaf.m-belakang .face.back { display: block; }
+      .sp-leaf.m-belakang .face.front { display: none; }
+      /* Satu halaman per layar: hanya lembar aktif (dari JS) yang tampil. */
+      .sp-leaf { display: none; }
+      .sp-leaf.m-aktif { display: block; }
+      .face, .sp-base .base-page { padding: 22px 18px 46px; }
+      .face { height: auto; max-height: none; overflow-y: auto; position: static; backface-visibility: visible; }
+      .face.front { border-radius: 14px; box-shadow: 0 18px 44px -20px rgba(0,0,0,.55); }
+      .face h3 { font-size: 1.18rem; }
+      .face p, .sp-base .base-page p { font-size: .9rem; line-height: 1.75; }
+      .page-num { position: static; display: block; margin-top: 14px; text-align: right; }
+      .book-dl { margin-top: 6px; }
+      /* Kontrol: tombol prev/next menempel di bawah layar, mudah dijangkau ibu jari. */
+      .book-controls {
+        position: sticky; bottom: 0; margin-top: 12px; padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+        justify-content: center; gap: 26px;
+        background: linear-gradient(to top, rgba(13,31,56,.95) 65%, rgba(13,31,56,0));
+      }
+      .book-progress { min-width: 90px; }
+      .book-dots { margin-top: 4px; flex-wrap: wrap; justify-content: center; }
+      .book-hint { display: none; }                    /* hint keyboard tak relevan di ponsel */
     }
 
     /* =====================================================================

@@ -14,6 +14,14 @@
   let turned = 0;                 // lembar yang sudah dibalik
   let animating = false;
 
+  // MODE PONSEL (≤700px): buku dua-halaman-lanskap menyebabkan halaman
+  // terpotong & tumpang tindih di layar sempit. Di ponsel buku ditampilkan
+  // SATU HALAMAN per layar (seperti e-reader): navigasi melangkah per
+  // halaman, muka depan/belakang lembar ditampilkan bergantian.
+  const mqlPonsel = window.matchMedia('(max-width: 700px)');
+  let pPonsel = 0;                // halaman aktif mode ponsel (0 .. 2N-1)
+  function totalPonsel() { return N * 2; }
+
   // Tumpukan: lembar belum-dibalik (kanan) selalu di atas lembar terbalik (kiri).
   function applyZ() {
     leaves.forEach(function (leaf, k) {
@@ -23,7 +31,8 @@
 
   function buildDots() {
     dotsWrap.innerHTML = '';
-    for (let i = 0; i < STATES; i++) {
+    const jumlah = mqlPonsel.matches ? totalPonsel() : STATES;
+    for (let i = 0; i < jumlah; i++) {
       const d = document.createElement('button');
       d.className = 'book-dot';
       d.setAttribute('aria-label', 'Tampilan ' + (i + 1));
@@ -33,6 +42,7 @@
   }
 
   function update() {
+    if (mqlPonsel.matches) { terapkanPonsel(); return; }
     prevBtn.disabled = turned <= 0;
     nextBtn.disabled = turned >= N;
     progress.textContent = 'Buku ' + (turned + 1) + ' / ' + STATES;
@@ -42,6 +52,10 @@
   }
 
   function flipForward() {
+    if (mqlPonsel.matches) {
+      if (pPonsel < totalPonsel() - 1) { pPonsel++; terapkanPonsel(); }
+      return;
+    }
     if (animating || turned >= N) return;
     animating = true;
     const leaf = leaves[turned];
@@ -58,6 +72,10 @@
   }
 
   function flipBackward() {
+    if (mqlPonsel.matches) {
+      if (pPonsel > 0) { pPonsel--; terapkanPonsel(); }
+      return;
+    }
     if (animating || turned <= 0) return;
     animating = true;
     const leaf = leaves[turned - 1];
@@ -73,8 +91,30 @@
     }, 950);
   }
 
+  // Terapkan posisi halaman mode ponsel: hanya lembar aktif yang tampil,
+  // dengan muka depan (halaman ganjil) atau muka belakang (halaman genap).
+  function terapkanPonsel() {
+    const hal = Math.min(Math.max(pPonsel, 0), Math.max(totalPonsel() - 1, 0));
+    leaves.forEach(function (leaf, k) {
+      const aktif = k === Math.floor(hal / 2);
+      leaf.classList.toggle('m-aktif', aktif);
+      leaf.classList.toggle('m-belakang', aktif && (hal % 2 === 1));
+    });
+    prevBtn.disabled = hal <= 0;
+    nextBtn.disabled = hal >= totalPonsel() - 1;
+    progress.textContent = 'Halaman ' + (hal + 1) + ' / ' + totalPonsel();
+    Array.prototype.forEach.call(dotsWrap.children, function (d, i) {
+      d.classList.toggle('active', i === hal);
+    });
+  }
+
   // Pindah posisi tanpa animasi (dipakai lompat jauh & saat ganti mode tampilan).
   function langsungKe(target) {
+    if (mqlPonsel.matches) {
+      pPonsel = Math.min(Math.max(target, 0), Math.max(totalPonsel() - 1, 0));
+      terapkanPonsel();
+      return;
+    }
     leaves.forEach(function (leaf, k) { leaf.classList.toggle('flipped', k < target); });
     turned = target;
     applyZ();
@@ -82,6 +122,7 @@
   }
 
   function goTo(target) {
+    if (mqlPonsel.matches) { langsungKe(target); return; }   // target = indeks halaman
     if (animating || target === turned) return;
     if (Math.abs(target - turned) === 1) {
       target > turned ? flipForward() : flipBackward();
@@ -96,6 +137,7 @@
     N = leaves.length;
     STATES = N + 1;
     turned = 0;
+    pPonsel = 0;
     animating = false;
     leaves.forEach(function (leaf) { leaf.classList.remove('flipped', 'flipping'); });
     applyZ();
@@ -122,7 +164,7 @@
   const fullBtn = document.getElementById('book-full');
   function penuh(on) {
     if (!shell) return;
-    const posisi = turned;              // jangan kehilangan posisi halaman
+    const posisi = mqlPonsel.matches ? pPonsel : turned;   // jangan kehilangan posisi halaman
     shell.classList.toggle('fs', on);
     document.body.classList.toggle('book-fs', on);
     if (fullBtn) {
@@ -140,9 +182,9 @@
       } else if (document.fullscreenElement && document.exitFullscreen) {
         document.exitFullscreen();
       }
-    } catch (e) { /* Fullscreen API tidak tersedia */ }
+    } catch (_e) { /* Fullscreen API tidak tersedia */ }
     refresh();
-    if (posisi) langsungKe(posisi);   // posisi halaman tetap, tanpa animasi ulang
+    if (posisi || mqlPonsel.matches) langsungKe(posisi);   // posisi halaman tetap
   }
   if (fullBtn) fullBtn.addEventListener('click', function () { penuh(!shell.classList.contains('fs')); });
   document.addEventListener('fullscreenchange', function () {
@@ -168,6 +210,13 @@
     if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy)) return;
     if (dx < 0) flipForward(); else flipBackward();
   }, { passive: true });
+
+  // Ganti mode desktop ↔ ponsel: bangun ulang buku dari awal.
+  if (mqlPonsel.addEventListener) {
+    mqlPonsel.addEventListener('change', function () { pPonsel = 0; refresh(); });
+  } else if (mqlPonsel.addListener) {
+    mqlPonsel.addListener(function () { pPonsel = 0; refresh(); });
+  }
 
   refresh();
   // Dipakai modul konten setelah buku dirender ulang dari data admin.

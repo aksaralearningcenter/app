@@ -3,6 +3,8 @@ import { cTxt, cEsc, byUrutan, elById, tampilkan } from './util.js';
 
 // Jenis berkas unduhan katalog — dibaca dari nama berkas hasil unggahan
 // admin (kolom "Berkas"), atau dari ekstensi pada URL yang ditempel.
+// DIPAKAI JUGA oleh halaman flipbook: katalog kini dikonversi menjadi
+// flipbook, jadi tombol unduh tampil di halaman bukunya sendiri.
 function jenisKatalog(b) {
   const peta = {
     pdf: 'PDF', doc: 'Word', docx: 'Word', xls: 'Excel', xlsx: 'Excel', ppt: 'PowerPoint', pptx: 'PowerPoint'
@@ -21,9 +23,14 @@ function pageFace(b, num, face) {
   const cover = cTxt(b.cover)
     ? '<img src="' + cEsc(b.cover) + '" alt="' + cEsc(b.judul) + '" style="width:100%; border-radius:8px; margin:6px 0 12px;">'
     : '';
+  // Tombol unduh bila buku punya berkas/link (katalog yang dijadikan flipbook).
+  const unduh = cTxt(b.link)
+    ? '<a class="btn btn-outline btn-sm book-dl" href="' + cEsc(b.link) + '" target="_blank" rel="noopener">' +
+      '<i class="fa-solid fa-download"></i> ' + (jenisKatalog(b) ? 'Unduh ' + jenisKatalog(b) : 'Unduh berkas') + '</a>'
+    : '';
   return '<div class="face ' + face + '">' +
-    '<div class="page-kicker">' + cEsc(b.deskripsi || 'Buku Panduan') + '</div>' +
-    '<h3>' + cEsc(b.judul) + '</h3>' + cover + paras +
+    '<div class="page-kicker">' + cEsc(b.deskripsi || 'Buku') + '</div>' +
+    '<h3>' + cEsc(b.judul) + '</h3>' + cover + paras + unduh +
     '<div class="page-num">' + num + '</div></div>';
 }
 
@@ -58,8 +65,10 @@ export function renderBooks(list) {
     if (shell) shell.style.display = 'none';
   }
 
-  // Katalog: buku/modul unduhan — kosong → wrap tetap disembunyikan.
-  const katalog = katalog0;
+  // Katalog tidak lagi dirender sebagai grid unduhan — semua buku kini
+  // tampil sebagai flipbook (dikonversi di database). Grid unduhan tetap
+  // disiapkan untuk masa depan bila admin menambah katalog lagi.
+  const katalog = katalog0.filter(function (b) { return cTxt(b.tipe) === 'katalog'; });
   const wrap = elById('book-catalog-wrap');
   const grid = elById('book-catalog');
   if (wrap && !katalog.length) wrap.classList.add('is-hidden');
