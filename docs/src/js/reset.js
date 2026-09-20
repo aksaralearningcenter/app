@@ -1,5 +1,5 @@
 // ============ HALAMAN RESET PASSWORD ============
-// Dibuka dari tautan di email "Lupa Password": /sites/reset.html?token=...
+// Dibuka dari tautan di email "Lupa Password": /sites/reset/?token=...
 // Alur: verifikasi token → isi password baru → kirim. Token sekali pakai &
 // berlaku 30 menit (ditegakkan di server, halaman ini hanya menampilkannya).
 import { API_URL } from './admin/config.js';
