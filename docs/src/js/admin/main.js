@@ -2,8 +2,8 @@
 // Panel admin dipecah per domain (lihat folder pages/). Berkas ini merangkai
 // semuanya: navigasi & gate, prefetch, loadPage, event delegation, boot,
 // dan jembatan global untuk atribut inline.
-import { state, CACHE_TTL, invalidateCache, simpanHalaman } from './state.js';
-import { $, esc, skeletonHtml, siapkanTabelResponsif } from './ui.js';
+import { state, CACHE_TTL, invalidateCache, simpanHalaman, peranTampil, setMode, bisaGantiMode } from './state.js';
+import { $, esc, toast, skeletonHtml, siapkanTabelResponsif } from './ui.js';
 import { terjemahkan, terjemahkanAkar } from './i18n.js';
 import { pasangTema, pasangBahasa, pasangLaci, pasangMenu, tutupLaci,
   bentangkanGrupUntuk, setelSaatBahasaBerubah } from './tampilan.js';
@@ -11,6 +11,7 @@ import { API_URL } from './config.js';
 import { api } from './api.js';
 import { boot, doLogin, doLogout, forgotPass, setAppContext } from './auth.js';
 import { app, closeModal, filterTable } from './helpers.js';
+import { kunciTombol, lepasTombol, sekaliTulis } from './kunci.js';
 import { render as renderDashboard, actions as actionsDashboard } from './pages/dashboard.js';
 import { render as renderMurid, actions as actionsMurid,
   openAddProgress, openAddProgressFor, loadProgressStudent, saveProgress,
@@ -62,7 +63,22 @@ const RENDER = Object.assign({}, renderDashboard, renderMurid, renderKelas,
 function handleAction(action, id, name, extra, el) {
   if (action === 'refresh-page') { invalidateCache(id); app.loadPage(id); return; }
   const fn = ACTIONS[action];
-  if (fn) fn(id, name, extra, el);
+  if (!fn) return;
+  // Anti-klik-ganda: abaikan bila aksi yang sama masih berjalan di tombol ini.
+  // Handler sinkron (buka modal, pindah tab) tidak mengembalikan janji → bebas.
+  if (!kunciTombol(el)) return;
+  let hasil;
+  try {
+    hasil = fn(id, name, extra, el);
+  } catch (e) {
+    lepasTombol(el);
+    throw e;
+  }
+  if (hasil && typeof hasil.then === 'function') {
+    hasil.then(function () { lepasTombol(el); }, function () { lepasTombol(el); });
+  } else {
+    lepasTombol(el);
+  }
 }
 
 
@@ -79,7 +95,9 @@ function handleAction(action, id, name, extra, el) {
     });
   });
 
-  function applyGate(peran) {
+  function applyGate() {
+    // Peran tampil (mode ganda Guru/Orang Tua) menentukan menu yang terlihat.
+    const peran = peranTampil();
     // Halaman yang datanya memang Admin saja. 'reports', 'loginhistory', dan
     // 'settings' ikut di sini karena isinya memakai pengaturan situs, riwayat
     // login, dan token WhatsApp — sebelumnya menunya tampil untuk Guru tetapi
@@ -160,9 +178,41 @@ function handleAction(action, id, name, extra, el) {
   }
 
   // Menuliskan identitas pengguna di panel (dipakai boot() dan saat gagal muat).
+  // Crumb & judul tab mengikuti peran TAMPIL (mode ganda Guru/Orang Tua).
+  const NAMA_PANEL = { 'Admin': 'Panel Admin', 'Guru': 'Panel Guru', 'Orang Tua': 'Panel Orang Tua', 'Murid': 'Panel Murid' };
   function pasangIdentitas(me) {
     if (!me) return;
-    $('who-label').textContent = '👤 ' + (me.nama || me.email) + ' · ' + me.peran;
+    const tampil = (me.peran === 'Guru' && me.punyaAnak && state.mode === 'Orang Tua') ? 'Orang Tua' : me.peran;
+    const panel = NAMA_PANEL[tampil] || 'Panel Admin';
+    $('who-label').textContent = '👤 ' + (me.nama || me.email) + ' · ' + me.peran +
+      (tampil !== me.peran ? ' (mode ' + tampil + ')' : '');
+    const crumb = document.querySelector('.tb-title .crumb');
+    if (crumb) crumb.textContent = terjemahkan('Aksara Learning Center · ' + panel);
+    document.title = terjemahkan(tampil + ' | Aksara Learning Center');
+    pasangTombolMode();
+  }
+
+  // Tombol ganti mode (hanya untuk Guru yang anaknya kursus di sini).
+  function pasangTombolMode() {
+    let t = $('btn-mode');
+    if (!bisaGantiMode()) { if (t) t.style.display = 'none'; return; }
+    if (!t) return;
+    t.style.display = '';
+    const ortu = state.mode === 'Orang Tua';
+    t.textContent = ortu ? '👨‍👩‍👧 Mode: Orang Tua' : '👩‍🏫 Mode: Guru';
+    t.title = ortu ? 'Beralih ke tampilan Guru' : 'Beralih ke tampilan Orang Tua';
+  }
+
+  function gantiMode() {
+    if (!bisaGantiMode()) return;
+    setMode(state.mode === 'Orang Tua' ? 'Guru' : 'Orang Tua');
+    invalidateCache('dashboard');
+    invalidateCache('requests');
+    pasangIdentitas(state.me);
+    applyGate();
+    const p = state.currentPage;
+    if (p === 'dashboard' || p === 'requests') loadPage(p);
+    else toast('Beralih ke mode ' + state.mode + '.', 'ok');
   }
 
   // Halaman yang dibuka saat pertama tampil: lanjutkan halaman terakhir, asalkan
@@ -192,7 +242,7 @@ function handleAction(action, id, name, extra, el) {
   function tampilkanGagalMuat(pesan, coba) {
     $('login').style.display = 'none';
     $('shell').classList.add('on');
-    applyGate(state.me ? state.me.peran : null);
+    applyGate();
     if (state.me) pasangIdentitas(state.me);
     $('page').innerHTML =
       '<div class="card"><div class="empty">⚠️ ' + esc(pesan) +
@@ -248,9 +298,10 @@ function handleAction(action, id, name, extra, el) {
       let data;
       if (page === 'dashboard') {
         // Tiga wajah dashboard: Orang Tua (anak-anaknya), Murid (dirinya sendiri),
-        // dan staf (ringkasan sekolah).
-        if (state.me.peran === 'Orang Tua') data = await api('getMyChildrenData');
-        else if (state.me.peran === 'Murid') data = await api('getMyStudent');
+        // dan staf (ringkasan sekolah). Mode ganda Guru/Ortu mengikuti tampilan.
+        const tampil = peranTampil();
+        if (tampil === 'Orang Tua') data = await api('getMyChildrenData');
+        else if (tampil === 'Murid') data = await api('getMyStudent');
         else data = await api('getDashboardData');
       } else if (page === 'students') data = await api('getStudents');
       else if (page === 'classes') data = await api('getClasses');
@@ -259,7 +310,18 @@ function handleAction(action, id, name, extra, el) {
       else if (page === 'attendance') data = await api('getAttendanceSheet', absenTanggal(), absenKelas());
       else if (page === 'schedules') data = await api('getSchedules');
       // Permintaan jadwal + kuota sesi (kelas & murid).
-      else if (page === 'requests') data = await api('getScheduleRequests');
+      else if (page === 'requests') {
+        data = await api('getScheduleRequests');
+        // Mode ortu butuh daftar anak untuk formulir: pastikan cache dashboard
+        // memegang respons my-children (bukan dashboard staf).
+        if (peranTampil() === 'Orang Tua' && !((state.cache.dashboard || {}).children)) {
+          try {
+            const anak = await api('getMyChildrenData');
+            state.cache.dashboard = anak;
+            state.cacheTime.dashboard = Date.now();
+          } catch (_e) { /* formulir tetap jalan dari data permintaan */ }
+        }
+      }
       else if (page === 'savings') data = await api('getSavingsAccounts');
       else if (page === 'transactions') data = await api('getAllTransactions', 200);
       else if (page === 'users') data = await api('getUsers');
@@ -362,22 +424,38 @@ function handleAction(action, id, name, extra, el) {
   // fungsi yang dipanggil dari atribut inline itu harus didaftarkan ke window.
   // Daftar ini lengkap — menambah handler inline baru berarti menambah namanya
   // di sini juga.
+  // Semua operasi tulis lewat atribut inline dikunci sekali-jalan
+  // (anti-klik-ganda). Pengecualian: closeModal, filter/saring tampilan murni,
+  // dan pratinjau/unggah yang mengatur kuncinya sendiri.
   Object.assign(window, {
-    closeModal, doLogin, doLogout, filterTable, forgotPass, genReport,
-    imporSoalSekarang, jenisSoalBerubah, simpanNilaiEsai, unduhTemplateSoal,
-    loadPage, loadProgressStudent, openAddProgress, openAddProgressFor, openChangePass,
-    saveAsesmen, saveSoal,
-    pilihBerkas, pratinjauDokumen, pratinjauGambar, saveAddClass, saveAddStudent,
-    saveAddUser, saveAttendance, saveBook, saveChangePass, saveEditClass,
-    saveEditStudent, saveFaq, saveGallery, saveKartu, saveKurikulum, saveNews,
-    savePartner, savePricing, saveProgram, saveProgress, saveTestimoni,
-    saveTransaction, txFillSavings, unggahBerkas,
+    closeModal, doLogin, doLogout, filterTable, loadProgressStudent,
+    forgotPass: sekaliTulis(forgotPass),
+    genReport: sekaliTulis(genReport), gantiMode,
+    imporSoalSekarang: sekaliTulis(imporSoalSekarang), jenisSoalBerubah,
+    simpanNilaiEsai: sekaliTulis(simpanNilaiEsai), unduhTemplateSoal,
+    loadPage: sekaliTulis(loadPage), openAddProgress, openAddProgressFor, openChangePass,
+    saveAsesmen: sekaliTulis(saveAsesmen), saveSoal: sekaliTulis(saveSoal),
+    pilihBerkas, pratinjauDokumen, pratinjauGambar,
+    saveAddClass: sekaliTulis(saveAddClass), saveAddStudent: sekaliTulis(saveAddStudent),
+    saveAddUser: sekaliTulis(saveAddUser), saveAttendance: sekaliTulis(saveAttendance),
+    saveBook: sekaliTulis(saveBook), saveChangePass: sekaliTulis(saveChangePass),
+    saveEditClass: sekaliTulis(saveEditClass),
+    saveEditStudent: sekaliTulis(saveEditStudent), saveFaq: sekaliTulis(saveFaq),
+    saveGallery: sekaliTulis(saveGallery), saveKartu: sekaliTulis(saveKartu),
+    saveKurikulum: sekaliTulis(saveKurikulum), saveNews: sekaliTulis(saveNews),
+    savePartner: sekaliTulis(savePartner), savePricing: sekaliTulis(savePricing),
+    saveProgram: sekaliTulis(saveProgram), saveProgress: sekaliTulis(saveProgress),
+    saveTestimoni: sekaliTulis(saveTestimoni),
+    saveTransaction: sekaliTulis(saveTransaction), txFillSavings, unggahBerkas,
     // Jadwal & absensi (termasuk atribut inline di dalam modal).
     bukaFormJadwal, jadwalKelasBerubah, muatAbsensi, muatRiwayatAbsensi,
-    saringJadwal, saveSchedule,
+    saringJadwal, saveSchedule: sekaliTulis(saveSchedule),
     // Permintaan jadwal & kuota (form pengajuan, proses, dan kuota).
     bukaFormPermintaan, permintaanKelasBerubah, permintaanKuotaBerubah,
-    prosesPermintaanSekarang, saringPermintaan, saveKuotaKelas, saveKuotaMurid, savePermintaan,
+    prosesPermintaanSekarang: sekaliTulis(prosesPermintaanSekarang),
+    saringPermintaan,
+    saveKuotaKelas: sekaliTulis(saveKuotaKelas), saveKuotaMurid: sekaliTulis(saveKuotaMurid),
+    savePermintaan: sekaliTulis(savePermintaan),
     // Akun Orang Tua ↔ anak (pencarian di halaman Akun & Anak).
     saringAkunAnak
   });

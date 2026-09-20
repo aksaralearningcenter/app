@@ -59,6 +59,7 @@ function kartuOrtu(u) {
       '<h3>👤 ' + esc(u.nama || u.email) + '</h3>' +
       '<div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">' +
         '<span class="badge ' + (u.status === 'Aktif' ? 'b-ok' : 'b-err') + '">' + esc(u.status) + '</span>' +
+        (u.peran && u.peran !== 'Orang Tua' ? '<span class="badge b-warn">akun ' + esc(u.peran) + '</span>' : '') +
         '<span class="badge ' + (u.anak.length ? 'b-info' : 'b-warn') + '">' + u.anak.length + ' anak</span>' +
         tombolKredensial(u.email) +
       '</div></div>' +

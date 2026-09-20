@@ -696,3 +696,6 @@ html[data-theme="dark"] details.ortu-sec { background: var(--d-surface); border-
 html[data-theme="dark"] details.ortu-sec > summary { color: var(--d-ink); }
 html[data-theme="dark"] .ortu-notif { background: var(--d-surface-2); border-color: var(--d-border); }
 html[data-theme="dark"] .ortu-book { background: var(--d-surface-2); border-color: var(--d-border); }
+
+/* Anti-klik-ganda: elemen yang aksinya masih berjalan (non-tombol juga). */
+[data-sibuk="1"] { cursor: wait !important; }

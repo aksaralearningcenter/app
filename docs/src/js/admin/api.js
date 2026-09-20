@@ -5,6 +5,14 @@
 import { API_URL } from './config.js';
 import { state, REQ_TIMEOUT, hardLogout } from './state.js';
 
+// Mode ganda Guru/Orang Tua: permintaan data panel anak menandai dirinya
+// `sebagai=ortu` supaya server memakai skop Orang Tua (hanya anaknya).
+function modeOrtu() {
+  const me = state.me || {};
+  return me.peran === 'Guru' && !!me.punyaAnak && state.mode === 'Orang Tua';
+}
+const ortuQuery = (awal) => modeOrtu() ? (awal ? '&sebagai=ortu' : '?sebagai=ortu') : '';
+
 // Bungkus fetch dengan batas waktu agar UI tidak menggantung bila server lambat.
 function fetchWithTimeout(url, opsi) {
   const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
@@ -88,11 +96,11 @@ const API_MAP = {
   // Jadwal belajar (per pekan, per kelas atau per murid).
   getSchedules:           { m: 'GET',  p: 'schedules' },
   // Permintaan jadwal (Guru / Orang Tua) + kuota sesi per pekan.
-  getScheduleRequests:      { m: 'GET',  p: 'schedule-requests' },
-  addScheduleRequest:       { m: 'POST', p: 'schedule-requests', b: a => a[0] },
+  getScheduleRequests:      { m: 'GET',  p: () => 'schedule-requests' + ortuQuery(false) },
+  addScheduleRequest:       { m: 'POST', p: () => 'schedule-requests' + ortuQuery(false), b: a => a[0] },
   prosesScheduleRequest:    { m: 'POST', p: a => 'schedule-requests/' + enc(a[0]) + '/proses', b: a => ({ aksi: a[1], jawaban: a[2] || '' }) },
   batalkanScheduleRequest:  { m: 'POST', p: a => 'schedule-requests/' + enc(a[0]) + '/batal' },
-  getScheduleQuota:         { m: 'GET',  p: a => 'schedule-quota?murid=' + enc(a[0]) },
+  getScheduleQuota:         { m: 'GET',  p: a => 'schedule-quota?murid=' + enc(a[0]) + ortuQuery(true) },
   terapkanKuotaPaket:       { m: 'POST', p: 'schedule-quota/terapkan' },
   addSchedule:            { m: 'POST', p: 'schedules', b: a => a[0] },
   updateSchedule:         { m: 'PUT',  p: a => 'schedules/' + enc(a[0]), b: a => a[1] },
@@ -107,7 +115,7 @@ const API_MAP = {
   getDashboardData:       { m: 'GET',  p: 'dashboard' },
   getBatchStartupData:    { m: 'GET',  p: 'dashboard/batch' },
   getStatsData:           { m: 'GET',  p: 'stats' },
-  getMyChildrenData:      { m: 'GET',  p: 'my-children' },
+  getMyChildrenData:      { m: 'GET',  p: () => 'my-children' + ortuQuery(false) },
   // Panel Murid (SMA/mahasiswa/les privat dewasa): data miliknya sendiri.
   getMyStudent:           { m: 'GET',  p: 'my-student' },
   setMyNotifEmail:        { m: 'POST', p: 'my-notif-email', b: a => ({ status: a[0] }) },

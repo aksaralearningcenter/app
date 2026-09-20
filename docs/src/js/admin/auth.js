@@ -56,7 +56,7 @@ export async function boot() {
     $('login').style.display = 'none';
     $('shell').classList.add('on');
     app.pasangIdentitas(state.me);
-    app.applyGate(state.me.peran);
+    app.applyGate();
     if (!$('page').innerHTML.trim()) $('page').innerHTML = skeletonHtml();
   }
 
@@ -81,7 +81,7 @@ export async function boot() {
   $('shell').classList.add('on');
   app.pasangIdentitas(me);
   $('btn-cp').style.display = '';
-  app.applyGate(me.peran);
+  app.applyGate();
 
   // Lanjutkan di halaman yang terakhir dibuka (bukan selalu dashboard).
   const startPage = app.halamanAwal();

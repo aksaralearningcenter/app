@@ -9,7 +9,7 @@
 // Angka 0 = belum diatur → tanpa batas, supaya data lama tidak mendadak terkunci.
 // Saat disetujui (Admin, atau Guru pengampu kelasnya), sesinya dibuat otomatis
 // dan langsung muncul di halaman Absensi.
-import { state, invalidateCache } from '../state.js';
+import { state, invalidateCache, peranTampil } from '../state.js';
 import { $, esc, toast } from '../ui.js';
 import { api } from '../api.js';
 import { app, modal, closeModal, unduhCSV } from '../helpers.js';
@@ -22,7 +22,7 @@ let halaman = { permintaan: [], jadwal: [], kuotaMurid: {}, kuotaKelas: {}, pake
 let kelasCache = [];
 let muridCache = [];
 
-const aku = () => state.me || {};
+const aku = () => Object.assign({}, state.me || {}, { peran: peranTampil() });
 const ortu = () => aku().peran === 'Orang Tua';
 // Non-staf = Orang Tua & Murid: keduanya hanya mengajukan (tidak memproses),
 // kelasnya terkunci ke kelas anaknya/dirinya, dan tidak melihat kuota org lain.
