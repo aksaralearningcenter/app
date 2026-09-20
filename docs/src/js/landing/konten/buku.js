@@ -48,12 +48,14 @@ function pecahHalaman(teks) {
 function faceHtml(hal, face, num, buku) {
   const paras = cTxt(hal).split(/\n+/).filter(Boolean)
     .map(function (p) { return '<p>' + cEsc(p) + '</p>'; }).join('');
-  const cover = (num === 1 && cTxt(buku.cover))
-    ? '<img src="' + cEsc(buku.cover) + '" alt="' + cEsc(buku.judul) + '" style="width:100%; border-radius:8px; margin:6px 0 12px;">'
+  // Judul besar hanya di halaman pertama; halaman lain cukup kicker jenis buku.
+  const kepala = (num === 1)
+    ? '<h3>' + cEsc(buku.judul) + '</h3>' +
+      (cTxt(buku.cover) ? '<img src="' + cEsc(buku.cover) + '" alt="' + cEsc(buku.judul) + '" style="width:100%; border-radius:8px; margin:6px 0 12px;">' : '')
     : '';
   return '<div class="face ' + face + '">' +
     '<div class="page-kicker">' + cEsc(buku.jenis || buku.deskripsi || 'Buku') + '</div>' +
-    '<h3>' + cEsc(buku.judul) + '</h3>' + cover + paras +
+    kepala + paras +
     '<div class="page-num">' + num + '</div></div>';
 }
 

@@ -536,9 +536,9 @@
     }
     .reader-body .sp-leaf.flipped { transform: rotateY(-180deg); }
     .reader-body .face {
-      position: absolute; inset: 0; padding: 30px 28px; background: #fff;
+      position: absolute; inset: 0; padding: 30px 28px 46px; background: #fff;
       background-image: linear-gradient(rgba(184,147,74,.045) 1px, transparent 1px); background-size: 100% 34px;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow-y: auto;
     }
     .reader-body .face.front { border-radius: 0 18px 18px 0; box-shadow: inset 16px 0 28px -24px rgba(16,43,78,.6); }
     .reader-body .face.back { transform: rotateY(180deg); border-radius: 10px 0 0 10px; box-shadow: inset -16px 0 28px -24px rgba(16,43,78,.6); }
