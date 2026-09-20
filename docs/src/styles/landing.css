@@ -624,7 +624,14 @@
     .lb { position: fixed; inset: 0; z-index: 300; background: rgba(8,18,32,.93); display: none; align-items: center; justify-content: center; padding: 24px; }
     .lb.on { display: flex; animation: fadeUp .25s ease; }
     .lb img { max-width: min(1040px, 92vw); max-height: 78vh; border-radius: 14px; box-shadow: 0 34px 80px rgba(0,0,0,.6); }
-    .lb-cap { position: absolute; left: 24px; right: 24px; bottom: 24px; text-align: center; color: #D6E2F0; font-size: .86rem; }
+    .lb-cap { position: absolute; left: 24px; right: 24px; bottom: 24px; text-align: center; color: #D6E2F0; font-size: .86rem; font-weight: 600; }
+    .lb-ket {
+      position: absolute; left: 24px; right: 24px; bottom: 52px; text-align: center;
+      color: #AFC3D9; font-size: .84rem; line-height: 1.6;
+      max-height: 32vh; overflow-y: auto; padding: 0 8px;
+    }
+    .lb-ket::-webkit-scrollbar { width: 4px; }
+    .lb-ket::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 2px; }
     .lb-btn {
       position: absolute; width: 46px; height: 46px; border-radius: 50%;
       background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); color: #fff;
@@ -731,6 +738,7 @@
       .lb { padding: 14px; }
       .lb img { max-height: 64vh; }
       .lb-cap { font-size: .78rem; bottom: 16px; }
+      .lb-ket { font-size: .76rem; bottom: 42px; max-height: 26vh; }
       .lb-prev { left: 8px; }
       .lb-next { right: 8px; }
       .cta-band { padding: 26px 20px; border-radius: 18px; }

@@ -13,8 +13,10 @@ export function renderGallery(list) {
   tampilkan(elById('galeri'), true);
   grid.innerHTML = isi.map(function (g) {
     const judul = cTxt(g.judul);
+    const ket = cTxt(g.keterangan);
     const lebar = cTxt(g.ukuran) === 'wide' ? ' wide' : '';
-    return '<figure class="gal-item' + lebar + '" tabindex="0" role="button" data-cap="' + cEsc(judul) + '">' +
+    return '<figure class="gal-item' + lebar + '" tabindex="0" role="button" data-cap="' + cEsc(judul) + '"' +
+      (ket ? ' data-ket="' + cEsc(ket) + '"' : '') + '>' +
       '<img src="' + cEsc(g.gambar) + '" alt="' + cEsc(judul) + '" loading="lazy" width="1200" height="800">' +
       '<span class="gal-zoom"><i class="fa-solid fa-expand"></i></span>' +
       '<figcaption>' + cEsc(judul) + '</figcaption></figure>';

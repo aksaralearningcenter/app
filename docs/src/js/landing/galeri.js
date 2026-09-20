@@ -27,6 +27,13 @@
     lbImg.src = besar || gambar.getAttribute('src') || '';
     lbImg.alt = gambar.getAttribute('alt') || '';
     lbCap.textContent = fig.getAttribute('data-cap') || gambar.getAttribute('alt') || '';
+    // Keterangan lengkap (dari data admin) tampil di bawah judul bila ada.
+    const ket = fig.getAttribute('data-ket') || '';
+    const ketEl = document.getElementById('lb-ket');
+    if (ketEl) {
+      ketEl.textContent = ket;
+      ketEl.style.display = ket ? '' : 'none';
+    }
   }
 
   function buka(fig) {
