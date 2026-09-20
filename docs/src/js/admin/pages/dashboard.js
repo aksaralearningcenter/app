@@ -3,6 +3,8 @@ import { state, invalidateCache } from '../state.js';
 import { $, esc, rp } from '../ui.js';
 import { app, modal } from '../helpers.js';
 import { buatFlipbook } from '../../shared/flipbook.js';
+import { mukaIsi, halamanSampul, halamanHakCipta, halamanPustaka, halamanPenutup,
+  pasangKendali } from '../../shared/reader-buku.js';
 
   // Buku pelajaran/modul untuk akun Orang Tua (diisi ulang tiap render).
   let bukuOrangTua = [];
@@ -15,22 +17,15 @@ import { buatFlipbook } from '../../shared/flipbook.js';
   }
 
   // Baca buku untuk Orang Tua/murid: buku dibuka sebagai FLIPBOOK dua halaman
-  // (modul bersama src/js/shared/flipbook.js — mesin yang sama dengan tombol
-  // Baca di landing), jadi tidak ada lagi modal teks biasa. Bila buku hanya
-  // punya berkas tanpa isi teks, tautannya langsung dibuka di tab baru.
+  // memakai mesin & halaman bersama (src/js/shared/flipbook.js untuk pembalik
+  // halaman, src/js/shared/reader-buku.js untuk isi halaman, Daftar Isi, dan
+  // kendali pembaca) — pembacanya sama persis dengan tombol Baca di halaman
+  // Perpustakaan landing: sampul → hak cipta → isi → daftar pustaka → penutup.
+  // Bila buku hanya punya berkas tanpa isi teks, tautannya langsung dibuka.
   let flipBuku = null;      // instance flipbook modal (dibuat ulang tiap buku)
+  let kendaliBuku = null;   // kendali bersama (ukuran tulisan, Daftar Isi, layar penuh)
   let flipAkar = null;      // root DOM flipbook yang sedang aktif
   let papanTikSiap = false; // listener panah keyboard cukup dipasang sekali
-
-  // Muka satu halaman buku (dipakai modul flipbook lewat callback).
-  function mukaBuku(hal, face, num, b) {
-    const paras = String(hal || '').split(/\n+/).map(s => s.trim()).filter(Boolean)
-      .map(p => '<p>' + esc(p) + '</p>').join('');
-    const kepala = num === 1
-      ? '<div class="ak-kicker">' + esc(b.jenis || 'Buku Pelajaran') + '</div><h4>' + esc(b.judul) + '</h4>'
-      : '';
-    return '<div class="ak-face ' + face + '">' + kepala + paras + '<span class="ak-num">' + num + '</span></div>';
-  }
 
   // Panah ←/→ membalik halaman selama modal buku terbuka (sekali pasang saja).
   function pasangPapanTik() {
@@ -58,12 +53,22 @@ import { buatFlipbook } from '../../shared/flipbook.js';
     const isi =
       // .flip-wrap = kolom flex: di ponsel area buku mengambil seluruh sisa
       // ruang modal, dan tinggi itu dipakai modul flipbook untuk memenggal isi
-      // supaya tiap halaman pas (tanpa menggulir). Baris pustaka ikut di dalam
-      // pembungkus supaya tingginya diperhitungkan (kalau di luar, modal jadi
-      // sedikit tergulir).
-      '<div class="flip-wrap">' +
-        (meta ? '<p class="ak-pustaka">' + esc(meta) + '</p>' : '') +
-        '<div class="ak-stage">' +
+      // supaya tiap halaman pas (tanpa menggulir). Baris alat (pustaka + kendali)
+      // ikut di dalam pembungkus supaya tingginya diperhitungkan.
+      // Kelas "buku" = gaya halaman buku bersama (src/styles/buku.css), sama
+      // dengan pembaca di halaman Perpustakaan landing.
+      '<div class="flip-wrap buku" id="bkflip">' +
+        '<div class="ak-bar">' +
+          '<p class="ak-pustaka">' + esc(meta || b.jenis || 'Buku Pelajaran') + '</p>' +
+          '<div class="ak-tools">' +
+            '<span class="ak-count" id="bkflip-count"></span>' +
+            '<button class="ak-ikon" id="bkflip-kecil" type="button" aria-label="Perkecil ukuran tulisan"><i class="fa-solid fa-magnifying-glass-minus"></i></button>' +
+            '<button class="ak-ikon" id="bkflip-besar" type="button" aria-label="Perbesar ukuran tulisan"><i class="fa-solid fa-magnifying-glass-plus"></i></button>' +
+            '<button class="ak-ikon" id="bkflip-daftar" type="button" aria-expanded="false" aria-controls="bkflip-toc"><i class="fa-solid fa-list-ul"></i> <span>Daftar Isi</span></button>' +
+            '<button class="ak-ikon" id="bkflip-full" type="button"><i class="fa-solid fa-expand" id="bkflip-full-ikon"></i> <span id="bkflip-full-teks">Layar Penuh</span></button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ak-stage" id="bkflip-stage">' +
           '<div class="ak-base">' +
             '<div class="ak-base-page cover"><span class="ak-mark">AKSARA</span><b>' + esc(b.judul) + '</b>' +
               '<small>' + esc(b.jenis || 'Buku Pelajaran') + '</small></div>' +
@@ -71,18 +76,19 @@ import { buatFlipbook } from '../../shared/flipbook.js';
           '</div>' +
           '<div class="ak-spine"></div>' +
           '<div class="ak-leaves" id="bkflip-leaves"></div>' +
-        '</div>' +
-        // Label panjang disembunyikan di ponsel lewat CSS (.nav-teks) — tinggal
-        // panahnya saja supaya baris navigasi tidak meluber di layar sempit.
-        '<div class="ak-nav">' +
-          '<button class="btn btn-o btn-sm" id="bkflip-prev" type="button" aria-label="Halaman sebelumnya"><span aria-hidden="true">◀</span><span class="nav-teks"> Sebelumnya</span></button>' +
-          '<span class="ak-count" id="bkflip-count"></span>' +
-          '<button class="btn btn-o btn-sm" id="bkflip-next" type="button" aria-label="Halaman berikutnya"><span class="nav-teks">Berikutnya </span><span aria-hidden="true">▶</span></button>' +
+          '<button class="ak-panah kiri" id="bkflip-prev" type="button" aria-label="Halaman sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>' +
+          '<button class="ak-panah kanan" id="bkflip-next" type="button" aria-label="Halaman berikutnya"><i class="fa-solid fa-chevron-right"></i></button>' +
+          // Panel Daftar Isi (gaya & isinya dari buku.css + reader-buku.js).
+          '<div class="toc-panel" id="bkflip-toc" aria-hidden="true">' +
+            '<div class="toc-head"><b><i class="fa-solid fa-list-ul"></i> Daftar Isi</b>' +
+              '<button class="toc-tutup" id="bkflip-toc-tutup" type="button" aria-label="Tutup daftar isi"><i class="fa-solid fa-xmark"></i></button></div>' +
+            '<ol class="toc-list" id="bkflip-toc-list"></ol>' +
+          '</div>' +
         '</div>' +
       '</div>';
     modal('📖 ' + b.judul, isi,
       unduh + '<button class="btn btn-o btn-sm" onclick="closeModal()">Tutup</button>', { lebar: true });
-    // Root flipbook = isi modal, karena tombol ‹ › dan penghitung halaman ada
+    // Root flipbook = isi modal, karena tombol panah dan penghitung halaman ada
     // di luar area buku (modul mencari semua elemennya dari dalam root ini).
     const wrap = $('m-body');
     if (!wrap) return;
@@ -90,10 +96,39 @@ import { buatFlipbook } from '../../shared/flipbook.js';
     flipBuku = buatFlipbook(wrap, {
       leavesSel: '#bkflip-leaves', prevSel: '#bkflip-prev', nextSel: '#bkflip-next',
       countSel: '#bkflip-count', leafClass: 'ak-leaf',
-      kosong: 'Isi buku ini belum tersedia — silakan unduh berkasnya.'
+      kosong: 'Isi buku ini belum tersedia — silakan unduh berkasnya.',
+      // Halaman berpindah → Daftar Isi ditutup supaya halaman tujuannya terlihat
+      // (perilaku yang sama dengan pembaca di landing).
+      padaUbah: function () { if (kendaliBuku) kendaliBuku.padaUbah(); }
     });
     flipBuku.pasang();
-    flipBuku.bangun(b.isi, function (hal, face, num) { return mukaBuku(hal, face, num, b); });
+    // Sampul & hak cipta di depan, daftar pustaka & penutup di belakang —
+    // urutan yang sama dengan pembaca di landing.
+    const jumlahDepan = 2;
+    const depan = [
+      halamanSampul(b, { jenisDefault: 'Buku Pelajaran' }),
+      halamanHakCipta(b, { depan: jumlahDepan })
+    ];
+    const belakang = [
+      halamanPustaka(b, { depan: jumlahDepan }),
+      halamanPenutup(b, {
+        depan: jumlahDepan,
+        teks: 'Terima kasih telah membaca <b>' + esc(b.judul) + '</b>. Bahan belajar lainnya dibagikan lewat panel ini.',
+        aksiHtml: '<button class="btn btn-o btn-sm" type="button" onclick="closeModal()"><i class="fa-solid fa-list-ul"></i> Tutup buku</button>'
+      })
+    ];
+    flipBuku.bangun(b.isi, function (hal, face, num) {
+      return mukaIsi(hal, face, num, b, { depan: jumlahDepan });
+    }, { depan: depan, belakang: belakang });
+    kendaliBuku = pasangKendali(wrap, flipBuku, {
+      kecilSel: '#bkflip-kecil', besarSel: '#bkflip-besar',
+      tombolDaftarSel: '#bkflip-daftar', panelDaftarSel: '#bkflip-toc',
+      tutupDaftarSel: '#bkflip-toc-tutup', listDaftarSel: '#bkflip-toc-list',
+      stageSel: '#bkflip-stage', panelSel: '#bkflip', skalaSel: '#bkflip',
+      layarSel: '#bkflip-full', ikonLayarSel: '#bkflip-full-ikon', teksLayarSel: '#bkflip-full-teks',
+      leafClass: 'ak-leaf'
+    });
+    kendaliBuku.isiDaftarIsi(jumlahDepan);
     pasangPapanTik();
   }
 

@@ -400,6 +400,50 @@
 
     /* Grid katalog */
     .bk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(216px, 1fr)); gap: 26px; }
+    /* ---------- FAVORIT & BAGIKAN ---------- */
+    .bk-tools { display: flex; align-items: center; gap: 10px; }
+    /* Tombol penyaring favorit mengikuti gaya kontrol lain di seksi gelap ini. */
+    .bk-fav-toggle {
+      display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; cursor: pointer;
+      font-family: inherit; font-size: .84rem; font-weight: 700; color: #fff;
+      background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3);
+      padding: 12px 16px; border-radius: 12px; transition: all .18s;
+    }
+    .bk-fav-toggle b {
+      display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px;
+      padding: 0 6px; border-radius: 999px; background: rgba(255,255,255,.22); font-size: .7rem;
+    }
+    .bk-fav-toggle:hover { background: rgba(255,255,255,.24); }
+    .bk-fav-toggle.aktif { background: var(--gold); border-color: var(--gold); }
+    .bk-fav-toggle.aktif b { background: rgba(0,0,0,.22); }
+    .bk-fav-toggle.aktif i { font-weight: 900; }
+    /* Tombol bintang menempel di sampul buku, selalu di atas gambar sampul. */
+    .bk-cover-wrap { position: relative; }
+    .bk-save {
+      position: absolute; top: 9px; right: 9px; z-index: 2; width: 34px; height: 34px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: .82rem;
+      border: 1px solid rgba(255,255,255,.5); background: rgba(8,17,30,.52); color: #fff;
+      transition: all .18s;
+    }
+    .bk-save:hover { background: var(--gold); border-color: var(--gold); transform: scale(1.07); }
+    .bk-save[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); }
+    .bk-share {
+      display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+      width: 35px; height: 35px; border-radius: 10px; cursor: pointer; font-size: .82rem;
+      border: 1px solid var(--border); background: #fff; color: var(--navy); transition: all .18s;
+    }
+    .bk-share:hover { border-color: var(--navy); background: #FBF9F5; }
+
+    /* Pesan singkat (toast): favorit tersimpan, tautan disalin, dsb. */
+    .lp-toast {
+      position: fixed; left: 50%; bottom: 26px; z-index: 900; max-width: min(90vw, 420px);
+      transform: translate(-50%, 14px); opacity: 0; pointer-events: none; text-align: center;
+      background: var(--navy); color: #fff; font-size: .82rem; font-weight: 600;
+      padding: 12px 18px; border-radius: 12px; box-shadow: 0 18px 40px -18px rgba(0,0,0,.6);
+      transition: opacity .22s, transform .22s;
+    }
+    .lp-toast.tampil { opacity: 1; transform: translate(-50%, 0); }
+
     .bk-card {
       display: flex; flex-direction: column; background: #fff; border: 1px solid rgba(16,43,78,.08);
       border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-sm); cursor: pointer;
@@ -571,90 +615,9 @@
       transition: transform .9s cubic-bezier(.55, .06, .32, 1); will-change: transform;
     }
     .reader-body .sp-leaf.flipped { transform: rotateY(-180deg); }
-    /* Kertas buku: krem hangat (bukan putih layar) supaya terasa seperti buku. */
-    .reader-body .face {
-      position: absolute; inset: 0; padding: 32px 30px 48px; background: #fffaf0;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow-y: auto;
-    }
-    /* Gambar isi dibatasi tingginya: satu gambar saja yang lebih tinggi dari
-       halaman tidak bisa dipecah oleh pemenggalan dan membuat halaman tergulir. */
-    .reader-body .face img { max-height: min(46%, 220px); object-fit: cover; border-radius: 8px; }
-    .reader-body .face.front { border-radius: 0 18px 18px 0; box-shadow: inset 16px 0 28px -24px rgba(16,43,78,.6); }
-    .reader-body .face.back { transform: rotateY(180deg); border-radius: 10px 0 0 10px; box-shadow: inset -16px 0 28px -24px rgba(16,43,78,.6); }
-    .reader-body .face::after {
-      content: ''; position: absolute; inset: 0; opacity: 0; pointer-events: none;
-      background: linear-gradient(to left, rgba(16,43,78,.26), rgba(16,43,78,.05) 50%, rgba(16,43,78,0));
-    }
-    .reader-body .sp-leaf.flipping .face::after { animation: shadePulse .9s ease; }
-    @keyframes shadePulse { 0% { opacity: 0; } 45% { opacity: .8; } 100% { opacity: 0; } }
-
-    /* --- Tipografi halaman buku --- */
-    /* Ukuran tulisan ikut tombol perkecil/perbesar (-/+). */
-    .reader-body .face p {
-      font-size: calc(.89rem * var(--rd-skala, 1)); line-height: 1.85; margin: 0 0 12px; color: #313e4d;
-      text-align: justify; -webkit-hyphens: auto; hyphens: auto;
-    }
-    /* Drop cap (huruf pertama besar) pada halaman pertama isi. */
-    .reader-body .face p.p-awal::first-letter {
-      float: left; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 3.1rem;
-      line-height: .8; color: var(--navy); padding: 3px 9px 0 0;
-    }
-    .reader-body .face h3, .reader-body .face h4 { font-family: 'Playfair Display', serif; color: var(--navy); }
-    .reader-body .face h3 { font-size: calc(1.15rem * var(--rd-skala, 1)); margin: 0 0 12px; }
-    .reader-body .face h4 { font-size: calc(1rem * var(--rd-skala, 1)); margin: 0 0 10px; }
-    .reader-body .face strong { color: var(--navy); }
-    .reader-body .face p.diam { margin: 0; }
-    .reader-body .page-num { position: absolute; bottom: 15px; font-size: .68rem; color: #8b95a1; font-weight: 700; letter-spacing: .06em; }
-    .reader-body .face.front .page-num { right: 22px; }
-    .reader-body .face.back .page-num { left: 22px; }
-
-    /* --- Halaman khusus: sampul, hak cipta, daftar pustaka, penutup --- */
-    .reader-body .lp { min-height: 100%; display: flex; flex-direction: column; }
-    .reader-body .face.cover { background: linear-gradient(150deg, #0e2440, var(--navy) 55%, #0b1b31); }
-    .reader-body .face.cover::before {
-      content: ''; position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(circle at 78% 12%, rgba(184,147,74,.28), transparent 46%);
-    }
-    .reader-body .lp-cover {
-      position: relative; flex: 1; display: flex; flex-direction: column; align-items: center;
-      justify-content: space-between; gap: 14px; text-align: center; padding: 8px 4px;
-    }
-    .reader-body .lp-cover .lp-kicker { font-size: .6rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold-light); font-weight: 700; }
-    .reader-body .lp-cover h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; line-height: 1.18; color: #fff; margin: 0; }
-    .reader-body .lp-cover .lp-garis { width: 56px; height: 3px; border-radius: 3px; background: var(--gold); }
-    .reader-body .lp-cover .lp-cover-img { width: 100%; max-width: 190px; max-height: 40%; border-radius: 10px; object-fit: cover; box-shadow: 0 20px 44px -18px rgba(0,0,0,.75); }
-    .reader-body .lp-cover .lp-bawah { display: flex; flex-direction: column; gap: 5px; }
-    .reader-body .lp-cover .lp-penulis { font-size: .84rem; font-weight: 700; letter-spacing: .05em; color: var(--gold-light); }
-    .reader-body .lp-cover .lp-merek { font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.65); }
-    .reader-body .lp-copy {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 8px; text-align: center; color: #5a6673; font-size: .74rem; line-height: 1.75;
-    }
-    .reader-body .lp-copy .lp-mark { font-family: 'Playfair Display', serif; font-size: 1rem; letter-spacing: .18em; color: var(--navy); }
-    .reader-body .lp-copy .lp-garis { width: 40px; height: 2px; background: var(--gold); border-radius: 2px; margin: 4px 0; }
-    .reader-body .lp-copy p { font-size: .74rem; text-align: center; color: #5a6673; margin: 0; }
-    .reader-body .lp-copy dl { margin: 12px 0 0; width: 100%; max-width: 300px; text-align: left; }
-    .reader-body .lp-copy .lp-row { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; border-bottom: 1px dashed rgba(16,43,78,.18); }
-    .reader-body .lp-copy .lp-row dt { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: #8b95a1; font-weight: 700; }
-    .reader-body .lp-copy .lp-row dd { margin: 0; font-size: .74rem; color: var(--navy); font-weight: 600; text-align: right; }
-    .reader-body .lp-judul {
-      font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--navy); text-align: center;
-      padding-bottom: 10px; margin-bottom: 18px; border-bottom: 1px solid rgba(16,43,78,.18);
-    }
-    .reader-body .lp-daftar { list-style: none; margin: 0; padding: 0; }
-    .reader-body .lp-daftar li {
-      font-size: .78rem; line-height: 1.75; color: #313e4d; margin-bottom: 12px;
-      padding-left: 12px; border-left: 2px solid var(--gold);
-    }
-    .reader-body .lp-daftar .lp-sitasi { display: block; font-size: .76rem; color: #5a6673; }
-    .reader-body .lp-akhir {
-      margin: auto; text-align: center; background: #fff; border: 1px solid rgba(16,43,78,.12);
-      border-radius: 14px; padding: 24px 20px; box-shadow: var(--shadow-sm);
-    }
-    .reader-body .lp-akhir .lp-ikon { font-size: 1.9rem; color: var(--gold); }
-    .reader-body .lp-akhir h4 { margin: 10px 0 8px; }
-    .reader-body .lp-akhir p { text-align: center; font-size: .78rem; color: #5a6673; }
-    .reader-body .lp-akhir .lp-aksi { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+    /* Kertas, tipografi, halaman khusus (sampul/hak cipta/daftar pustaka/penutup),
+       dan panel Daftar Isi ada di src/styles/buku.css supaya dipakai bersama
+       pembaca di panel admin (akun Orang Tua). Di sini hanya tata letak buku. */
 
     /* --- Panah pembalik halaman (di sisi buku) --- */
     .reader-body .rd-panah {
@@ -670,34 +633,7 @@
     .reader-body .rd-panah.kanan { right: -6px; }
     .reader-body .rd-petunjuk { margin: 12px 0 6px; font-size: .72rem; color: #6b7684; text-align: center; }
 
-    /* --- Panel Daftar Isi --- */
-    .reader-body .rd-toc {
-      position: absolute; inset: 0; z-index: 700; display: none; flex-direction: column;
-      padding: 20px 26px; background: rgba(255,255,255,.985);
-    }
-    .reader-body .rd-toc.terbuka { display: flex; }
-    .reader-body .rd-toc-head {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding-bottom: 12px; margin-bottom: 10px; border-bottom: 1px solid var(--border);
-      font-family: 'Playfair Display', serif; color: var(--navy);
-    }
-    .reader-body .rd-toc-tutup {
-      width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border);
-      background: #fff; color: var(--navy); cursor: pointer; font-size: .9rem;
-    }
-    .reader-body .rd-toc-tutup:hover { background: var(--navy); border-color: var(--navy); color: #fff; }
-    .reader-body .rd-toc-list { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
-    .reader-body .rd-toc-list button {
-      display: flex; align-items: baseline; gap: 14px; width: 100%; text-align: left; font: inherit;
-      background: none; border: 0; border-bottom: 1px dashed var(--border); padding: 10px 4px;
-      font-size: .84rem; color: #313e4d; cursor: pointer; transition: all .15s;
-    }
-    .reader-body .rd-toc-list button:hover { background: #FBF9F5; color: var(--navy); padding-left: 10px; }
-    .reader-body .rd-toc-list button.aktif { background: #FBF9F5; color: var(--navy); font-weight: 700; padding-left: 10px; }
-    .reader-body .rd-toc-list li.khusus button { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--navy); }
-    .reader-body .rd-toc-list .toc-teks { flex: 1; }
-    .reader-body .rd-toc-list .toc-hal { font-weight: 700; font-size: .74rem; color: var(--navy); white-space: nowrap; }
-    .reader-body .rd-toc-kosong { font-size: .8rem; color: var(--muted); padding: 10px 4px; }
+    /* Panel Daftar Isi (.toc-panel, .toc-list, …) ikut di buku.css. */
 
     /* ---------- SEKSI KATALOG (latar) ---------- */
     .book-section { background: linear-gradient(135deg, #0d1f38, var(--navy) 60%, var(--navy-light)); position: relative; overflow: hidden; }
@@ -1142,7 +1078,9 @@
       .bk-stat + .bk-stat { padding-left: 20px; }
       .bk-toolbar { flex-direction: column; }
       .bk-search { min-width: 0; width: 100%; }
+      .bk-tools { width: 100%; justify-content: space-between; }
       .bk-sort { justify-content: center; }
+      .bk-fav-toggle { padding: 11px 14px; }
       .bk-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
       .bk-cover { height: 200px; font-size: 2rem; }
       .bk-info { padding: 13px 13px 8px; }
@@ -1182,8 +1120,12 @@
          "flex: 1"), jadi tingginya NYATA — dipakai modul flipbook untuk mengukur
          dan memenggal isi supaya tiap halaman pas tanpa perlu digulir. */
       .reader-body .book-spread { flex: 1; min-height: 0; max-width: none; width: 100%; }
-      /* Pembungkus penggeser (buku tertutup) tak berlaku di mode satu halaman. */
-      .reader-body .book-inner { position: static; transform: none !important; perspective: none; }
+      /* Pembungkus penggeser (buku tertutup) tak berlaku di mode satu halaman.
+         height: 100% wajib: tanpa itu tingginya "auto", sehingga rantai
+         height:100% di bawahnya (leaves → leaf → halaman) ikut gagal dan kotak
+         halaman jadi setinggi isinya. Akibatnya pengukuran pemenggalan salah
+         dan teks bisa melewati batas area baca. */
+      .reader-body .book-inner { position: static; height: 100%; transform: none !important; perspective: none; }
       .reader-body .sp-base { display: none; }
       .reader-body .sp-spine { display: none; }
       .reader-body .sp-leaves { position: static; width: 100%; height: 100%; display: block; }
@@ -1193,24 +1135,9 @@
       .reader-body .sp-leaf .face.back { display: none; transform: none; }
       .reader-body .sp-leaf.m-belakang .face.back { display: block; }
       .reader-body .sp-leaf.m-belakang .face.front { display: none; }
-      .reader-body .face {
-        /* relative (bukan static): jadi acuan nomor halaman yang absolute.
-           height: 100% + overflow: auto → tinggi kotak dipakai sebagai patokan
-           pemenggalan; gulir hanya muncul kalau ada blok yang memang tak muat. */
-        position: relative; height: 100%; min-height: 0; max-height: none; overflow-y: auto;
-        /* padding tipis: di layar sempit 28px per sisi menghabiskan ~20% lebar
-           halaman, sehingga teks per halaman jadi sedikit. */
-        padding: 20px 18px 36px;
-        backface-visibility: visible; border-radius: 14px; box-shadow: 0 14px 34px -18px rgba(0,0,0,.4);
-      }
-      .reader-body .face p { font-size: calc(.86rem * var(--rd-skala, 1)); line-height: 1.8; }
-      /* Halaman khusus (sampul, hak cipta, penutup) tidak ikut tombol perkecil/
-         perbesar — ukurannya sudah dirancang dan mengikuti desktop. */
-      .reader-body .lp-copy p, .reader-body .lp-akhir p { font-size: .74rem; }
-      .reader-body .face p.p-awal::first-letter { font-size: 2.6rem; }
-      .reader-body .lp-cover h2 { font-size: 1.45rem; }
-      .reader-body .lp-cover .lp-cover-img { max-height: 34%; }
-      .reader-body .rd-toc { padding: 14px; }
+      /* Halaman (kertas, tipografi, halaman khusus, Daftar Isi) diatur
+         src/styles/buku.css; di sini hanya sisa tata letak khas landing. */
+      .reader-body .face { backface-visibility: visible; box-shadow: 0 14px 34px -18px rgba(0,0,0,.4); }
 
     }
 

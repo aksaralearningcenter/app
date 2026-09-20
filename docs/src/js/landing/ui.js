@@ -2,25 +2,34 @@
 
 const PAGES = ['home', 'program', 'kurikulum', 'harga', 'buku', 'berita', 'daftar'];
 
-// Halaman yang sedang tampil. Dipakai agar perubahan alamat (#home, #buku, …)
-// tidak menggambar ulang halaman yang sudah terbuka.
-let halamanAktif = '';
+// Alamat yang sedang tampil (mis. "buku" atau "buku/BK-12"). Dipakai agar
+// perubahan alamat (#home, #buku, …) tidak menggambar ulang halaman yang sudah
+// terbuka.
+let alamatAktif = '';
 
 // ==================== ALAMAT HALAMAN (#home, #buku, …) ====================
 // Setiap halaman punya alamatnya sendiri. Tanpa ini, menekan refresh (F5) selalu
 // melempar pengunjung kembali ke Beranda dan tautan halaman tidak bisa
 // dibagikan. Tautan lama di navbar (href="#buku") otomatis ikut bekerja karena
 // formatnya sama.
+// Alamat halaman boleh membawa keterangan tambahan setelah garis miring, mis.
+// "#buku/BK-12" = buku tertentu di Perpustakaan. Dipakai tautan yang dibagikan.
 function dariAlamat() {
-  const h = String(location.hash || '').replace(/^#\/?/, '').trim().toLowerCase();
-  return PAGES.indexOf(h) === -1 ? '' : h;
+  const isi = String(location.hash || '').replace(/^#\/?/, '');
+  const bagian = isi.split('/');
+  const page = (bagian[0] || '').trim().toLowerCase();
+  if (PAGES.indexOf(page) === -1) return null;
+  const sisa = bagian.slice(1).join('/').trim();
+  let extra = '';
+  try { extra = decodeURIComponent(sisa); } catch (_e) { extra = sisa; }
+  return { page: page, extra: extra.trim() };
 }
 
 // Tulis alamat halaman: `ganti` memakai replaceState supaya membuka tautan
 // langsung (mis. …/app/#buku) tidak menumpuk riwayat; selebihnya lewat
 // location.hash agar tombol maju/mundur peramban tetap berfungsi.
-function tulisAlamat(page, ganti) {
-  const alamat = '#' + page;
+function tulisAlamat(page, ganti, extra) {
+  const alamat = '#' + page + (extra ? '/' + encodeURIComponent(extra) : '');
   if (location.hash === alamat) return;
   try {
     if (ganti) history.replaceState(null, '', alamat);
@@ -32,8 +41,9 @@ function tulisAlamat(page, ganti) {
 export function goToPage(page, opsi) {
   opsi = opsi || {};
   if (PAGES.indexOf(page) === -1) page = 'home';
-  halamanAktif = page;
-  tulisAlamat(page, opsi.ganti);
+  const extra = String(opsi.extra || '').trim();
+  alamatAktif = page + (extra ? '/' + extra : '');
+  tulisAlamat(page, opsi.ganti, extra);
   document.querySelectorAll('.page-view').forEach(function (v) {
     v.classList.toggle('active', v.getAttribute('data-page') === page);
   });
@@ -54,13 +64,20 @@ export function goToPage(page, opsi) {
       if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('visible');
     });
   });
+  // Keterangan tambahan pada alamat diserahkan ke modul terkait lewat event,
+  // supaya modul navigasi ini tidak perlu tahu isi halaman (mis. buku).
+  if (extra) {
+    document.dispatchEvent(new CustomEvent('lp:buka-buku', { detail: { id: extra } }));
+  }
 }
 
 // Tombol maju/mundur peramban dan tautan halaman yang dibuka langsung.
 function tampilkanDariAlamat(ganti) {
-  const page = dariAlamat() || 'home';
-  if (page === halamanAktif) return;
-  goToPage(page, { ganti: !!ganti });
+  const rute = dariAlamat();
+  const page = rute ? rute.page : 'home';
+  const extra = rute ? rute.extra : '';
+  if (page + (extra ? '/' + extra : '') === alamatAktif) return;
+  goToPage(page, { ganti: !!ganti, extra: extra });
 }
 window.addEventListener('hashchange', function () { tampilkanDariAlamat(false); });
 tampilkanDariAlamat(true);

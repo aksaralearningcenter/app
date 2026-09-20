@@ -17,6 +17,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/regular.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/brands.min.css">
   <link rel="stylesheet" href="./src/styles/landing.css">
+  <!-- Gaya halaman buku (kertas, tipografi, sampul, Daftar Isi) — dipakai bersama
+       pembaca di halaman Perpustakaan dan pembaca di panel admin. -->
+  <link rel="stylesheet" href="./src/styles/buku.css">
 </head>
 <body>
   <!-- ================= NAVBAR ================= -->
@@ -469,13 +472,19 @@
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="search" id="book-q" placeholder="Cari judul, penulis, atau penerbit…" autocomplete="off" aria-label="Cari buku">
           </label>
-          <div class="bk-sort">
-            <i class="fa-solid fa-arrow-down-wide-short"></i>
-            <select id="book-sort" aria-label="Urutkan buku">
-              <option value="urutan">Urutan default</option>
-              <option value="judul">Judul A–Z</option>
-              <option value="tahun">Tahun terbaru</option>
-            </select>
+          <div class="bk-tools">
+            <!-- Muncul begitu ada buku tersimpan (atau saat sedang menyaringnya). -->
+            <button class="bk-fav-toggle is-hidden" id="book-fav" type="button" aria-pressed="false" title="Tampilkan buku favorit">
+              <i class="fa-regular fa-star"></i> Favorit <b id="book-fav-count">0</b>
+            </button>
+            <div class="bk-sort">
+              <i class="fa-solid fa-arrow-down-wide-short"></i>
+              <select id="book-sort" aria-label="Urutkan buku">
+                <option value="urutan">Urutan default</option>
+                <option value="judul">Judul A–Z</option>
+                <option value="tahun">Tahun terbaru</option>
+              </select>
+            </div>
           </div>
         </div>
         <!-- Filter kategori (jenis buku) & jenjang -->
@@ -519,6 +528,9 @@
     </div>
   </div>
 
+  <!-- Pesan singkat: favorit tersimpan, tautan disalin, dsb. -->
+  <div class="lp-toast" id="lp-toast" role="status" aria-live="polite"></div>
+
   <!-- ================= PEMBACA BUKU (KATALOG) ================= -->
   <div class="reader" id="book-reader" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Pembaca buku">
     <div class="reader-back" id="reader-back"></div>
@@ -544,7 +556,9 @@
       </div>
 
       <!-- 3. Panggung buku -->
-      <div class="reader-body" id="reader-body">
+      <!-- kelas "buku" = penanda gaya halaman buku bersama (src/styles/buku.css),
+           dipakai juga oleh pembaca di panel admin. -->
+      <div class="reader-body buku" id="reader-body">
         <div class="book-spread" id="reader-spread">
           <div class="book-inner" id="reader-inner">
             <div class="sp-base">
@@ -560,12 +574,12 @@
         <p class="rd-petunjuk"><i class="fa-regular fa-hand-pointer"></i> Klik halaman atau gunakan tombol panah untuk membalik. Tekan <b>Esc</b> untuk menutup.</p>
 
         <!-- 4. Panel Daftar Isi -->
-        <div class="rd-toc" id="reader-toc" aria-hidden="true">
-          <div class="rd-toc-head">
+        <div class="toc-panel" id="reader-toc" aria-hidden="true">
+          <div class="toc-head">
             <b><i class="fa-solid fa-list-ul"></i> Daftar Isi</b>
-            <button class="rd-toc-tutup" id="reader-toc-tutup" type="button" aria-label="Tutup daftar isi"><i class="fa-solid fa-xmark"></i></button>
+            <button class="toc-tutup" id="reader-toc-tutup" type="button" aria-label="Tutup daftar isi"><i class="fa-solid fa-xmark"></i></button>
           </div>
-          <ol class="rd-toc-list" id="reader-toc-list"></ol>
+          <ol class="toc-list" id="reader-toc-list"></ol>
         </div>
       </div>
     </div>

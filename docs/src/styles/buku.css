@@ -1,0 +1,141 @@
+/* =====================================================================
+   HALAMAN BUKU (DIPAKAI BERSAMA)
+   Gaya kertas, tipografi, halaman khusus (sampul, hak cipta, daftar pustaka,
+   penutup), dan panel Daftar Isi — dipakai dua tempat:
+     • pembaca di halaman Perpustakaan (landing), dan
+     • tombol Baca "Buku Pelajaran" di panel admin (akun Orang Tua).
+   Keduanya cukup menambahkan kelas `buku` pada wadahnya; tata letak buku
+   (lembar, punggung, panah) tetap diatur masing-masing halaman, karena
+   landing memakai buku dua halaman 3D dan panel admin memakai modal.
+
+   Ukuran tulisan halaman bisa diperbesar/diperkecil lewat variabel
+   --buku-skala (dipasang tombol −/+ oleh src/js/shared/reader-buku.js).
+
+   Catatan: semua warna/shadow memakai token tema dengan nilai cadangan, karena
+   halaman Perpustakaan (landing) dan panel admin punya set variabel berbeda.
+   ===================================================================== */
+
+/* ---------- Kertas & tipografi halaman ---------- */
+.buku .face {
+  position: absolute; inset: 0; padding: 32px 30px 48px; background: #fffaf0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow-y: auto;
+}
+/* Gambar isi dibatasi tingginya: satu gambar yang lebih tinggi dari halaman
+   tidak bisa dipecah oleh pemenggalan dan membuat halaman tergulir. */
+.buku .face img { max-height: min(46%, 220px); object-fit: cover; border-radius: 8px; }
+.buku .face.front { border-radius: 0 18px 18px 0; box-shadow: inset 16px 0 28px -24px rgba(16,43,78,.6); }
+.buku .face.back { transform: rotateY(180deg); border-radius: 10px 0 0 10px; box-shadow: inset -16px 0 28px -24px rgba(16,43,78,.6); }
+.buku .face::after {
+  content: ''; position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  background: linear-gradient(to left, rgba(16,43,78,.26), rgba(16,43,78,.05) 50%, rgba(16,43,78,0));
+}
+.buku .sp-leaf.flipping .face::after,
+.buku .ak-leaf.flipping .face::after { animation: bukuShade .9s ease; }
+@keyframes bukuShade { 0% { opacity: 0; } 45% { opacity: .8; } 100% { opacity: 0; } }
+
+.buku .face p {
+  font-size: calc(.89rem * var(--buku-skala, 1)); line-height: 1.85; margin: 0 0 12px; color: #313e4d;
+  text-align: justify; -webkit-hyphens: auto; hyphens: auto;
+}
+/* Drop cap (huruf pertama besar) pada halaman pertama isi. */
+.buku .face p.p-awal::first-letter {
+  float: left; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 3.1rem;
+  line-height: .8; color: var(--navy); padding: 3px 9px 0 0;
+}
+.buku .face h2, .buku .face h3, .buku .face h4 { font-family: 'Playfair Display', serif; color: var(--navy); }
+.buku .face h3 { font-size: calc(1.15rem * var(--buku-skala, 1)); margin: 0 0 12px; }
+.buku .face h4 { font-size: calc(1rem * var(--buku-skala, 1)); margin: 0 0 10px; }
+.buku .face strong { color: var(--navy); }
+.buku .page-num { position: absolute; bottom: 15px; font-size: .68rem; color: #8b95a1; font-weight: 700; letter-spacing: .06em; }
+.buku .face.front .page-num { right: 22px; }
+.buku .face.back .page-num { left: 22px; }
+
+/* ---------- Halaman khusus ---------- */
+.buku .lp { min-height: 100%; display: flex; flex-direction: column; }
+.buku .face.cover { background: linear-gradient(150deg, #0e2440, var(--navy) 55%, #0b1b31); }
+.buku .face.cover::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 78% 12%, rgba(184,147,74,.28), transparent 46%);
+}
+.buku .lp-cover {
+  position: relative; flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: space-between; gap: 14px; text-align: center; padding: 8px 4px;
+}
+.buku .lp-cover .lp-kicker { font-size: .6rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold-light, var(--gold2, #D4AF37)); font-weight: 700; }
+.buku .lp-cover h2 { font-size: 1.75rem; line-height: 1.18; color: #fff; margin: 0; }
+.buku .lp-cover .lp-garis { width: 56px; height: 3px; border-radius: 3px; background: var(--gold); }
+.buku .lp-cover .lp-cover-img { width: 100%; max-width: 190px; max-height: 40%; border-radius: 10px; object-fit: cover; box-shadow: 0 20px 44px -18px rgba(0,0,0,.75); }
+.buku .lp-cover .lp-bawah { display: flex; flex-direction: column; gap: 5px; }
+.buku .lp-cover .lp-penulis { font-size: .84rem; font-weight: 700; letter-spacing: .05em; color: var(--gold-light, var(--gold2, #D4AF37)); }
+.buku .lp-cover .lp-merek { font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.65); }
+.buku .lp-copy {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; text-align: center; color: #5a6673; font-size: .74rem; line-height: 1.75;
+}
+.buku .lp-copy .lp-mark { font-family: 'Playfair Display', serif; font-size: 1rem; letter-spacing: .18em; color: var(--navy); }
+.buku .lp-copy .lp-garis { width: 40px; height: 2px; background: var(--gold); border-radius: 2px; margin: 4px 0; }
+.buku .lp-copy p { font-size: .74rem; text-align: center; color: #5a6673; margin: 0; }
+.buku .lp-copy dl { margin: 12px 0 0; width: 100%; max-width: 300px; text-align: left; }
+.buku .lp-copy .lp-row { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; border-bottom: 1px dashed rgba(16,43,78,.18); }
+.buku .lp-copy .lp-row dt { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: #8b95a1; font-weight: 700; }
+.buku .lp-copy .lp-row dd { margin: 0; font-size: .74rem; color: var(--navy); font-weight: 600; text-align: right; }
+.buku .lp-judul {
+  font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--navy); text-align: center;
+  padding-bottom: 10px; margin-bottom: 18px; border-bottom: 1px solid rgba(16,43,78,.18);
+}
+.buku .lp-daftar { list-style: none; margin: 0; padding: 0; }
+.buku .lp-daftar li {
+  font-size: .78rem; line-height: 1.75; color: #313e4d; margin-bottom: 12px;
+  padding-left: 12px; border-left: 2px solid var(--gold);
+}
+.buku .lp-daftar .lp-sitasi { display: block; font-size: .76rem; color: #5a6673; }
+.buku .lp-akhir {
+  margin: auto; text-align: center; background: #fff; border: 1px solid rgba(16,43,78,.12);
+  border-radius: 14px; padding: 24px 20px; box-shadow: var(--shadow-sm, 0 1px 2px rgba(16, 43, 78, .06));
+}
+.buku .lp-akhir .lp-ikon { font-size: 1.9rem; color: var(--gold); }
+.buku .lp-akhir h4 { margin: 10px 0 8px; }
+.buku .lp-akhir p { text-align: center; font-size: .78rem; color: #5a6673; }
+.buku .lp-akhir .lp-aksi { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+
+/* ---------- Panel Daftar Isi ---------- */
+.buku .toc-panel {
+  position: absolute; inset: 0; z-index: 700; display: none; flex-direction: column;
+  padding: 20px 26px; background: rgba(255,255,255,.985);
+}
+.buku .toc-panel.terbuka { display: flex; }
+.buku .toc-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-bottom: 12px; margin-bottom: 10px; border-bottom: 1px solid var(--border);
+  font-family: 'Playfair Display', serif; color: var(--navy);
+}
+.buku .toc-tutup {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border);
+  background: #fff; color: var(--navy); cursor: pointer; font-size: .9rem;
+}
+.buku .toc-tutup:hover { background: var(--navy); border-color: var(--navy); color: #fff; }
+.buku .toc-list { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
+.buku .toc-list button {
+  display: flex; align-items: baseline; gap: 14px; width: 100%; text-align: left; font: inherit;
+  background: none; border: 0; border-bottom: 1px dashed var(--border); padding: 10px 4px;
+  font-size: .84rem; color: #313e4d; cursor: pointer; transition: all .15s;
+}
+.buku .toc-list button:hover { background: #FBF9F5; color: var(--navy); padding-left: 10px; }
+.buku .toc-list button.aktif { background: #FBF9F5; color: var(--navy); font-weight: 700; padding-left: 10px; }
+.buku .toc-list li.khusus button { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--navy); }
+.buku .toc-list .toc-teks { flex: 1; }
+.buku .toc-list .toc-hal { font-weight: 700; font-size: .74rem; color: var(--navy); white-space: nowrap; }
+.buku .toc-kosong { font-size: .8rem; color: var(--muted); padding: 10px 4px; }
+
+/* Ponsel: halaman buku memakai hampir seluruh lebar layar, jadi padding dan
+   ukuran tulisan dirapatkan (padding tebal menghabiskan ~20% lebar halaman). */
+@media (max-width: 700px) {
+  .buku .face { position: relative; height: 100%; min-height: 0; max-height: none; overflow-y: auto; padding: 20px 18px 36px; border-radius: 14px; }
+  .buku .face p { font-size: calc(.86rem * var(--buku-skala, 1)); line-height: 1.8; }
+  .buku .face p.p-awal::first-letter { font-size: 2.6rem; }
+  .buku .lp-cover h2 { font-size: 1.45rem; }
+  .buku .lp-cover .lp-cover-img { max-height: 34%; }
+  /* Halaman khusus tidak ikut tombol perkecil/perbesar: ukurannya sudah dirancang. */
+  .buku .lp-copy p, .buku .lp-akhir p { font-size: .74rem; }
+  .buku .toc-panel { padding: 14px; }
+}

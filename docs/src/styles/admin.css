@@ -219,7 +219,21 @@
     .flip-wrap { display: flex; flex-direction: column; gap: 12px; }
     /* Jarak ke area buku diatur gap .flip-wrap, bukan margin (agar tinggi total
        tetap terhitung dan modal tidak perlu digulir). */
-    .ak-pustaka { font-size: .78rem; color: var(--muted); margin-bottom: 0; }
+    /* Bilah alat di atas buku: baris pustaka + kendali pembaca (penghitung
+       halaman, ukuran tulisan, Daftar Isi, layar penuh). */
+    .ak-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .ak-pustaka {
+      font-size: .78rem; color: var(--muted); margin-bottom: 0; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .ak-tools { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+    .ak-ikon {
+      display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; font: inherit;
+      border: 1px solid transparent; background: transparent; color: var(--muted);
+      font-size: .75rem; font-weight: 700; padding: 7px 11px; border-radius: 9px; cursor: pointer; transition: all .18s;
+    }
+    .ak-ikon:hover { background: var(--surface-2); border-color: var(--border); color: var(--navy); }
+    .ak-ikon[aria-expanded="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
     .ak-stage { position: relative; width: 100%; height: clamp(320px, 50vh, 560px); perspective: 3000px; }
     .ak-base {
       position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr;
@@ -251,57 +265,50 @@
       transition: transform .9s cubic-bezier(.55, .06, .32, 1); will-change: transform;
     }
     .ak-leaf.flipped { transform: rotateY(-180deg); }
-    .ak-face {
-      position: absolute; inset: 0; padding: 26px 24px 40px; background: var(--surface); overflow-y: auto;
-      background-image: linear-gradient(rgba(184, 147, 74, .05) 1px, transparent 1px); background-size: 100% 32px;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    /* Muka halaman (.face), kertas krem, tipografi, halaman khusus (sampul, hak
+       cipta, daftar pustaka, penutup), dan panel Daftar Isi memakai gaya bersama
+       di src/styles/buku.css — pembacanya identik dengan halaman Perpustakaan. */
+    /* Panah pembalik halaman di sisi kanan/kiri buku. */
+    .ak-panah {
+      position: absolute; top: 50%; transform: translateY(-50%); z-index: 600;
+      width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+      border: 1px solid rgba(16, 43, 78, .1); background: rgba(255, 255, 255, .95); color: var(--navy);
+      display: inline-flex; align-items: center; justify-content: center; font-size: .92rem;
+      box-shadow: 0 12px 26px -14px rgba(0, 0, 0, .5); transition: all .2s;
     }
-    .ak-face.front { border-radius: 0 16px 16px 0; box-shadow: inset 14px 0 26px -24px rgba(16, 43, 78, .6); }
-    .ak-face.back { transform: rotateY(180deg); border-radius: 10px 0 0 10px; box-shadow: inset -14px 0 26px -24px rgba(16, 43, 78, .6); }
-    .ak-kicker { font-size: .6rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
-    .ak-face h4 { font-size: 1.05rem; margin-bottom: 10px; }
-    .ak-face p { font-size: .85rem; line-height: 1.78; margin-bottom: 10px; color: var(--text); }
-    .ak-num { position: absolute; bottom: 12px; font-size: .66rem; font-weight: 700; color: var(--muted); }
-    .ak-face.front .ak-num { right: 18px; }
-    .ak-face.back .ak-num { left: 18px; }
-    .ak-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
-    .ak-count { font-size: .78rem; font-weight: 700; color: var(--navy); }
-    /* Ponsel: satu halaman per layar (buku dua halaman tak muat). */
+    .ak-panah:hover:not(:disabled) { background: var(--navy); border-color: var(--navy); color: #fff; }
+    .ak-panah:disabled { opacity: .3; cursor: not-allowed; }
+    .ak-panah.kiri { left: -6px; }
+    .ak-panah.kanan { right: -6px; }
+    .ak-count { font-size: .78rem; font-weight: 700; color: var(--navy); white-space: nowrap; }
+    /* Ponsel: satu halaman per layar (buku dua halaman tak muat). Gaya halaman
+       (.face) dan aturan satu-halaman berasal dari buku.css. */
     @media (max-width: 700px) {
       /* Buku mengisi seluruh modal: modal dibuat setinggi layar, area buku
-         mengambil sisa ruang setelah judul, pustaka, dan baris navigasi. */
+         mengambil sisa ruang setelah judul, pustaka, dan bilah kendali. */
       .modal-bg.lebar .modal { height: 94vh; }
-      .flip-wrap { height: 100%; }
-      .ak-pustaka { flex: 0 0 auto; }
-      .ak-stage { flex: 1 1 auto; height: auto; min-height: 0; }
+      .flip-wrap { height: 100%; gap: 8px; }
+      .ak-bar { flex: 0 0 auto; gap: 8px; }
+      .ak-tools { gap: 0; }
+      .ak-ikon { padding: 8px 9px; }
+      .ak-ikon span { display: none; }   /* ikon saja: bilah tidak meluber di layar sempit */
+      .ak-count { font-size: .72rem; }
+      /* padding bawah = tempat panah melayang di bawah buku. */
+      .ak-stage { flex: 1 1 auto; height: auto; min-height: 0; padding-bottom: 60px; }
       .ak-base, .ak-spine { display: none; }
       .ak-leaves { position: static; width: 100%; height: 100%; display: block; }
       .ak-leaf { position: static; inset: auto; height: 100%; transform: none !important; display: none; }
       .ak-leaf.m-aktif { display: block; }
-      .ak-leaf .ak-face.back { display: none; transform: none; }
-      .ak-leaf.m-belakang .ak-face.back { display: block; }
-      .ak-leaf.m-belakang .ak-face.front { display: none; }
-      .ak-face {
-        /* relative (bukan static): jadi acuan nomor halaman yang absolute.
-           height: 100% + overflow: auto → kotak halaman punya tinggi nyata,
-           dipakai modul flipbook sebagai patokan pemenggalan isi. */
-        position: relative; height: 100%; min-height: 0; overflow-y: auto; backface-visibility: visible;
-        /* padding tipis: di layar sempit padding lebar membuat teks per halaman
-           jadi sedikit sehingga halaman terasa terlalu banyak. */
-        padding: 18px 18px 32px;
-        border-radius: 12px; box-shadow: 0 12px 30px -18px rgba(0, 0, 0, .4);
-      }
-      /* Label panjang membuat baris navigasi meluber & teksnya terpotong di
-         layar sempit → panah saja, tapi tombolnya dibesarkan (≥44px). */
-      .ak-nav .nav-teks { display: none; }
-      .ak-nav .btn { flex: 1 1 0; min-width: 0; min-height: 44px; justify-content: center; font-size: .95rem; }
-      .ak-count { flex: 0 0 auto; white-space: nowrap; font-size: .72rem; }
-      /* Halaman bisa panjang (isi buku) — panahnya tetap menempel di bawah
-         supaya tidak perlu menggulir sampai ujung hanya untuk pindah halaman. */
-      .ak-nav {
-        flex: 0 0 auto; position: sticky; bottom: 0; z-index: 6; gap: 8px;
-        background: var(--surface); box-shadow: 0 -10px 20px -16px rgba(16, 43, 78, .5);
-      }
+      /* Satu lembar = satu halaman tampil: sisi belakang hanya muncul setelah
+         halaman dibalik, jadi tidak ada dua muka yang saling menimpa. */
+      .ak-leaf .face.back { display: none; transform: none; }
+      .ak-leaf.m-belakang .face.back { display: block; }
+      .ak-leaf.m-belakang .face.front { display: none; }
+      /* Panah turun ke bawah buku (≥44px, nyaman disentuh) supaya tidak menutupi
+         teks; jaraknya tetap karena berada di dalam panggung. */
+      .ak-panah { top: auto; bottom: 5px; transform: none; width: 54px; height: 46px; border-radius: 12px; }
+      .ak-panah.kiri { left: 0; }
+      .ak-panah.kanan { right: 0; }
     }
 
     .fg { margin-bottom: 14px; } .fg label { display: block; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--navy); margin-bottom: 6px; }
@@ -586,6 +593,9 @@
     /* Muka halaman sengaja tetap berwarna kertas agar tetap nyaman dibaca. */
     html[data-theme="dark"] .ak-count { color: var(--d-ink); }
     html[data-theme="dark"] .ak-pustaka { color: var(--d-text); }
+    html[data-theme="dark"] .ak-ikon { color: var(--d-text); }
+    html[data-theme="dark"] .ak-ikon:hover { background: var(--d-surface-2); border-color: var(--d-border); color: var(--d-ink); }
+    html[data-theme="dark"] .ak-ikon[aria-expanded="true"] { background: var(--navy2); border-color: var(--navy2); color: #fff; }
     html[data-theme="dark"] .table-wrap { border-color: var(--d-border); }
     html[data-theme="dark"] th { background: #16263A; }
     html[data-theme="dark"] td { border-bottom-color: var(--d-border); }
