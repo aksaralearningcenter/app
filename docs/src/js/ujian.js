@@ -16,7 +16,7 @@ const API_URL = (function () {
   try {
     const p = new URLSearchParams(window.location.search).get('api');
     if (p) return p.replace(/\/+$/, '');
-  } catch (e) { /* abaikan */ }
+  } catch (_e) { /* abaikan */ }
   return DEFAULT_API;
 })();
 
@@ -67,7 +67,7 @@ async function panggil(path, opsi, bolehUlang) {
     try {
       res = await fetch(API_URL + path, opsi);
       break;
-    } catch (e) {
+    } catch (_e) {
       // Permintaan pertama setelah deploy/cold-start bisa gagal di lapisan
       // jaringan/CDN (respons tanpa header CORS) — browser melaporkannya sama
       // seperti server mati. Sekali coba ulang menyelamatkan kasus itu.
@@ -79,7 +79,7 @@ async function panggil(path, opsi, bolehUlang) {
   }
   const teks = await res.text();
   let data;
-  try { data = teks ? JSON.parse(teks) : {}; } catch (e) { throw new Error('Respon server tidak dikenal.'); }
+  try { data = teks ? JSON.parse(teks) : {}; } catch (_e) { throw new Error('Respon server tidak dikenal.'); }
   if (!res.ok || data.success === false) throw new Error(data.message || ('Server error (HTTP ' + res.status + ').'));
   return data;
 }
@@ -135,7 +135,7 @@ function pasangProktor() {
 function mintaFullscreen() {
   const r = document.documentElement;
   if (!r || typeof r.requestFullscreen !== 'function') return;
-  try { r.requestFullscreen().then(function () { }).catch(function () { }); } catch (e) { /* diblokir browser */ }
+  try { r.requestFullscreen().then(function () { }).catch(function () { }); } catch (_e) { /* diblokir browser */ }
 }
 
 function keluarDariUjian() {
@@ -160,7 +160,7 @@ async function kirimProktor() {
   if (!attempt || !attempt.attempt_id || !proktor.absen) return;
   try {
     await post('/public/asesmen/attempts/' + encodeURIComponent(attempt.attempt_id) + '/proktor', { pindah_tab: proktor.absen });
-  } catch (e) { /* jaringan putus → nilai terakhir tetap terkirim saat kirim jawaban */ }
+  } catch (_e) { /* jaringan putus → nilai terakhir tetap terkirim saat kirim jawaban */ }
 }
 
 function kumpulPaksaProktor() {
@@ -209,18 +209,11 @@ function simpanSementara() {
       soal: attempt.soal, mulai: attempt.mulai, durasi_menit: attempt.durasi_menit,
       nama: attempt.nama, jawaban: jawaban
     }));
-  } catch (e) { /* localStorage penuh/diblokir — ujian tetap jalan */ }
+  } catch (_e) { /* localStorage penuh/diblokir — ujian tetap jalan */ }
 }
 
 function hapusSimpanan() {
-  try { if (attempt) localStorage.removeItem(KUNCI_SIMPAN()); } catch (e) { /* abaikan */ }
-}
-
-function bacaSimpanan(attemptId) {
-  try {
-    const mentah = localStorage.getItem('aksara_ujian_' + attemptId);
-    return mentah ? JSON.parse(mentah) : null;
-  } catch (e) { return null; }
+  try { if (attempt) localStorage.removeItem(KUNCI_SIMPAN()); } catch (_e) { /* abaikan */ }
 }
 
 // ---------- TAHAP 1: INFO ----------
@@ -275,7 +268,7 @@ async function pasangInfoAkun() {
   const wadah = el('info-akun');
   if (!wadah) return;
   let token = '';
-  try { token = localStorage.getItem('aksara_token') || ''; } catch (e) { return; }
+  try { token = localStorage.getItem('aksara_token') || ''; } catch (_e) { return; }
   if (!token) return;
   let akun = null;
   try {
@@ -283,7 +276,7 @@ async function pasangInfoAkun() {
     const d = r.ok ? await r.json() : {};
     if (!d.success) return;
     akun = d;
-  } catch (e) { return; }
+  } catch (_e) { return; }
   if (!akun || akun.peran !== 'Orang Tua') return;
   let anak = [];
   try {
@@ -291,7 +284,7 @@ async function pasangInfoAkun() {
     const d = r.ok ? await r.json() : {};
     if (!d.success) return;
     anak = d.children || [];
-  } catch (e) { return; }
+  } catch (_e) { return; }
   if (!anak.length) return;
   wadah.innerHTML =
     '<div class="akun-pilih">' +
@@ -494,7 +487,7 @@ function tampilkanHasil(h, otomatis) {
 
 // ---------- MULAI ----------
 (function init() {
-  try { asesmenId = new URLSearchParams(window.location.search).get('id') || ''; } catch (e) { asesmenId = ''; }
+  try { asesmenId = new URLSearchParams(window.location.search).get('id') || ''; } catch (_e) { asesmenId = ''; }
 
   // Melanjutkan pengerjaan yang belum selesai di perangkat ini (refresh/HP
   // mati). Hanya simpanan untuk ASESMEN YANG SAMA yang dipulihkan — kalau siswa
@@ -535,7 +528,7 @@ function tampilkanHasil(h, otomatis) {
         // Sudah lewat batas → bersihkan agar tidak menggantung.
         localStorage.removeItem(kunci);
       }
-    } catch (e) { /* simpanan rusak → abaikan */ }
+    } catch (_e) { /* simpanan rusak → abaikan */ }
   }
 
   muatInfo();

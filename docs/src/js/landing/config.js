@@ -10,6 +10,6 @@ export const LP_API_URL = (function () {
   try {
     const p = new URLSearchParams(window.location.search).get('api');
     if (p) return p.replace(/\/+$/, '');
-  } catch (e) { /* abaikan */ }
+  } catch (_e) { /* abaikan */ }
   return LP_API_DEFAULT;
 })();

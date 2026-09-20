@@ -32,7 +32,7 @@ function parseRes(r) {
   // Mengubah Response fetch → objek; 401 memicu logout otomatis (needLogin).
   return r.text().then(function (text) {
     var data;
-    try { data = text ? JSON.parse(text) : {}; } catch (parseErr) {
+    try { data = text ? JSON.parse(text) : {}; } catch (_parseErr) {
       console.error('Non-JSON response:', text.substring(0, 200));
       throw new Error('Respon server tidak valid. Pastikan URL API benar dan coba lagi.');
     }
@@ -53,7 +53,7 @@ function parseResLogin(r) {
   // Kegagalan sungguhan (respon rusak / tanpa pesan) tetap dilempar.
   return r.text().then(function (text) {
     var data;
-    try { data = text ? JSON.parse(text) : {}; } catch (parseErr) {
+    try { data = text ? JSON.parse(text) : {}; } catch (_parseErr) {
       console.error('Non-JSON response:', text.substring(0, 200));
       throw new Error('Respon server tidak valid. Pastikan URL API benar dan coba lagi.');
     }

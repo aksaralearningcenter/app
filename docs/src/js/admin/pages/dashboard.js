@@ -1,7 +1,35 @@
 // ============ HALAMAN: DASHBOARD ============
 import { state, invalidateCache } from '../state.js';
 import { $, esc, rp } from '../ui.js';
-import { app } from '../helpers.js';
+import { app, modal } from '../helpers.js';
+
+  // Buku pelajaran/modul untuk akun Orang Tua (diisi ulang tiap render).
+  let bukuOrangTua = [];
+
+  // Jenis berkas unduhan dari ekstensi URL/nama berkas (PDF, Word, Excel, ...).
+  function jenisBerkas(b) {
+    const peta = { pdf: 'PDF', doc: 'Word', docx: 'Word', xls: 'Excel', xlsx: 'Excel', ppt: 'PowerPoint', pptx: 'PowerPoint' };
+    const m = /\.([A-Za-z0-9]{2,4})(?:$|[?#])/.exec(String(b.berkas || '') + ' ' + String(b.link || ''));
+    return m ? (peta[m[1].toLowerCase()] || '') : '';
+  }
+
+  // Baca buku: teks penuh (isi) ditampilkan di modal; bila hanya ada berkas,
+  // tautannya dibuka di tab baru. Tombol unduh selalu tersedia bila ada link.
+  function bacaBuku(id) {
+    const b = bukuOrangTua.filter(function (x) { return String(x.id) === String(id); })[0];
+    if (!b) return;
+    if (!String(b.isi || '').trim() && b.link) { window.open(b.link, '_blank', 'noopener'); return; }
+    const meta = [b.penulis, b.penerbit, b.tahun].map(v => String(v || '').trim()).filter(Boolean).join(' · ');
+    const paras = String(b.isi || '').split(/\n+/).filter(Boolean).map(p => '<p style="font-size:.9rem; line-height:1.8;">' + esc(p) + '</p>').join('');
+    const cover = b.cover ? '<img src="' + esc(b.cover) + '" alt="" style="width:110px; border-radius:8px; float:left; margin:0 16px 10px 0;">' : '';
+    const jenis = jenisBerkas(b);
+    const unduh = b.link ? '<a class="btn btn-o btn-sm" href="' + esc(b.link) + '" target="_blank" rel="noopener">⬇️ ' + (jenis ? 'Unduh ' + jenis : 'Unduh berkas') + '</a>' : '';
+    modal('📖 ' + b.judul,
+      '<div style="overflow:hidden;">' + cover +
+        '<p style="font-size:.78rem; font-weight:700; color:var(--redup);">' + esc(b.jenis || 'Buku') + (meta ? ' · ' + esc(meta) : '') + '</p></div>' +
+      '<div style="clear:both; margin-top:10px;">' + (paras || '<p>Isi buku belum tersedia — silakan unduh berkasnya.</p>') + '</div>' +
+      (unduh ? '<div style="margin-top:16px;">' + unduh + '</div>' : ''));
+  }
 
 
   export const render = {
@@ -36,13 +64,24 @@ import { app } from '../helpers.js';
         // Buku pelajaran/modul yang dibagikan admin — orang tua & murid bisa
         // membukanya langsung dari sini tanpa perlu login ke panel konten.
         const buku = (data.buku || []);
+        bukuOrangTua = buku;
+        // Katalog & daftar pustaka untuk orang tua/murid: tiap buku bisa
+        // dibaca (isi lengkap) dan diunduh bila admin menautkan berkasnya.
         const bukuHtml = buku.length
-          ? '<table><thead><tr><th>Judul</th><th>Keterangan</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' +
+          ? '<table><thead><tr><th>Judul</th><th>Pustaka</th><th>Keterangan</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' +
             buku.map(function (b) {
-              const aksi = b.link
-                ? '<a class="btn btn-o btn-sm" href="' + esc(b.link) + '" target="_blank" rel="noopener">📖 Buka</a>'
+              const meta = [b.penulis, b.penerbit, b.tahun].map(v => String(v || '').trim()).filter(Boolean).join(' · ');
+              const jenis = jenisBerkas(b);
+              const baca = (String(b.isi || '').trim() || b.link)
+                ? '<button class="btn btn-n btn-sm" data-action="baca-buku" data-id="' + esc(b.id) + '">📖 Baca</button>'
                 : '<span class="badge b-info">Tersedia di kelas</span>';
-              return '<tr><td><b>' + esc(b.judul) + '</b></td><td>' + esc(b.deskripsi || '-') + '</td><td style="text-align:right;">' + aksi + '</td></tr>';
+              const unduh = b.link
+                ? ' <a class="btn btn-o btn-sm" href="' + esc(b.link) + '" target="_blank" rel="noopener">⬇️ ' + (jenis ? 'Unduh ' + jenis : 'Unduh') + '</a>'
+                : '';
+              return '<tr><td><b>' + esc(b.judul) + '</b>' + (b.jenis ? '<div style="font-size:.75rem;"><span class="badge b-info">' + esc(b.jenis) + '</span></div>' : '') + '</td>' +
+                '<td style="font-size:.78rem;">' + esc(meta || '-') + '</td>' +
+                '<td>' + esc(b.deskripsi || '-') + '</td>' +
+                '<td style="text-align:right; white-space:nowrap;">' + baca + unduh + '</td></tr>';
             }).join('') + '</tbody></table>'
           : '<div class="empty">Belum ada buku pelajaran yang dibagikan admin.</div>';
         $('page').innerHTML = '<div class="card"><div class="card-head"><h2>👋 Selamat datang, ' + esc(data.namaOrangTua || state.me.nama || 'Orang Tua') + '</h2></div><p style="font-size:0.9rem;">Pemantauan data anak Anda: tabungan, kehadiran, dan progres belajar.</p></div>' +
@@ -79,5 +118,6 @@ import { app } from '../helpers.js';
 
 
   export const actions = {
-    'refresh-dashboard': function () { invalidateCache('dashboard'); app.loadPage('dashboard'); }
+    'refresh-dashboard': function () { invalidateCache('dashboard'); app.loadPage('dashboard'); },
+    'baca-buku': function (id) { bacaBuku(id); }
   };

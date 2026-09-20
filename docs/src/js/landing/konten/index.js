@@ -60,7 +60,7 @@ function pasangBannerCobaUlang() {
     btn.addEventListener('click', function () { location.reload(); });
     b.append(document.createTextNode('Konten belum bisa dimuat (koneksi/API). '), btn);
     document.body.appendChild(b);
-  } catch (e) { /* abaikan */ }
+  } catch (_e) { /* abaikan */ }
 }
 
 // Muat konten publik via REST. Tanpa cache sessionStorage lagi: CORS kini

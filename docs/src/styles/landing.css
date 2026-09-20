@@ -334,18 +334,64 @@
     .news-full { font-size: .85rem; line-height: 1.75; color: var(--muted); margin-bottom: 14px; }
     .news-empty { text-align: center; padding: 40px 16px; color: var(--muted); }
 
-    /* ---------- KATALOG BUKU ---------- */
-    .bookcat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; }
-    .bookcat-card {
-      background: #fff; border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
-      box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: transform .3s ease, box-shadow .3s ease;
+    /* ---------- KATALOG & DAFTAR PUSTAKA ---------- */
+    .book-list { display: flex; flex-direction: column; gap: 14px; }
+    .book-item {
+      display: grid; grid-template-columns: 92px 1fr auto; gap: 18px; align-items: center;
+      background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px;
+      box-shadow: var(--shadow-sm); transition: transform .3s ease, box-shadow .3s ease;
     }
-    .bookcat-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
-    .bookcat-cover { height: 230px; background: linear-gradient(135deg, var(--cream), #ece6d8); display: flex; align-items: center; justify-content: center; font-size: 2.4rem; color: var(--gold); background-size: cover; background-position: center; }
-    .bookcat-body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
-    .bookcat-body h3 { font-size: 1.02rem; margin-bottom: 6px; }
-    .bookcat-body p { font-size: .82rem; line-height: 1.6; margin-bottom: 14px; flex: 1; }
-    .bookcat-body .btn { align-self: flex-start; }
+    .book-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .book-item-cover {
+      width: 92px; height: 122px; border-radius: 8px; background-size: cover; background-position: center;
+      background-color: var(--cream); display: flex; align-items: center; justify-content: center;
+      font-size: 1.7rem; color: var(--gold); box-shadow: inset 0 0 0 1px rgba(16,43,78,.06);
+    }
+    .book-item-cover.kosong { background-image: linear-gradient(135deg, var(--cream), #ece6d8); }
+    .book-item-body { min-width: 0; }
+    .book-item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .book-item-badge {
+      font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+      padding: 3px 9px; border-radius: 999px; background: rgba(184,147,74,.14); color: #8a6d2f;
+    }
+    .book-item-badge.alt { background: rgba(16,43,78,.08); color: var(--navy); }
+    .book-item-badge.file { background: rgba(30,107,60,.12); color: #1E6B3C; }
+    .book-item h3 { font-size: 1.05rem; margin-bottom: 4px; }
+    .book-item-pustaka { font-size: .78rem; font-weight: 700; color: var(--gold); margin-bottom: 6px; }
+    .book-item-desc { font-size: .82rem; color: #5a6673; line-height: 1.55; margin: 0; }
+    .book-item-actions { display: flex; flex-direction: column; gap: 8px; }
+    .book-item-note { font-size: .74rem; color: var(--muted); font-weight: 700; text-align: center; }
+
+    /* ---------- PEMBACA BUKU (OVERLAY) ---------- */
+    body.reader-open { overflow: hidden; }
+    .reader { position: fixed; inset: 0; z-index: 800; display: none; }
+    .reader.open { display: flex; align-items: center; justify-content: center; }
+    .reader-back { position: absolute; inset: 0; background: rgba(8,17,30,.72); }
+    .reader-panel {
+      position: relative; z-index: 1; width: min(860px, 94vw); max-height: 92vh; background: #fff;
+      border-radius: 16px; box-shadow: 0 30px 80px -32px rgba(0,0,0,.6); display: flex; flex-direction: column; overflow: hidden;
+    }
+    .reader-close {
+      position: absolute; top: 12px; right: 12px; z-index: 2; width: 38px; height: 38px; border-radius: 50%;
+      border: 1px solid var(--border); background: #fff; color: var(--navy); cursor: pointer; font-size: 1rem;
+    }
+    .reader-close:hover { background: var(--navy); color: #fff; }
+    .reader-meta { display: flex; gap: 18px; padding: 26px 30px 18px; border-bottom: 1px solid var(--border); }
+    .reader-cover {
+      width: 96px; height: 128px; border-radius: 8px; flex-shrink: 0; background-size: cover; background-position: center;
+      background-color: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--gold);
+    }
+    .reader-meta-text { min-width: 0; }
+    .reader-kicker { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .16em; color: var(--gold); }
+    .reader-meta h3 { font-size: 1.3rem; margin: 6px 0 6px; }
+    .reader-pustaka { font-size: .8rem; color: #5a6673; margin-bottom: 4px; }
+    .reader-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+    .reader-desc { font-size: .76rem; color: var(--muted); flex: 1; min-width: 160px; }
+    .reader-body { padding: 22px 30px; overflow-y: auto; flex: 1; }
+    .reader-body p { font-size: .92rem; line-height: 1.85; margin-bottom: 12px; color: #2D3748; }
+    .reader-kosong { font-size: .9rem; color: var(--muted); }
+    .reader-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 30px; border-top: 1px solid var(--border); background: #FAF8F4; }
+    .reader-count { font-size: .8rem; font-weight: 700; color: var(--navy); }
 
     /* ---------- FLIPBOOK ---------- */
     .book-section { background: linear-gradient(135deg, #0d1f38, var(--navy) 60%, var(--navy-light)); position: relative; overflow: hidden; }
@@ -950,6 +996,17 @@
       .book-progress { min-width: 90px; }
       .book-dots { margin-top: 4px; flex-wrap: wrap; justify-content: center; }
       .book-hint { display: none; }                    /* hint keyboard tak relevan di ponsel */
+
+      /* ---- 7. Katalog & pembaca buku di ponsel ---- */
+      .book-item { grid-template-columns: 76px 1fr; gap: 14px; padding: 14px; }
+      .book-item-cover { width: 76px; height: 104px; }
+      .book-item-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+      .book-item-actions .btn { flex: 1; justify-content: center; text-align: center; }
+      .reader-panel { width: 100vw; max-height: 100vh; height: 100%; border-radius: 0; }
+      .reader-meta { flex-direction: column; padding: 20px 18px 16px; }
+      .reader-cover { width: 76px; height: 100px; }
+      .reader-body { padding: 18px; }
+      .reader-nav { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
     }
 
     /* =====================================================================

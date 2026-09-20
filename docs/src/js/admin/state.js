@@ -5,7 +5,7 @@ import { $ } from './ui.js';
 // di-refresh panel langsung tampil (tidak berkedip ke layar login) sementara
 // sesi divalidasi ulang ke server di belakang layar.
 function bacaSesi() {
-  try { return JSON.parse(localStorage.getItem('aksara_user') || 'null'); } catch (e) { return null; }
+  try { return JSON.parse(localStorage.getItem('aksara_user') || 'null'); } catch (_e) { return null; }
 }
 
 // Satu sumber kebenaran untuk data sesi + cache halaman.
@@ -22,19 +22,19 @@ export const state = {
 
 // Simpan profil sesi supaya refresh berikutnya bisa langsung menampilkan panel.
 export function simpanSesi() {
-  try { localStorage.setItem('aksara_user', JSON.stringify(state.me || null)); } catch (e) {}
+  try { localStorage.setItem('aksara_user', JSON.stringify(state.me || null)); } catch (_e) {}
 }
 
 // Simpan halaman aktif (dipanggil tiap kali navigasi).
 export function simpanHalaman(page) {
   state.currentPage = page || '';
-  try { localStorage.setItem('aksara_page', state.currentPage); } catch (e) {}
+  try { localStorage.setItem('aksara_page', state.currentPage); } catch (_e) {}
 }
 
 // Simpan asesmen yang sedang dikelola (id kosong = kembali ke daftar).
 export function simpanAsesmen(id) {
   state.currentAsesmen = id || '';
-  try { localStorage.setItem('aksara_asesmen', state.currentAsesmen); } catch (e) {}
+  try { localStorage.setItem('aksara_asesmen', state.currentAsesmen); } catch (_e) {}
 }
 
 // Cache halaman dianggap masih segar selama CACHE_TTL ms. Selama segar, pindah
@@ -79,7 +79,7 @@ export function hardLogout() {
     localStorage.removeItem('aksara_user');
     localStorage.removeItem('aksara_page');
     localStorage.removeItem('aksara_asesmen');
-  } catch (e) {}
+  } catch (_e) {}
   // Hapus juga penanda "ada sesi" di <html> (dipasang skrip kecil di <head>),
   // supaya layar login benar-benar tampil kembali.
   document.documentElement.classList.remove('ada-sesi');

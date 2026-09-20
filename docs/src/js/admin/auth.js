@@ -43,7 +43,7 @@ export function forgotPass() {
 }
 
 export async function doLogout() {
-  try { await post('logout', { token: state.token }); } catch (e) {}
+  try { await post('logout', { token: state.token }); } catch (_e) {}
   hardLogout();
 }
 
@@ -108,7 +108,7 @@ export async function boot() {
           return;
         }
       }
-    } catch (e) { /* gagal batch → fallback ke loadPage biasa */ }
+    } catch (_e) { /* gagal batch → fallback ke loadPage biasa */ }
   }
   await app.loadPage(startPage);
 }

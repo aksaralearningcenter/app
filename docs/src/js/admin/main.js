@@ -14,7 +14,7 @@ import { app, closeModal, filterTable } from './helpers.js';
 import { render as renderDashboard, actions as actionsDashboard } from './pages/dashboard.js';
 import { render as renderMurid, actions as actionsMurid,
   openAddProgress, openAddProgressFor, loadProgressStudent, saveProgress,
-  openAddStudent, saveAddStudent, saveEditStudent, saveAttendance, saveTransaction, txFillSavings } from './pages/murid.js';
+  saveAddStudent, saveEditStudent, saveAttendance, saveTransaction, txFillSavings } from './pages/murid.js';
 import { render as renderKelas, actions as actionsKelas, saveAddClass, saveEditClass } from './pages/kelas.js';
 import { render as renderUsers, actions as actionsUsers, openChangePass, saveChangePass, saveAddUser } from './pages/users.js';
 import { render as renderKonten, actions as actionsKonten,
@@ -116,7 +116,7 @@ function handleAction(action, id, name, extra) {
     if (tombolAktif && nav && nav.scrollHeight > nav.clientHeight + 4) {
       try {
         tombolAktif.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      } catch (e) {
+      } catch (_e) {
         tombolAktif.scrollIntoView(false);
       }
     }

@@ -6,8 +6,6 @@
 // Jalur cadangan: base64 lewat server (uploadImage/uploadDoc) untuk file kecil
 // bila tiket gagal diterbitkan (mis. versi backend lama).
 import { $, esc, toast } from '../ui.js';
-import { API_URL } from '../config.js';
-import { state } from '../state.js';
 import { api } from '../api.js';
 
 
@@ -245,11 +243,11 @@ import { api } from '../api.js';
     });
     if (!put.ok) {
       let pesan = 'Storage menolak unggahan (HTTP ' + put.status + ').';
-      try { const t = await put.text(); if (t) pesan += ' ' + t.slice(0, 140); } catch (e) { /* abaikan */ }
+      try { const t = await put.text(); if (t) pesan += ' ' + t.slice(0, 140); } catch (_e) { /* abaikan */ }
       throw new Error(pesan);
     }
     // Beri tahu server (log aktivitas saja — tidak menggagalkan unggahan).
-    try { await api('confirmUploadTicket', { ok: true, path: tiket.path, nama: file.name }); } catch (e) { /* abaikan */ }
+    try { await api('confirmUploadTicket', { ok: true, path: tiket.path, nama: file.name }); } catch (_e) { /* abaikan */ }
     return { url: tiket.url.split('?')[0], path: tiket.path };
   }
 

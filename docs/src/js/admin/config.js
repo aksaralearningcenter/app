@@ -10,7 +10,7 @@ export const API_DEFAULT = 'https://backend-aksara.vercel.app/api';
 export const API_PARAM = (function () {
   try {
     return (new URLSearchParams(window.location.search).get('api') || '').replace(/\/+$/, '');
-  } catch (e) { return ''; }
+  } catch (_e) { return ''; }
 })();
 
 export const API_URL = API_PARAM || API_DEFAULT;

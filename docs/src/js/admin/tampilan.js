@@ -11,18 +11,14 @@ import { $ } from './ui.js';
 import { aturBahasa, bahasaAktif, terjemahkan, terjemahkanAkar } from './i18n.js';
 
 const KUNCI_TEMA = 'aksara_tema';
-const KUNCI_BAHASA = 'aksara_bahasa';
 const KUNCI_MENU = 'aksara_menu_tutup';
 
 // main.js menitipkan fungsi penyegaran label tabel (data-label pada mode kartu
 // dihitung dari teks <thead>, jadi harus dihitung ulang setelah bahasa ganti).
 let saatBahasaBerubah = function () {};
 
-function baca(kunci, baku) {
-  try { return localStorage.getItem(kunci) || baku; } catch (e) { return baku; }
-}
 function tulis(kunci, nilai) {
-  try { localStorage.setItem(kunci, nilai); } catch (e) { /* localStorage diblokir */ }
+  try { localStorage.setItem(kunci, nilai); } catch (_e) { /* localStorage diblokir */ }
 }
 
 // ============ TEMA ============
@@ -138,7 +134,7 @@ function bacaTutup() {
   try {
     const arr = JSON.parse(localStorage.getItem(KUNCI_MENU) || '[]');
     return Array.isArray(arr) ? arr : [];
-  } catch (e) { return []; }
+  } catch (_e) { return []; }
 }
 
 function simpanTutup(arr) { tulis(KUNCI_MENU, JSON.stringify(arr)); }

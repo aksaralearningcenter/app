@@ -32,7 +32,7 @@ import { LP_API_URL } from './config.js';
         sessionStorage.setItem('aksara_chat_sesi', s);
       }
       return s;
-    } catch (err) { return 'c' + Date.now().toString(36); }
+    } catch (_err) { return 'c' + Date.now().toString(36); }
   }
 
   function teksAman(t) {
@@ -145,7 +145,7 @@ import { LP_API_URL } from './config.js';
       } else {
         tambah('err', kaya((res && res.message) || 'Maaf, asisten belum bisa menjawab. Coba lagi ya.'));
       }
-    } catch (err) {
+    } catch (_err) {
       tunggu.remove();
       tambah('err', kaya('Maaf, koneksi ke asisten gagal. Periksa jaringan Anda, atau hubungi tim kami lewat WhatsApp.'));
     } finally {
@@ -207,6 +207,6 @@ import { LP_API_URL } from './config.js';
   // dari data terakhir ikut disiapkan di sini bila sudah tersedia.
   if (window.__lpTerakhir) {
     try { window.siapkanChat(window.__lpTerakhir.chat || {}, window.__lpTerakhir.settings || {}); }
-    catch (err) { /* abaikan */ }
+    catch (_err) { /* abaikan */ }
   }
 })();

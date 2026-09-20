@@ -380,7 +380,7 @@ function tautanUjian(id) {
     // API produksi sementara gurunya menguji di server lokal.
     if (API_PARAM) u.searchParams.set('api', API_PARAM);
     return u.href;
-  } catch (e) {
+  } catch (_e) {
     return '../ujian/?id=' + encodeURIComponent(id) + (API_PARAM ? '&api=' + encodeURIComponent(API_PARAM) : '');
   }
 }
@@ -421,7 +421,7 @@ function tampilkanTautan(tautan) {
   const salinBtn = $('lnk-salin');
   if (salinBtn) salinBtn.addEventListener('click', function () {
     const salin = function () { toast('Tautan ujian disalin.', 'ok'); };
-    const jatuh = function () { if (inp) { inp.select(); try { document.execCommand('copy'); } catch (e) {} } salin(); };
+    const jatuh = function () { if (inp) { inp.select(); try { document.execCommand('copy'); } catch (_e) {} } salin(); };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(tautan).then(salin).catch(jatuh);
     } else { jatuh(); }

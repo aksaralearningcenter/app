@@ -2,7 +2,7 @@
 import { state, invalidateCache } from '../state.js';
 import { $, esc, toast } from '../ui.js';
 import { api, post } from '../api.js';
-import { app, modal, closeModal, studentOptions } from '../helpers.js';
+import { app, modal, closeModal } from '../helpers.js';
 
 
   export const render = {

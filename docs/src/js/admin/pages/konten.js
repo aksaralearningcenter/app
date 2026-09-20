@@ -2,7 +2,7 @@
 //             testimoni, FAQ, program, kurikulum, kartu, situs, chatbot) ============
 import { state, invalidateCache } from '../state.js';
 import { $, esc, toast } from '../ui.js';
-import { api, post } from '../api.js';
+import { api } from '../api.js';
 import { app, modal, closeModal, sorterHtml, urutkanBy } from '../helpers.js';
 import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokumen } from './upload.js';
 
@@ -65,10 +65,16 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       const cover = b => b.cover
         ? '<span class="thumb" style="background-image:url(\'' + esc(b.cover) + '\')"></span>'
         : '<span class="thumb" title="Cover belum diisi"><i class="fa-solid fa-file-lines"></i></span>';
+      const pustaka = b => {
+        const baris = [b.penulis, b.penerbit, b.tahun].map(v => String(v || '').trim()).filter(Boolean).join(' · ');
+        const jenis = b.jenis ? '<span class="badge b-info">' + esc(b.jenis) + '</span> ' : '';
+        return jenis + (baris ? '<div style="font-size:.75rem;">' + esc(baris) + '</div>' : '<div style="font-size:.75rem; opacity:.6;">Belum diisi</div>');
+      };
       const body = rows.map(b =>
         '<tr><td>' + cover(b) + '</td>' +
         '<td><span class="badge ' + (b.tipe === 'flipbook' ? 'b-info' : 'b-warn') + '">' + esc(b.tipe || 'katalog') + '</span></td>' +
         '<td><b>' + esc(b.judul) + '</b><div style="font-size:.75rem;">' + esc((b.deskripsi || '').substring(0, 90)) + '</div></td>' +
+        '<td>' + pustaka(b) + '</td>' +
         '<td>' + badgeBerkas(b) + '</td>' +
         '<td class="col-sm-hide">' + (b.urutan || 0) + '</td>' +
         '<td><span class="badge ' + ((b.status || 'Aktif') === 'Aktif' ? 'b-ok' : 'b-warn') + '">' + esc(b.status || 'Aktif') + '</span></td>' +
@@ -76,10 +82,10 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
         '<button class="btn btn-d btn-sm" data-action="del-book" data-id="' + esc(b.id) + '">🗑️</button></td></tr>').join('');
       $('page').innerHTML =
         '<div class="card-head" style="margin-bottom:16px;"><h2>📚 Buku</h2><button class="btn btn-n btn-sm" data-action="add-book">➕ Tambah Buku</button></div>' +
-        '<p style="font-size:.78rem; margin-bottom:12px;">Tipe <b>flipbook</b> = halaman buku panduan di landing (atur urutannya di kartu di atas). Tipe <b>katalog</b> = buku/modul unduhan — cover dan berkasnya (PDF/Word/Excel) bisa <b>diunggah langsung</b> dari modal Tambah/Edit Buku. Kolom <b>Link</b> menampilkan jenis berkas yang dipakai tombol “Unduh / Baca” di katalog.</p>' +
+        '<p style="font-size:.78rem; margin-bottom:12px;">Tipe <b>flipbook</b> = halaman buku panduan di landing (atur urutannya di kartu di atas). Tipe <b>katalog</b> = buku/modul unduhan. Isi <b>Penulis / Penerbit / Tahun / Jenis</b> agar tampil sebagai <b>katalog &amp; daftar pustaka</b> di landing — pengunjung bisa memilih buku mana yang dibaca (tombol <b>Baca</b>) atau mengunduh berkasnya. Cover &amp; berkas (PDF/Word/Excel) bisa <b>diunggah langsung</b> dari modal Tambah/Edit Buku.</p>' +
         sorter +
-        '<div class="card"><div class="table-wrap"><table><thead><tr><th>Cover</th><th>Tipe</th><th>Judul</th><th>Link</th><th class="col-sm-hide">Urutan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
-        (body || '<tr><td colspan="7" style="text-align:center;">Belum ada buku.</td></tr>') + '</tbody></table></div></div>';
+        '<div class="card"><div class="table-wrap"><table><thead><tr><th>Cover</th><th>Tipe</th><th>Judul</th><th>Pustaka</th><th>Link</th><th class="col-sm-hide">Urutan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
+        (body || '<tr><td colspan="8" style="text-align:center;">Belum ada buku.</td></tr>') + '</tbody></table></div></div>';
     },
 
     gallery: function(rows) {
@@ -201,7 +207,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
         satuan: ' program',
         atas: 'Geser kartu (drag) atau pakai tombol ↑ ↓ untuk mengubah urutan kartu program di landing.',
         label: p => p.judul,
-        sub: (p, i) => (p.grup === 'tambahan' ? 'Grup tambahan (2 kolom)' : 'Grup utama (3 kolom)') + ' · ' + esc(p.tag || 'tanpa label') +
+        sub: (p, _i) => (p.grup === 'tambahan' ? 'Grup tambahan (2 kolom)' : 'Grup utama (3 kolom)') + ' · ' + esc(p.tag || 'tanpa label') +
           ' · ' + (String(p.poin || '').split('|').filter(x => x.trim()).length) + ' poin'
       });
       const body = list.map(p =>
@@ -298,7 +304,6 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
             (f.hint ? '<p style="font-size:.7rem; opacity:.75; margin-top:6px;">' + f.hint + '</p>' : '') +
             '</div>';
         }).join('');
-        const duaKolom = g === 'Halo & Hero' || g === 'Kontak & Ajakan (CTA)';
         return '<div class="card" style="margin-bottom:16px;"><h3 style="margin-bottom:12px;">' + esc(g) + '</h3>' +
           '<div class="frow">' + bidang + '</div></div>';
       }).join('');
@@ -356,8 +361,6 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     jenjang: { label: 'Tarif per Jenjang (per sesi)', cols: ['Jenjang', '0–3 km', '3–6 km', '6–10 km', '10–15 km'] },
     online: { label: 'Paket Online per Jenjang', cols: ['Jenjang', '4×/bulan', '8×/bulan', '12×/bulan', ''] }
   };
-  const PRICING_PROGRAM_KEYS = ['kids', 'sd', 'smp', 'sma', 'academic'];
-
   function pricingFieldHtml(tipe) {
     const cols = (PRICING_TIPES[tipe] || PRICING_TIPES.program).cols;
     return cols.map(function(c, i) {
@@ -452,6 +455,10 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       '<div class="fg"><label>Judul *</label><input id="b-judul" value="' + esc(row.judul || '') + '"></div>' +
       '<div class="fg"><label>Deskripsi</label><textarea id="b-deskripsi" rows="2">' + esc(row.deskripsi || '') + '</textarea></div>' +
       '<div class="fg"><label>Isi (untuk flipbook)</label><textarea id="b-isi" rows="4">' + esc(row.isi || '') + '</textarea></div>' +
+      '<div class="frow"><div class="fg"><label>Penulis</label><input id="b-penulis" value="' + esc(row.penulis || '') + '" placeholder="mis. Tim Aksara Learning Center"></div>' +
+      '<div class="fg"><label>Penerbit</label><input id="b-penerbit" value="' + esc(row.penerbit || '') + '" placeholder="mis. Aksara Learning Center"></div></div>' +
+      '<div class="frow"><div class="fg"><label>Tahun</label><input id="b-tahun" value="' + esc(row.tahun || '') + '" placeholder="mis. 2025"></div>' +
+      '<div class="fg"><label>Jenis / Kategori</label><input id="b-jenis" value="' + esc(row.jenis || '') + '" placeholder="mis. Modul, Panduan, Karya Ilmiah"></div></div>' +
       '<div class="frow">' + uploadField('Cover Buku', 'b-cover', row.cover, 'https://... atau klik Unggah',
         'Tampil sebagai cover di katalog buku (tipe katalog) atau di halaman booklet (tipe flipbook).') +
       dokumenField('URL Link / Berkas', 'b-link', row.link, 'https://... atau unggah PDF/Word/Excel',
@@ -463,7 +470,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
   }
 
   async function saveBook(id) {
-    const data = { tipe: $('b-tipe').value, judul: $('b-judul').value.trim(), deskripsi: $('b-deskripsi').value, isi: $('b-isi').value, cover: $('b-cover').value.trim(), link: $('b-link').value.trim(), urutan: parseInt($('b-urutan').value, 10) || 0, status: $('b-status').value, berkas: ($('b-link-nama') ? $('b-link-nama').value.trim() : '') };
+    const data = { tipe: $('b-tipe').value, judul: $('b-judul').value.trim(), deskripsi: $('b-deskripsi').value, isi: $('b-isi').value, cover: $('b-cover').value.trim(), link: $('b-link').value.trim(), urutan: parseInt($('b-urutan').value, 10) || 0, status: $('b-status').value, berkas: ($('b-link-nama') ? $('b-link-nama').value.trim() : ''), penulis: $('b-penulis').value.trim(), penerbit: $('b-penerbit').value.trim(), tahun: $('b-tahun').value.trim(), jenis: $('b-jenis').value.trim() };
     if (!data.judul) { toast('Judul wajib diisi.', 'err'); return; }
     try {
       const res = id ? await api('updateBook', id, data) : await api('addBook', data);
@@ -637,6 +644,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     { k: 'seksi_buku_judul', label: 'Buku Panduan — Judul', grup: 'Judul & Sub-judul Seksi' },
     { k: 'seksi_buku_sub', label: 'Buku Panduan — Sub-judul', grup: 'Judul & Sub-judul Seksi', area: true },
     { k: 'seksi_katalog_judul', label: 'Katalog Buku — Judul', grup: 'Judul & Sub-judul Seksi' },
+    { k: 'seksi_katalog_sub', label: 'Katalog Buku — Sub-judul', grup: 'Judul & Sub-judul Seksi', area: true },
     { k: 'seksi_layanan_judul', label: 'Layanan & Fasilitas — Judul', grup: 'Judul & Sub-judul Seksi' },
     { k: 'seksi_layanan_sub', label: 'Layanan & Fasilitas — Sub-judul', grup: 'Judul & Sub-judul Seksi', area: true },
     { k: 'seksi_alur_judul', label: 'Alur Belajar — Judul', grup: 'Judul & Sub-judul Seksi' },
@@ -938,7 +946,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       item.classList.add('dragging');
       if (e.dataTransfer) {
         e.dataTransfer.effectAllowed = 'move';
-        try { e.dataTransfer.setData('text/plain', dragId); } catch (err) { /* browser lama */ }
+        try { e.dataTransfer.setData('text/plain', dragId); } catch (_err) { /* browser lama */ }
       }
     });
     box.addEventListener('dragover', function(e) {

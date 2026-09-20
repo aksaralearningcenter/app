@@ -581,7 +581,7 @@ export function bahasaAktif() { return aktif; }
 export function aturBahasa(kode) {
   aktif = kode === 'en' ? 'en' : 'id';
   document.documentElement.setAttribute('lang', aktif);
-  try { localStorage.setItem('aksara_bahasa', aktif); } catch (e) { /* localStorage diblokir */ }
+  try { localStorage.setItem('aksara_bahasa', aktif); } catch (_e) { /* localStorage diblokir */ }
   return aktif;
 }
 

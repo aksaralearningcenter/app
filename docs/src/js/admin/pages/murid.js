@@ -1,7 +1,7 @@
 // ============ HALAMAN: MURID · ABSENSI · TABUNGAN · TRANSAKSI · PROGRES ============
 import { state, invalidateCache } from '../state.js';
 import { $, esc, rp, toast } from '../ui.js';
-import { api, post } from '../api.js';
+import { api } from '../api.js';
 import { app, modal, closeModal, studentOptions } from '../helpers.js';
 
 
@@ -73,7 +73,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
   // ============ AKSI: MURID ============
   async function openAddStudent() {
     let classes = [];
-    try { classes = await api('getClasses'); } catch (e) {}
+    try { classes = await api('getClasses'); } catch (_e) {}
     const opts = classes.map(c => '<option value="' + c.id + '">' + esc(c.nama) + '</option>').join('');
     modal('➕ Tambah Murid',
       '<div class="fg"><label>Nama Lengkap *</label><input id="f-nama" required></div>' +
@@ -159,7 +159,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
   async function txFillSavings() {
     const id = $('t-murid').value;
     if (!id) { $('t-savings').value = ''; return; }
-    try { const s = await api('getStudent', id); $('t-savings').value = s.savingsId || ''; } catch (e) {}
+    try { const s = await api('getStudent', id); $('t-savings').value = s.savingsId || ''; } catch (_e) {}
   }
 
   async function saveTransaction() {
@@ -176,7 +176,7 @@ import { app, modal, closeModal, studentOptions } from '../helpers.js';
   async function openTransactionFor(savingsId) {
     const acc = (state.cache.savings || []).find(a => a.id === savingsId);
     if (!acc) return;
-    try { const st = await api('getStudent', acc.studentId); state.students = [st].concat(state.students.filter(s => s.id !== st.id)); } catch (e) {}
+    try { const st = await api('getStudent', acc.studentId); state.students = [st].concat(state.students.filter(s => s.id !== st.id)); } catch (_e) {}
     openTransaction();
     setTimeout(() => {
       const sel = $('t-murid');

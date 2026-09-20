@@ -153,6 +153,8 @@
     // Panah hanya membalik buku saat halaman Buku benar-benar tampil.
     const halBuku = document.getElementById('buku');
     if (!halBuku || !halBuku.classList.contains('active')) return;
+    // Pembaca katalog sedang terbuka → panah dipakai untuk berpindah halaman pembaca.
+    if (document.body.classList.contains('reader-open')) return;
     if (e.key === 'ArrowRight') flipForward();
     if (e.key === 'ArrowLeft') flipBackward();
   });

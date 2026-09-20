@@ -480,16 +480,40 @@
         <div class="book-dots" id="book-dots"></div>
       </div>
 
-      <!-- Katalog buku/modul (dikelola admin) -->
+      <!-- Katalog & daftar pustaka buku (dikelola admin) -->
       <div id="book-catalog-wrap" style="margin-top:58px; display:none;">
         <div class="section-head reveal" style="margin-bottom:34px;">
-          <div class="eyebrow">Katalog Buku &amp; Modul</div>
+          <div class="eyebrow">Katalog &amp; Daftar Pustaka</div>
           <h2 data-set="seksi_katalog_judul">Bahan Belajar Pilihan</h2>
+          <p data-set="seksi_katalog_sub">Pilih buku atau modul yang ingin dibaca — setiap judul menyediakan tombol Baca dan Unduh.</p>
         </div>
-        <div class="bookcat-grid" id="book-catalog"></div>
+        <div class="book-list" id="book-catalog"></div>
       </div>
     </div>
   </section>
+
+  <!-- ================= PEMBACA BUKU (KATALOG) ================= -->
+  <div class="reader" id="book-reader" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Pembaca buku">
+    <div class="reader-back" id="reader-back"></div>
+    <div class="reader-panel" role="document">
+      <button class="reader-close" id="reader-close" type="button" aria-label="Tutup pembaca"><i class="fa-solid fa-xmark"></i></button>
+      <div class="reader-meta">
+        <div class="reader-cover" id="reader-cover"><i class="fa-solid fa-book-open"></i></div>
+        <div class="reader-meta-text">
+          <span class="reader-kicker" id="reader-kicker"></span>
+          <h3 id="reader-judul"></h3>
+          <p class="reader-pustaka" id="reader-pustaka"></p>
+          <div class="reader-actions" id="reader-actions"></div>
+        </div>
+      </div>
+      <div class="reader-body" id="reader-body"></div>
+      <div class="reader-nav">
+        <button class="btn btn-outline btn-sm" id="reader-prev" type="button">◀ Sebelumnya</button>
+        <span class="reader-count" id="reader-count">1 / 1</span>
+        <button class="btn btn-outline btn-sm" id="reader-next" type="button">Berikutnya ▶</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= LAYANAN & FASILITAS ================= -->
   <section class="section page-view active" data-page="home" id="layanan">

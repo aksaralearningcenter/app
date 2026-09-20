@@ -1,8 +1,6 @@
 // ==================== KONTEN DINAMIS — PENGATURAN SITUS ====================
 // Nilai dipakai pada elemen yang punya atribut data-set, dan nomor WhatsApp
 // dipakai ulang untuk semua tautan wa.me (termasuk yang baru dirender).
-import { cTxt } from './util.js';
-
 let SETELAN = {};
 
 export function nomorWA() { return String(SETELAN.wa_nomor || '').replace(/\D/g, ''); }
