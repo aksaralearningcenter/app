@@ -35,7 +35,11 @@ export function renderBooks(list) {
   if (!flip.length && !katalog0.length) { tampilkan(elById('buku'), false); return; }
   tampilkan(elById('buku'), true);
   const leaves = elById('book-leaves');
-  if (flip.length >= 2 && leaves) {
+  const shell = elById('book-shell');
+  if (flip.length >= 1 && leaves) {
+    // SATU booklet pun tetap tampil (sebelumnya syaratnya >= 2, sehingga
+    // booklet tunggal tidak pernah muncul sama sekali).
+    if (shell) shell.style.display = '';
     const pages = flip.slice();
     if (pages.length % 2) {
       pages.push({ judul: 'Terima Kasih', deskripsi: 'Aksara Learning Center',
@@ -48,6 +52,10 @@ export function renderBooks(list) {
     }
     leaves.innerHTML = html;
     if (typeof window.refreshFlipbook === 'function') window.refreshFlipbook();
+  } else {
+    // Tak ada booklet → jangan tampilkan buku kosong (mis. saat hanya ada katalog).
+    if (leaves) leaves.innerHTML = '';
+    if (shell) shell.style.display = 'none';
   }
 
   // Katalog: buku/modul unduhan — kosong → wrap tetap disembunyikan.

@@ -33,10 +33,24 @@ import { app } from '../helpers.js';
             '</div></div>';
         }).join('');
         const notifOn = (data.notifEmail || 'Aktif') === 'Aktif';
+        // Buku pelajaran/modul yang dibagikan admin — orang tua & murid bisa
+        // membukanya langsung dari sini tanpa perlu login ke panel konten.
+        const buku = (data.buku || []);
+        const bukuHtml = buku.length
+          ? '<table><thead><tr><th>Judul</th><th>Keterangan</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' +
+            buku.map(function (b) {
+              const aksi = b.link
+                ? '<a class="btn btn-o btn-sm" href="' + esc(b.link) + '" target="_blank" rel="noopener">📖 Buka</a>'
+                : '<span class="badge b-info">Tersedia di kelas</span>';
+              return '<tr><td><b>' + esc(b.judul) + '</b></td><td>' + esc(b.deskripsi || '-') + '</td><td style="text-align:right;">' + aksi + '</td></tr>';
+            }).join('') + '</tbody></table>'
+          : '<div class="empty">Belum ada buku pelajaran yang dibagikan admin.</div>';
         $('page').innerHTML = '<div class="card"><div class="card-head"><h2>👋 Selamat datang, ' + esc(data.namaOrangTua || state.me.nama || 'Orang Tua') + '</h2></div><p style="font-size:0.9rem;">Pemantauan data anak Anda: tabungan, kehadiran, dan progres belajar.</p></div>' +
           '<div class="card"><div class="card-head"><h3>🔔 Notifikasi Email</h3><span class="badge ' + (notifOn ? 'b-ok' : 'b-warn') + '">' + (notifOn ? '📧 Aktif' : '📧 Off') + '</span></div>' +
           '<p style="font-size:0.85rem;">Terima email saat data anak Anda diperbarui (progres belajar, absensi, tabungan).</p>' +
           '<button class="btn btn-o btn-sm" data-action="toggle-my-notif" data-extra="' + (data.notifEmail || 'Aktif') + '">' + (notifOn ? '⏸️ Matikan' : '▶️ Aktifkan') + '</button></div>' +
+          '<div class="card" style="margin-top:18px;"><div class="card-head"><h3>📚 Buku Pelajaran</h3><span class="badge b-info">' + buku.length + ' buku</span></div>' +
+          '<p style="font-size:0.85rem;">Bahan belajar & modul untuk menemani belajar di rumah.</p>' + bukuHtml + '</div>' +
           (cards || '<div class="card"><div class="empty">Belum ada data anak tertaut ke akun ini. Hubungi admin.</div></div>');
         return;
       }
