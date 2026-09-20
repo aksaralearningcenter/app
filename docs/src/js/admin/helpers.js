@@ -3,9 +3,26 @@
 // `app` = registry kecil: main.js mengisinya dengan loadPage, sehingga modul
 // halaman bisa kembali ke loadPage TANPA impor melingkar ke main.js.
 import { state } from './state.js';
-import { $, esc } from './ui.js';
+import { $, esc, toast } from './ui.js';
 
 export const app = {};
+
+// ============ UNDUH CSV (dipakai beberapa halaman) ============
+// Pemisah ";" + BOM supaya Excel (locale Indonesia) langsung membuka kolom dengan
+// benar tanpa wizard impor. Nilai dibungkus kutip ganda bila memuat pemisah.
+function unduhCSV(namaBerkas, baris) {
+  const csv = baris.map(r => r.map(c => {
+    const s = String(c == null ? '' : c);
+    return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }).join(';')).join('\r\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = namaBerkas;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  toast('✅ ' + namaBerkas + ' diunduh.', 'ok');
+}
 
 
   // ⚡ Debounce 150ms — tabel bisa ratusan baris; tanpa ini tiap ketikan
@@ -78,4 +95,4 @@ export const app = {};
       }).join('') + '</div></div>';
   }
 
-  export { modal, closeModal, studentOptions, filterTable, sorterHtml, urutkanBy };
+  export { modal, closeModal, studentOptions, filterTable, sorterHtml, urutkanBy, unduhCSV };

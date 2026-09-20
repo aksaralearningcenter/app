@@ -5,24 +5,42 @@ import { api, post } from '../api.js';
 import { app, modal, closeModal } from '../helpers.js';
 
 
+  // Jumlah murid tertaut (kolom `users.anak` = "S-1:A, S-2:B"): anak-anak untuk
+  // akun Orang Tua, atau dirinya sendiri untuk akun Murid.
+  function hitungAnak(teks) {
+    return String(teks || '').split(',').map(x => x.trim()).filter(Boolean).length;
+  }
+  // Akun non-staf (Orang Tua & Murid) diatur tautannya di menu 👨‍👩‍👧 Akun & Anak.
+  const NON_STAF = ['Orang Tua', 'Murid'];
+  const nonStaf = peran => NON_STAF.indexOf(peran) !== -1;
+
   export const render = {
     users: function(list) {
       list = list || [];
       const rows = list.map((u, i) =>
         '<tr><td>' + (i + 1) + '</td><td><b>' + esc(u.email) + '</b><div style="font-size:0.75rem;">' + esc(u.nama || '-') + '</div></td>' +
         '<td>' + (u.username ? '<span class="mono">' + esc(u.username) + '</span>' : '—') + '</td>' +
-        '<td><span class="badge ' + (u.peran === 'Admin' ? 'b-info' : 'b-warn') + '">' + esc(u.peran) + '</span></td>' +
+        '<td><span class="badge ' + (u.peran === 'Admin' ? 'b-info' : (nonStaf(u.peran) ? 'b-ok' : 'b-warn')) + '">' + esc(u.peran) + '</span>' +
+        // Akun Orang Tua & Murid langsung menuju halaman Akun & Anak: di sana
+        // muridnya bisa ditautkan/dilepas (kakak-adik, ayah & ibu beda email,
+        // atau murid yang login sendiri).
+        (nonStaf(u.peran)
+          ? '<div class="ab-kecil" style="margin-top:4px;"><button class="btn btn-o btn-sm" data-action="lihat-anak" data-id="' + esc(u.email) + '">' +
+            (u.peran === 'Murid' ? '🎒 ' + (hitungAnak(u.anak) ? 'Murid' : 'Belum tertaut') : '👨‍👩‍👧 ' + hitungAnak(u.anak) + ' anak') + '</button></div>'
+          : '') + '</td>' +
         '<td><span class="badge ' + (u.status === 'Aktif' ? 'b-ok' : 'b-err') + '">' + esc(u.status) + '</span></td>' +
         '<td><span class="badge ' + ((u.notifEmail || 'Aktif') === 'Aktif' ? 'b-ok' : 'b-warn') + '" style="cursor:pointer;" data-action="toggle-notif-email" data-id="' + esc(u.email) + '" data-extra="' + esc(u.notifEmail || 'Aktif') + '">' + ((u.notifEmail || 'Aktif') === 'Aktif' ? '📧 Aktif' : '📧 Off') + '</span></td>' +
         '<td style="white-space:nowrap;">' +
         '<button class="btn btn-o btn-sm" data-action="toggle-user-status" data-id="' + esc(u.email) + '" data-extra="' + esc(u.status) + '" title="Aktif/Nonaktif">' + (u.status === 'Aktif' ? '🚫' : '✅') + '</button> ' +
-        '<button class="btn btn-o btn-sm" data-action="toggle-user-role" data-id="' + esc(u.email) + '" data-extra="' + esc(u.peran) + '" title="Ganti peran">🔄</button> ' +
+        // Tombol 🔄 hanya untuk STAF: akun Orang Tua & Murid bukan staf, dan
+        // dahulu menekannya malah mengusulkan "jadikan Admin".
+        (nonStaf(u.peran) ? '' : '<button class="btn btn-o btn-sm" data-action="toggle-user-role" data-id="' + esc(u.email) + '" data-extra="' + esc(u.peran) + '" title="Ganti peran (Admin ⇄ Guru)">🔄</button> ') +
         '<button class="btn btn-o btn-sm" data-action="reset-pass" data-id="' + esc(u.email) + '" title="Reset password">🔑</button> ' +
         '<button class="btn btn-d btn-sm" data-action="del-user" data-id="' + esc(u.email) + '">🗑️</button></td></tr>').join('');
       $('page').innerHTML =
         '<div class="card-head" style="margin-bottom:16px;"><h2>👥 Users</h2><button class="btn btn-n btn-sm" data-action="add-user">➕ Tambah User</button></div>' +
         '<div class="card"><div class="table-wrap"><table><thead><tr><th>No</th><th>Email</th><th>Username</th><th>Peran</th><th>Status</th><th>Email Notif</th><th>Aksi</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-        '<p style="font-size:0.78rem; margin-top:10px;">Buat kredensial username/password staf (Admin & Guru) via menu spreadsheet: <b>LMS & Tabungan → User → 🔑 Buat Akun Admin & Guru</b> — email kredensial dikirim otomatis.</p></div>';
+        '<p style="font-size:0.78rem; margin-top:10px;">Akun Orang Tua &amp; Murid dibuat di sini juga; yang belum punya password (belum ada <b>Username</b>) diberi kredensial lewat tombol 🔑.</p></div>';
     },
 
     registrations: function(list) {
@@ -53,7 +71,9 @@ import { app, modal, closeModal } from '../helpers.js';
     modal('➕ Tambah User',
       '<div class="fg"><label>Email Google *</label><input type="email" id="u-email"></div>' +
       '<div class="fg"><label>Nama</label><input id="u-nama"></div>' +
-      '<div class="frow"><div class="fg"><label>Peran</label><select id="u-peran"><option value="Guru">Guru</option><option value="Admin">Admin</option><option value="Orang Tua">Orang Tua</option></select></div>' +
+      // Peran Murid = siswa yang login sendiri (SMA/mahasiswa/les privat dewasa);
+      // tautan ke datanya diatur di menu 👨‍👩‍👧 Akun & Anak.
+      '<div class="frow"><div class="fg"><label>Peran</label><select id="u-peran"><option value="Guru">Guru</option><option value="Admin">Admin</option><option value="Orang Tua">Orang Tua</option><option value="Murid">Murid</option></select></div>' +
       '<div class="fg"><label>Status</label><select id="u-status"><option>Aktif</option><option>Nonaktif</option></select></div></div>' +
       '<div class="fg"><label style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="u-notif" style="width:auto;" checked> 📧 Aktifkan notifikasi email</label></div>',
       '<button class="btn btn-o btn-sm" onclick="closeModal()">Batal</button><button class="btn btn-n btn-sm" onclick="saveAddUser()">💾 Simpan</button>');
@@ -75,6 +95,10 @@ import { app, modal, closeModal } from '../helpers.js';
   }
 
   async function toggleUserRole(email, peran) {
+    if (nonStaf(peran)) {
+      toast('Akun ' + peran + ' bukan akun staf — perannya tidak bisa ditukar. Buat akun staf baru lewat ➕ Tambah User.', 'err');
+      return;
+    }
     const target = peran === 'Admin' ? 'Guru' : 'Admin';
     if (!confirm('Ubah peran ' + email + ' menjadi ' + target + '?')) return;
     try { const res = await api('updateUser', email, { peran: target }); toast(res.message || 'OK', 'ok'); app.loadPage('users'); }
@@ -155,6 +179,7 @@ import { app, modal, closeModal } from '../helpers.js';
     'add-user': function () { openAddUser(); },
     'toggle-user-status': function (id, extra) { toggleUserStatus(id, extra); },
     'toggle-user-role': function (id, extra) { toggleUserRole(id, extra); },
+    'lihat-anak': function () { app.loadPage('orangtua'); },
     'reset-pass': function (id) { resetPass(id); },
     'del-user': function (id) { delUser(id); },
     'toggle-notif-email': function (id, extra) { toggleNotifEmail(id, extra); },

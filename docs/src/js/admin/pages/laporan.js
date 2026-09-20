@@ -142,7 +142,7 @@ import { app, modal } from '../helpers.js';
             '<div><button class="btn btn-o btn-sm" data-action="unseed-konten">🗑️ Kosongkan Konten Landing (' + (d.konten || []).length + ' sheet)</button>' +
             '<p style="font-size:.7rem; opacity:.75; margin-top:5px;">Harga, Berita, Buku, Galeri, Mitra, Testimoni, FAQ, Program, Kurikulum, Kartu Info, Pengaturan Situs. Setelah ini landing memakai konten statis bawaan.</p></div>' +
             '<div><button class="btn btn-o btn-sm" data-action="unseed-lms">🗑️ Kosongkan Data LMS (' + (d.lms || []).length + ' sheet)</button>' +
-            '<p style="font-size:.7rem; opacity:.75; margin-top:5px;">Murid, Kelas, Absensi, Progres, Tabungan, Transaksi.</p></div>' +
+            '<p style="font-size:.7rem; opacity:.75; margin-top:5px;">Murid, Kelas, Jadwal, Absensi, Progres, Tabungan, Transaksi.</p></div>' +
           '</div></div>' +
         '<div class="card" style="border:1px solid #F3CFC9;"><h3 style="margin-bottom:10px;">☠️ Reset Total</h3>' +
           '<p style="font-size:.78rem; margin-bottom:10px;">Mengosongkan <b>semua</b> sheet di atas (termasuk asesmen, bank soal, dan hasil ujian siswa) + Pendaftaran + Riwayat Login + semua akun <b>kecuali akun Admin yang sedang dipakai</b> (agar Anda tetap bisa login). Akun Orang Tua, Guru, dan pendaftar ikut terhapus.</p>' +
@@ -244,7 +244,7 @@ import { app, modal } from '../helpers.js';
   // ============ PEMELIHARAAN DATA (SEED / UNSEED) ============
   const JUDUL_UNSEED = {
     konten: { kode: 'HAPUS KONTEN', judul: 'Kosongkan Konten Landing', teks: 'SEMUA baris pada sheet Harga, Berita, Buku, Galeri, Mitra, Testimoni, FAQ, Program, Kurikulum, Kartu Info, dan Pengaturan Situs akan DIHAPUS (header tetap).\n\nSetelah ini landing otomatis memakai konten statis bawaan. Tindakan ini tidak bisa dibatalkan.\n\nLanjutkan?' },
-    lms: { kode: 'HAPUS LMS', judul: 'Kosongkan Data LMS', teks: 'SEMUA baris pada sheet Murid, Kelas, Absensi, Progres, Tabungan, dan Transaksi akan DIHAPUS (header tetap).\n\nTindakan ini tidak bisa dibatalkan.\n\nLanjutkan?' },
+    lms: { kode: 'HAPUS LMS', judul: 'Kosongkan Data LMS', teks: 'SEMUA baris pada sheet Murid, Kelas, Jadwal, Absensi, Progres, Tabungan, dan Transaksi akan DIHAPUS (header tetap).\n\nTindakan ini tidak bisa dibatalkan.\n\nLanjutkan?' },
     total: { kode: 'HAPUS SEMUA', judul: 'Reset Total Data', teks: 'SEMUA data akan dihapus: konten landing, murid, kelas, absensi, progres, tabungan, transaksi, pendaftaran, riwayat login, dan semua akun KECUALI akun Admin yang sedang dipakai.\n\nTindakan ini TIDAK BISA DIBATALKAN.\n\nLanjutkan?' }
   };
 

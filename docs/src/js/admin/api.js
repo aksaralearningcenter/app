@@ -63,6 +63,9 @@ function parseResLogin(r) {
   });
 }
 
+// Pembungkus encodeURIComponent untuk parameter query yang bisa kosong.
+const enc = v => encodeURIComponent(v == null ? '' : String(v));
+
 // Pemetaan: nama fungsi lama (fn, args) → REST endpoint baru.
 // Argumen dari call site dipetakan sesuai urutannya.
 const API_MAP = {
@@ -77,8 +80,23 @@ const API_MAP = {
   updateClass:            { m: 'PUT',  p: a => 'classes/' + a[0], b: a => a[1] },
   deleteClass:            { m: 'DELETE', p: a => 'classes/' + a[0] },
   getAttendanceToday:     { m: 'GET',  p: 'attendance/today' },
-  getAttendanceHistory:   { m: 'GET',  p: 'attendance/history' },
+  // Lembar absensi satu tanggal (tanggal lampau = absensi susulan).
+  getAttendanceSheet:     { m: 'GET',  p: a => 'attendance/sheet?tanggal=' + enc(a[0]) + '&kelas=' + enc(a[1]) },
+  getAttendanceHistory:   { m: 'GET',  p: a => 'attendance/history?dari=' + enc(a[0]) + '&sampai=' + enc(a[1]) +
+                                                     '&kelas=' + enc(a[2]) + '&status=' + enc(a[3]) },
   recordAttendance:       { m: 'POST', p: 'attendance', b: a => a[0] },
+  // Jadwal belajar (per pekan, per kelas atau per murid).
+  getSchedules:           { m: 'GET',  p: 'schedules' },
+  // Permintaan jadwal (Guru / Orang Tua) + kuota sesi per pekan.
+  getScheduleRequests:      { m: 'GET',  p: 'schedule-requests' },
+  addScheduleRequest:       { m: 'POST', p: 'schedule-requests', b: a => a[0] },
+  prosesScheduleRequest:    { m: 'POST', p: a => 'schedule-requests/' + enc(a[0]) + '/proses', b: a => ({ aksi: a[1], jawaban: a[2] || '' }) },
+  batalkanScheduleRequest:  { m: 'POST', p: a => 'schedule-requests/' + enc(a[0]) + '/batal' },
+  getScheduleQuota:         { m: 'GET',  p: a => 'schedule-quota?murid=' + enc(a[0]) },
+  terapkanKuotaPaket:       { m: 'POST', p: 'schedule-quota/terapkan' },
+  addSchedule:            { m: 'POST', p: 'schedules', b: a => a[0] },
+  updateSchedule:         { m: 'PUT',  p: a => 'schedules/' + enc(a[0]), b: a => a[1] },
+  deleteSchedule:         { m: 'DELETE', p: a => 'schedules/' + enc(a[0]) },
   addProgress:            { m: 'POST', p: 'progress', b: a => a[0] },
   getProgressByStudent:   { m: 'GET',  p: a => 'progress/' + a[0] },
   getSavingsAccounts:     { m: 'GET',  p: 'savings/accounts' },
@@ -90,6 +108,8 @@ const API_MAP = {
   getBatchStartupData:    { m: 'GET',  p: 'dashboard/batch' },
   getStatsData:           { m: 'GET',  p: 'stats' },
   getMyChildrenData:      { m: 'GET',  p: 'my-children' },
+  // Panel Murid (SMA/mahasiswa/les privat dewasa): data miliknya sendiri.
+  getMyStudent:           { m: 'GET',  p: 'my-student' },
   setMyNotifEmail:        { m: 'POST', p: 'my-notif-email', b: a => ({ status: a[0] }) },
   // --- ASESMEN (paket ujian + bank soal) ---
   getAssesmen:            { m: 'GET',  p: 'assessments' },
@@ -113,6 +133,10 @@ const API_MAP = {
   updateUser:             { m: 'PUT',  p: a => 'users/' + encodeURIComponent(a[0]), b: a => a[1] },
   deleteUser:             { m: 'DELETE', p: a => 'users/' + encodeURIComponent(a[0]) },
   resetUserPassword:      { m: 'POST', p: 'users/reset-password', b: a => ({ login: a[0] }) },
+  // Akun Orang Tua ↔ anak (kakak-adik, termasuk yang emailnya berbeda).
+  getUserChildren:        { m: 'GET',  p: 'user-children' },
+  tautkanAnak:            { m: 'POST', p: 'user-children/link', b: a => ({ email: a[0], studentId: a[1] }) },
+  lepasAnak:              { m: 'POST', p: 'user-children/unlink', b: a => ({ email: a[0], studentId: a[1] }) },
   getActivityLog:         { m: 'GET',  p: a => 'activity-log?limit=' + (a[0] || 200) },
   getLoginHistory:        { m: 'GET',  p: a => 'login-history?limit=' + (a[0] || 100) },
   // --- PENDAFTARAN ---

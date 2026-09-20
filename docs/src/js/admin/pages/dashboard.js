@@ -5,6 +5,7 @@ import { app, modal } from '../helpers.js';
 import { buatFlipbook } from '../../shared/flipbook.js';
 import { mukaIsi, halamanSampul, halamanHakCipta, halamanPustaka, halamanPenutup,
   pasangKendali } from '../../shared/reader-buku.js';
+import { BADGE_PERMINTAAN, labelKuota, badgeKuota, ringkasKuota } from '../../shared/jadwal.js';
 
   // Buku pelajaran/modul untuk akun Orang Tua (diisi ulang tiap render).
   let bukuOrangTua = [];
@@ -133,10 +134,14 @@ import { mukaIsi, halamanSampul, halamanHakCipta, halamanPustaka, halamanPenutup
   }
 
 
-  export const render = {
-    dashboard: function(data) {
-      if (data.children) { // Orang Tua
-        const cards = (data.children || []).map(c => {
+  // Panel NON-STAF — Orang Tua (banyak anak) dan Murid (dirinya sendiri) memakai
+  // kartu yang sama: tabungan, kehadiran, progres, jadwal, kuota sesi, pengajuan,
+  // dan riwayat ujian. Bedanya hanya di kalimat sapaan & jumlah kartu.
+  function renderNonStaf(data) {
+    const sendiri = !Array.isArray(data.children);      // peran Murid
+    const daftar = sendiri ? (data.murid ? [data.murid] : []) : data.children;
+    {
+        const cards = daftar.map(c => {
           const abs = (c.absensi || []);
           const hadir = abs.filter(a => a.status === 'Hadir').length;
           const persen = abs.length ? Math.round(hadir / abs.length * 100) : 0;
@@ -146,6 +151,21 @@ import { mukaIsi, halamanSampul, halamanHakCipta, halamanPustaka, halamanPenutup
             '<tr><td>' + new Date(a.tanggal).toLocaleDateString('id-ID') + '</td><td><span class="badge ' + (a.status === 'Hadir' ? 'b-ok' : (a.status === 'Alpha' ? 'b-err' : 'b-warn')) + '">' + a.status + '</span></td></tr>').join('');
           const pr = (c.progres || []).slice(0, 5).map(p =>
             '<tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + esc(p.mapel) + '</td><td>' + esc(p.topik) + '</td><td style="text-align:right;"><b>' + (p.nilai === '' || p.nilai == null ? '-' : p.nilai) + '</b></td></tr>').join('');
+          // Jadwal belajar anak (sesi kelasnya + sesi privat) dari data jadwal.
+          const jadwalAnak = (c.jadwal || []);
+          // Kuota sesi (dari paket atau pemberian admin) + pengajuan yang sedang
+          // diproses — Orang Tua bisa mengajukan jadwal selama kuota masih ada.
+          const kuotaAnak = c.kuota || null;
+          const pengajuanAnak = (c.permintaan || []);
+          const pg = pengajuanAnak.map(p =>
+            '<tr><td>' + (p.dibuat ? new Date(p.dibuat).toLocaleDateString('id-ID') : '-') + '</td>' +
+            '<td>' + esc([p.hari, p.jam, p.mapel].filter(Boolean).join(' · ')) + '</td>' +
+            '<td><span class="badge ' + (BADGE_PERMINTAAN[p.status] || 'b-info') + '">' + esc(p.status) + '</span>' +
+              (p.jawaban ? '<div class="ab-kecil">' + esc(p.jawaban) + '</div>' : '') + '</td></tr>').join('');
+          const jd = jadwalAnak.map(j =>
+            '<tr><td><b>' + esc(j.hari) + '</b></td><td class="mono">' + esc(j.jam || '-') + '</td>' +
+            '<td>' + esc(j.mapel || '-') + '</td>' +
+            '<td>' + (j.privat ? '<span class="badge b-warn">privat</span>' : '') + '</td></tr>').join('');
           const uj = (c.ujian || []).map(u => {
             const lulus = u.nilai_lulus != null ? (Number(u.skor) >= Number(u.nilai_lulus)) : null;
             const cls = lulus === null ? 'b-info' : (lulus ? 'b-ok' : 'b-warn');
@@ -156,7 +176,19 @@ import { mukaIsi, halamanSampul, halamanHakCipta, halamanPustaka, halamanPenutup
           return '<div class="card"><div class="card-head"><h3>👨‍🎓 ' + esc(c.nama) + ' — ' + esc(c.kelas) + '</h3><span class="badge b-ok">' + rp(c.saldo) + '</span></div>' +
             '<div class="grid"><div><h4 style="margin-bottom:8px;">💰 Tabungan</h4><table><tbody>' + (tx || '<tr><td>Belum ada transaksi.</td></tr>') + '</tbody></table></div>' +
             '<div><h4 style="margin-bottom:8px;">📝 Kehadiran ' + (abs.length ? '· ' + persen + '%' : '') + '</h4><table><tbody>' + (ab || '<tr><td>Belum ada catatan.</td></tr>') + '</tbody></table></div>' +
-            '<div><h4 style="margin-bottom:8px;">📈 Progres</h4><table><tbody>' + (pr || '<tr><td>Belum ada catatan.</td></tr>') + '</tbody></table></div></div>' +
+            '<div><h4 style="margin-bottom:8px;">📈 Progres</h4><table><tbody>' + (pr || '<tr><td>Belum ada catatan.</td></tr>') + '</tbody></table></div>' +
+            (jadwalAnak.length ? '<div><h4 style="margin-bottom:8px;">🗓️ Jadwal Belajar</h4><table><tbody>' + jd + '</tbody></table></div>' : '') +
+            // Pengajuan jadwal: kuota anak + riwayat pengajuannya + tombol untuk
+            // mengajukan sesi baru (dicek terhadap kuota paket).
+            '<div><h4 style="margin-bottom:8px;">📩 Pengajuan Jadwal</h4>' +
+              '<div class="ab-kecil" style="margin-bottom:8px;">Kuota: <span class="badge ' + badgeKuota(kuotaAnak) + '">' +
+                esc(labelKuota(kuotaAnak)) + '</span> ' + esc(ringkasKuota(kuotaAnak)) + '</div>' +
+              (pg ? '<table><thead><tr><th>Diajukan</th><th>Sesi</th><th>Status</th></tr></thead><tbody>' + pg + '</tbody></table>'
+                  : '<p class="ab-kecil" style="margin:0;">Belum ada pengajuan jadwal.</p>') +
+              '<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">' +
+                '<button class="btn btn-n btn-sm" data-action="add-request">📩 Ajukan Jadwal</button>' +
+                '<button class="btn btn-o btn-sm" data-action="lihat-requests">🗂️ Kuota &amp; Riwayat</button>' +
+              '</div></div>' + '</div>' +
             '<div class="ujian-riwayat"><h4 style="margin-bottom:8px;">📚 Ujian</h4>' +
             (uj ? '<table><thead><tr><th>Ujian</th><th>Tanggal</th><th style="text-align:right;">Skor</th><th>Status</th></tr></thead><tbody>' + uj + '</tbody></table>' : '<p style="font-size:.8rem; color:var(--redup); margin:0;">Belum ada riwayat ujian.</p>') +
             '</div></div>';
@@ -185,15 +217,36 @@ import { mukaIsi, halamanSampul, halamanHakCipta, halamanPustaka, halamanPenutup
                 '<td style="text-align:right; white-space:nowrap;">' + baca + unduh + '</td></tr>';
             }).join('') + '</tbody></table>'
           : '<div class="empty">Belum ada buku pelajaran yang dibagikan admin.</div>';
-        $('page').innerHTML = '<div class="card"><div class="card-head"><h2>👋 Selamat datang, ' + esc(data.namaOrangTua || state.me.nama || 'Orang Tua') + '</h2></div><p style="font-size:0.9rem;">Pemantauan data anak Anda: tabungan, kehadiran, dan progres belajar.</p></div>' +
+        // Sapaan & kalimat penjelas menyesuaikan siapa yang sedang melihat:
+        // orang tua (memantau) atau murid itu sendiri (SMA/mahasiswa).
+        const sapaan = sendiri
+          ? '<div class="card"><div class="card-head"><h2>👋 Halo, ' + esc((data.murid && data.murid.nama) || state.me.nama || 'Murid') + '</h2>' +
+            '<span class="badge b-info">🎒 ' + esc((data.murid && data.murid.kelas) || data.namaMurid || 'Murid') + '</span></div>' +
+            '<p style="font-size:0.9rem;">Ringkasan belajar Anda: jadwal, kehadiran, tabungan, progres, dan riwayat ujian.</p></div>'
+          : '<div class="card"><div class="card-head"><h2>👋 Selamat datang, ' + esc(data.namaOrangTua || state.me.nama || 'Orang Tua') + '</h2></div>' +
+            '<p style="font-size:0.9rem;">Pemantauan data anak Anda: tabungan, kehadiran, dan progres belajar.</p></div>';
+        const teksNotif = sendiri
+          ? 'Terima email saat data belajar Anda diperbarui (jadwal, absensi, progres, tabungan).'
+          : 'Terima email saat data anak Anda diperbarui (progres belajar, absensi, tabungan).';
+        const teksBuku = sendiri
+          ? 'Bahan belajar & modul pendamping untuk kelas Anda.'
+          : 'Bahan belajar & modul untuk menemani belajar di rumah.';
+        $('page').innerHTML = sapaan +
           '<div class="card"><div class="card-head"><h3>🔔 Notifikasi Email</h3><span class="badge ' + (notifOn ? 'b-ok' : 'b-warn') + '">' + (notifOn ? '📧 Aktif' : '📧 Off') + '</span></div>' +
-          '<p style="font-size:0.85rem;">Terima email saat data anak Anda diperbarui (progres belajar, absensi, tabungan).</p>' +
+          '<p style="font-size:0.85rem;">' + teksNotif + '</p>' +
           '<button class="btn btn-o btn-sm" data-action="toggle-my-notif" data-extra="' + (data.notifEmail || 'Aktif') + '">' + (notifOn ? '⏸️ Matikan' : '▶️ Aktifkan') + '</button></div>' +
           '<div class="card" style="margin-top:18px;"><div class="card-head"><h3>📚 Buku Pelajaran</h3><span class="badge b-info">' + buku.length + ' buku</span></div>' +
-          '<p style="font-size:0.85rem;">Bahan belajar & modul untuk menemani belajar di rumah.</p>' + bukuHtml + '</div>' +
-          (cards || '<div class="card"><div class="empty">Belum ada data anak tertaut ke akun ini. Hubungi admin.</div></div>');
-        return;
-      }
+          '<p style="font-size:0.85rem;">' + teksBuku + '</p>' + bukuHtml + '</div>' +
+          (cards || (sendiri
+            ? '<div class="card"><div class="empty">' + esc(data.pesan || 'Akun ini belum ditautkan ke data murid mana pun. Hubungi admin sekolah.') + '</div></div>'
+            : '<div class="card"><div class="empty">Belum ada data anak tertaut ke akun ini. Hubungi admin.</div></div>'));
+    }
+  }
+
+  export const render = {
+    dashboard: function(data) {
+      // Orang Tua (children[]) & Murid (murid) sama-sama memakai panel non-staf.
+      if (Array.isArray(data.children) || Object.prototype.hasOwnProperty.call(data, 'murid')) return renderNonStaf(data);
       const s = data.stats || {};
       $('page').innerHTML =
         '<div class="card-head" style="margin-bottom:16px;"><h2>📊 Dashboard</h2><button class="btn btn-o btn-sm" data-action="refresh-dashboard">🔄 Refresh</button></div>' +

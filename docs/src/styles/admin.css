@@ -634,3 +634,36 @@
     body, .card, .topbar, .icon-btn, .lang-switch, input, select, textarea, .modal, .sort-item, .stat {
       transition: background-color .22s ease, color .22s ease, border-color .22s ease;
     }
+
+    /* ============ JADWAL BELAJAR & ABSENSI PER SESI ============ */
+    /* Halaman Absensi: bilah pemilih tanggal/kelas, kartu per sesi jadwal, dan
+       empat tombol status (H/S/I/A) yang menyimpan seketika. */
+    .ab-banner { border-radius: 10px; padding: 10px 13px; font-size: .84rem; margin-top: 10px; border: 1px solid var(--border); }
+    .ab-banner.warn { background: #FFF6E5; border-color: #EAD9B0; color: var(--warn); }
+    .ab-banner.err { background: #FDECEA; border-color: #F3C9C4; color: var(--err); }
+    .ab-ringkas { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .ab-kecil { font-size: .72rem; color: var(--muted); text-transform: none; letter-spacing: 0; font-weight: 500; }
+    .ab-meta { font-size: .78rem; color: var(--muted); margin: 0 0 10px; }
+    .ab-sesi { margin-top: 14px; }
+    .ab-sesi .card-head { margin-bottom: 8px; }
+    .ab-kanan { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .ab-tombol { white-space: nowrap; }
+    .ab-tb { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted); font-weight: 800; font-size: .78rem; margin-right: 4px; transition: var(--transisi); }
+    .ab-tb:hover { border-color: var(--gold); color: var(--navy); }
+    .ab-tb.on { color: #fff; border-color: transparent; }
+    .ab-tb.b-ok.on { background: var(--ok); }
+    .ab-tb.b-warn.on { background: var(--warn); }
+    .ab-tb.b-err.on { background: var(--err); }
+    .ab-tb.b-info.on { background: var(--navy2); }
+
+    /* Halaman Jadwal: satu kartu per hari, plus bilah saring di atasnya. */
+    .jd-hari { margin-top: 14px; }
+    .jd-hari .card-head { margin-bottom: 10px; }
+
+    html[data-theme="dark"] .ab-tb { background: var(--d-surface-2); border-color: var(--d-border); color: #B9C6D8; }
+    html[data-theme="dark"] .ab-banner.warn { background: rgba(154,115,52,.18); border-color: rgba(240,199,122,.3); }
+    html[data-theme="dark"] .ab-banner.err { background: rgba(179,38,30,.18); border-color: rgba(255,158,149,.3); }
+    html[data-theme="dark"] .ab-tb.b-ok.on { background: #1E6B3C; }
+    html[data-theme="dark"] .ab-tb.b-warn.on { background: #8A6A2E; }
+    html[data-theme="dark"] .ab-tb.b-err.on { background: #A72319; }
+    html[data-theme="dark"] .ab-tb.b-info.on { background: #1A4073; }

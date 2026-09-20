@@ -84,6 +84,12 @@
           <div class="nav-items">
             <button data-page="students" data-title="Data Murid">👨‍🎓 Murid</button>
             <button data-page="classes" data-title="Kelas">🏫 Kelas</button>
+            <!-- Jadwal = sesi belajar per pekan; halaman Absensi memakai jadwal
+                 ini untuk menyusun daftar murid yang harus diabsen. -->
+            <button data-page="schedules" data-title="Jadwal Belajar">🗓️ Jadwal</button>
+            <!-- Guru & Orang Tua tidak membuat jadwal langsung: mereka mengajukan
+                 di sini, dan pengajuan lolos bila kuota sesi masih tersisa. -->
+            <button data-page="requests" data-title="Permintaan Jadwal">📩 Permintaan</button>
             <button data-page="attendance" data-title="Absensi">📝 Absensi</button>
             <button data-page="progress" data-title="Progres Belajar">📈 Progres</button>
             <button data-page="asesmen" data-title="Asesmen">🧪 Asesmen</button>
@@ -119,6 +125,9 @@
           <button class="side-label" type="button" data-lipat="Sistem">Sistem <i class="chev">▾</i></button>
           <div class="nav-items">
             <button data-page="users" data-title="Users">👥 Users</button>
+            <!-- Akun Orang Tua ↔ anak: kakak-adik cukup satu akun, dan anak yang
+                 email pendaftarannya berbeda bisa ditautkan dari sini. -->
+            <button data-page="orangtua" data-title="Akun &amp; Anak">👨‍👩‍👧 Akun &amp; Anak</button>
             <button data-page="registrations" data-title="Pendaftar">📥 Pendaftar</button>
             <button data-page="activitylog" data-title="Log Aktivitas">📜 Log</button>
             <button data-page="loginhistory" data-title="Riwayat Login">🕘 Riwayat Login</button>

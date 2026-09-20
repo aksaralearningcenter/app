@@ -14,9 +14,16 @@ import { app, closeModal, filterTable } from './helpers.js';
 import { render as renderDashboard, actions as actionsDashboard } from './pages/dashboard.js';
 import { render as renderMurid, actions as actionsMurid,
   openAddProgress, openAddProgressFor, loadProgressStudent, saveProgress,
-  saveAddStudent, saveEditStudent, saveAttendance, saveTransaction, txFillSavings } from './pages/murid.js';
+  saveAddStudent, saveEditStudent, saveAttendance, saveTransaction, txFillSavings,
+  muatAbsensi, muatRiwayatAbsensi, absenTanggal, absenKelas } from './pages/murid.js';
 import { render as renderKelas, actions as actionsKelas, saveAddClass, saveEditClass } from './pages/kelas.js';
+import { render as renderJadwal, actions as actionsJadwal,
+  saveSchedule, jadwalKelasBerubah, saringJadwal, bukaFormJadwal } from './pages/jadwal.js';
+import { render as renderPermintaan, actions as actionsPermintaan,
+  bukaFormPermintaan, savePermintaan, prosesPermintaanSekarang, permintaanKelasBerubah,
+  permintaanKuotaBerubah, saveKuotaKelas, saveKuotaMurid, saringPermintaan } from './pages/permintaan.js';
 import { render as renderUsers, actions as actionsUsers, openChangePass, saveChangePass, saveAddUser } from './pages/users.js';
+import { render as renderAnak, actions as actionsAnak, saringAkunAnak } from './pages/anak.js';
 import { render as renderKonten, actions as actionsKonten,
   savePricing, saveNews, saveBook, saveGallery, savePartner, saveTestimoni,
   saveFaq, saveProgram, saveKurikulum, saveKartu } from './pages/konten.js';
@@ -39,21 +46,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const id = btn.dataset.id || '';
     const name = btn.dataset.name || '';
     const extra = btn.dataset.extra || '';
-    handleAction(action, id, name, extra);
+    // Tombolnya ikut dikirim (argumen ke-4) supaya aksi bisa menyentuh baris yang
+    // diklik — mis. menyorot status absensi tanpa menggambar ulang halaman.
+    handleAction(action, id, name, extra, btn);
   });
 });
 
 const ACTIONS = Object.assign({}, actionsDashboard, actionsMurid, actionsKelas,
-  actionsUsers, actionsKonten, actionsAsesmen, actionsLaporan);
+  actionsJadwal, actionsPermintaan, actionsUsers, actionsAnak, actionsKonten, actionsAsesmen, actionsLaporan);
 
 // Renderer seluruh halaman, dirangkai dari modul per domain.
 const RENDER = Object.assign({}, renderDashboard, renderMurid, renderKelas,
-  renderUsers, renderKonten, renderAsesmen, renderLaporan);
+  renderJadwal, renderPermintaan, renderUsers, renderAnak, renderKonten, renderAsesmen, renderLaporan);
 
-function handleAction(action, id, name, extra) {
+function handleAction(action, id, name, extra, el) {
   if (action === 'refresh-page') { invalidateCache(id); app.loadPage(id); return; }
   const fn = ACTIONS[action];
-  if (fn) fn(id, name, extra);
+  if (fn) fn(id, name, extra, el);
 }
 
 
@@ -75,11 +84,13 @@ function handleAction(action, id, name, extra) {
     // 'settings' ikut di sini karena isinya memakai pengaturan situs, riwayat
     // login, dan token WhatsApp — sebelumnya menunya tampil untuk Guru tetapi
     // halamannya selalu gagal dengan "Hanya Admin yang bisa melakukan aksi ini".
-    const adminOnly = ['users', 'registrations', 'pricing', 'news', 'books', 'gallery', 'partners', 'testimoni', 'faq', 'program', 'kurikulum', 'kartu', 'situs', 'chatbot', 'maintenance', 'reports', 'loginhistory', 'settings'];
-    const parentOnly = peran === 'Orang Tua';
+    const adminOnly = ['users', 'orangtua', 'registrations', 'pricing', 'news', 'books', 'gallery', 'partners', 'testimoni', 'faq', 'program', 'kurikulum', 'kartu', 'situs', 'chatbot', 'maintenance', 'reports', 'loginhistory', 'settings'];
+    // Orang Tua & Murid bukan staf: keduanya hanya punya dua halaman — data
+    // mereka sendiri + pengajuan/riwayat jadwal.
+    const nonStaf = peran === 'Orang Tua' || peran === 'Murid';
     document.querySelectorAll('#nav button').forEach(b => {
       const p = b.dataset.page;
-      if (parentOnly) b.style.display = (p === 'dashboard') ? '' : 'none';
+      if (nonStaf) b.style.display = (p === 'dashboard' || p === 'requests') ? '' : 'none';
       else if (peran !== 'Admin') b.style.display = adminOnly.includes(p) ? 'none' : '';
       else b.style.display = '';
     });
@@ -207,10 +218,12 @@ function handleAction(action, id, name, extra) {
   function prefetch(pages) {
     (pages || []).forEach(p => {
       if (state.cache[p] || prefetching[p]) return;
+      // Catatan: halaman Absensi tidak ikut di-prefetch — isinya bergantung pada
+      // tanggal & kelas yang sedang dipilih guru (lembar absensi), bukan satu
+      // daftar tetap.
       const loaders = {
         students: 'getStudents', classes: 'getClasses',
-        attendance: 'getAttendanceToday', savings: 'getSavingsAccounts',
-        transactions: 'getAllTransactions'
+        savings: 'getSavingsAccounts', transactions: 'getAllTransactions'
       };
       if (!loaders[p]) return;
       prefetching[p] = true;
@@ -234,13 +247,24 @@ function handleAction(action, id, name, extra) {
     try {
       let data;
       if (page === 'dashboard') {
-        data = state.me.peran === 'Orang Tua' ? await api('getMyChildrenData') : await api('getDashboardData');
+        // Tiga wajah dashboard: Orang Tua (anak-anaknya), Murid (dirinya sendiri),
+        // dan staf (ringkasan sekolah).
+        if (state.me.peran === 'Orang Tua') data = await api('getMyChildrenData');
+        else if (state.me.peran === 'Murid') data = await api('getMyStudent');
+        else data = await api('getDashboardData');
       } else if (page === 'students') data = await api('getStudents');
       else if (page === 'classes') data = await api('getClasses');
-      else if (page === 'attendance') data = await api('getAttendanceToday');
+      // Halaman Absensi memuat LEMBAR ABSENSI (sesi jadwal hari itu + catatan
+      // yang sudah ada) untuk tanggal & kelas yang sedang dipilih guru.
+      else if (page === 'attendance') data = await api('getAttendanceSheet', absenTanggal(), absenKelas());
+      else if (page === 'schedules') data = await api('getSchedules');
+      // Permintaan jadwal + kuota sesi (kelas & murid).
+      else if (page === 'requests') data = await api('getScheduleRequests');
       else if (page === 'savings') data = await api('getSavingsAccounts');
       else if (page === 'transactions') data = await api('getAllTransactions', 200);
       else if (page === 'users') data = await api('getUsers');
+      // Akun Orang Tua + anak tertaut (menu “Akun & Anak”).
+      else if (page === 'orangtua') data = await api('getUserChildren');
       else if (page === 'pricing') data = await api('getPricingData');
       else if (page === 'news') data = await api('getNews');
       else if (page === 'books') data = await api('getBooks');
@@ -347,5 +371,13 @@ function handleAction(action, id, name, extra) {
     saveAddUser, saveAttendance, saveBook, saveChangePass, saveEditClass,
     saveEditStudent, saveFaq, saveGallery, saveKartu, saveKurikulum, saveNews,
     savePartner, savePricing, saveProgram, saveProgress, saveTestimoni,
-    saveTransaction, txFillSavings, unggahBerkas
+    saveTransaction, txFillSavings, unggahBerkas,
+    // Jadwal & absensi (termasuk atribut inline di dalam modal).
+    bukaFormJadwal, jadwalKelasBerubah, muatAbsensi, muatRiwayatAbsensi,
+    saringJadwal, saveSchedule,
+    // Permintaan jadwal & kuota (form pengajuan, proses, dan kuota).
+    bukaFormPermintaan, permintaanKelasBerubah, permintaanKuotaBerubah,
+    prosesPermintaanSekarang, saringPermintaan, saveKuotaKelas, saveKuotaMurid, savePermintaan,
+    // Akun Orang Tua ↔ anak (pencarian di halaman Akun & Anak).
+    saringAkunAnak
   });

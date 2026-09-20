@@ -87,10 +87,13 @@ export async function boot() {
   const startPage = app.halamanAwal();
   $('page').innerHTML = skeletonHtml();
 
-  // ⚡ Satu round-trip untuk semua data inti (non-Orang Tua):
-  // /dashboard/batch memuat dashboard + murid + kelas + absensi + users,
-  // lalu dashboard dirender langsung dari batch — tanpa panggilan kedua.
-  if (me.peran !== 'Orang Tua') {
+  // ⚡ Satu round-trip untuk semua data inti (STAF): /dashboard/batch memuat
+  // dashboard + murid + kelas + absensi + users, lalu dashboard dirender
+  // langsung dari batch — tanpa panggilan kedua.
+  // Orang Tua memakai /my-children dan Murid memakai /my-student; keduanya
+  // BUKAN staf, jadi tidak boleh menempuh jalur batch ini (dulu peran Murid
+  // ikut ke sini dan dashboard-nya kosong).
+  if (me.peran !== 'Orang Tua' && me.peran !== 'Murid') {
     try {
       const batch = await post('call', { fn: 'getBatchStartupData' });
       if (batch && batch.dashboard) {
@@ -98,9 +101,11 @@ export async function boot() {
         state.cache.dashboard = batch.dashboard;
         state.cache.students = batch.students || [];
         state.cache.classes = batch.classes || [];
-        state.cache.attendance = batch.attendanceToday || [];
         state.cache.users = batch.users || [];
-        ['dashboard', 'students', 'classes', 'attendance', 'users'].forEach(k => { state.cacheTime[k] = kini; });
+        // Catatan: cache 'attendance' TIDAK diisi dari batch. Halaman Absensi
+        // memuat LEMBAR ABSENSI (sesi jadwal + catatan) untuk tanggal tertentu,
+        // jadi bentuk datanya berbeda dari ringkasan absensi hari ini.
+        ['dashboard', 'students', 'classes', 'users'].forEach(k => { state.cacheTime[k] = kini; });
         if (startPage === 'dashboard') {
           app.setActiveNav('dashboard');
           app.RENDER.dashboard(batch.dashboard);

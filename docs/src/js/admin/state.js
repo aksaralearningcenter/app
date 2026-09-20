@@ -45,13 +45,19 @@ export const REQ_TIMEOUT = 25000;
 
 // ⚡ Targeted cache invalidation — hanya hapus cache yang terpengaruh
 const INVALIDATION_MAP = {
-  students: ['students', 'dashboard', 'attendance', 'progress'],
-  classes: ['classes', 'students', 'dashboard'],
+  students: ['students', 'dashboard', 'attendance', 'progress', 'schedules', 'requests', 'orangtua'],
+  classes: ['classes', 'students', 'dashboard', 'schedules', 'requests'],
   attendance: ['attendance', 'dashboard'],
+  // Jadwal memengaruhi lembar absensi: sesi & daftar murid yang ditampilkan.
+  // Kuota memengaruhi halaman Permintaan (sisa jatah sesi per kelas/murid).
+  schedules: ['schedules', 'attendance', 'requests'],
+  requests: ['requests', 'schedules'],
   savings: ['savings', 'dashboard', 'transactions'],
   transactions: ['transactions', 'dashboard', 'savings'],
   registrations: ['registrations', 'dashboard'],
-  users: ['users'],
+  users: ['users', 'orangtua'],
+  // Tautan anak mengubah panel Orang Tua (daftar anak) sekaligus halaman Users.
+  orangtua: ['orangtua', 'users'],
   pricing: ['pricing'],
   news: ['news'],
   books: ['books'],
