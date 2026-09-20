@@ -23,8 +23,12 @@ function barisPustaka(b) {
     .map(cTxt).map(function (v) { return v.trim(); }).filter(Boolean).join(' · ');
 }
 
-// ---------- PEMBACA BUKU ----------
-const pembaca = { aktif: false, halaman: [], index: 0, buku: null };
+// ---------- PEMBACA BUKU (FLIPBOOK) ----------
+// Tombol Baca membuka buku sebagai flipbook dua halaman: lembar dibalik dengan
+// tombol, geser (ponsel), atau panah keyboard. Di layar ponsel buku tampil satu
+// halaman per layar seperti e-reader.
+const pembaca = { aktif: false, buku: null, halaman: [], leaves: [], turned: 0, N: 0, animating: false, ponsel: 0 };
+const mqlPonsel = (window.matchMedia ? window.matchMedia('(max-width: 700px)') : { matches: false });
 
 // Pecah teks isi buku menjadi halaman-halaman yang nyaman dibaca.
 function pecahHalaman(teks) {
@@ -40,26 +44,113 @@ function pecahHalaman(teks) {
   return halaman;
 }
 
-function tampilkanHalaman() {
-  const body = elById('reader-body');
-  const count = elById('reader-count');
+// Satu halaman flipbook (muka lembar).
+function faceHtml(hal, face, num, buku) {
+  const paras = cTxt(hal).split(/\n+/).filter(Boolean)
+    .map(function (p) { return '<p>' + cEsc(p) + '</p>'; }).join('');
+  const cover = (num === 1 && cTxt(buku.cover))
+    ? '<img src="' + cEsc(buku.cover) + '" alt="' + cEsc(buku.judul) + '" style="width:100%; border-radius:8px; margin:6px 0 12px;">'
+    : '';
+  return '<div class="face ' + face + '">' +
+    '<div class="page-kicker">' + cEsc(buku.jenis || buku.deskripsi || 'Buku') + '</div>' +
+    '<h3>' + cEsc(buku.judul) + '</h3>' + cover + paras +
+    '<div class="page-num">' + num + '</div></div>';
+}
+
+// Bangun lembar-lembar flipbook dari isi buku yang sedang dibuka.
+function flipBangun() {
+  const leaves = elById('reader-leaves');
+  if (!leaves) return;
+  let pages = pembaca.halaman.slice();
+  if (!pages.length) pages = ['Isi buku ini belum diunggah. Silakan unduh berkasnya bila tersedia.'];
+  if (pages.length % 2) pages.push('');          // jumlah genap = pasangan lembar
+  pembaca.N = pages.length / 2;
+  let html = '';
+  for (let i = 0; i < pembaca.N; i++) {
+    html += '<div class="sp-leaf">' +
+      faceHtml(pages[i * 2], 'front', i * 2 + 1, pembaca.buku) +
+      faceHtml(pages[i * 2 + 1], 'back', i * 2 + 2, pembaca.buku) + '</div>';
+  }
+  leaves.innerHTML = html;
+  pembaca.leaves = Array.prototype.slice.call(leaves.querySelectorAll('.sp-leaf'));
+  pembaca.turned = 0;
+  pembaca.ponsel = 0;
+  pembaca.animating = false;
+  pembaca.leaves.forEach(function (l) { l.classList.remove('flipped', 'flipping', 'm-aktif', 'm-belakang'); });
+  flipZ();
+  flipUpdate();
+}
+
+// Tumpukan: lembar belum-dibalik (kanan) selalu di atas lembar terbalik (kiri).
+function flipZ() {
+  pembaca.leaves.forEach(function (leaf, k) {
+    leaf.style.zIndex = String(k < pembaca.turned ? (100 + k + 1) : (200 + (pembaca.N - k)));
+  });
+}
+
+function totalPonsel() { return pembaca.N * 2; }
+
+function flipUpdate() {
   const prev = elById('reader-prev');
   const next = elById('reader-next');
-  if (!body) return;
-  const total = pembaca.halaman.length;
-  if (!total) {
-    body.innerHTML = '<p class="reader-kosong">Isi buku ini belum diunggah. Silakan tekan tombol unduh bila tersedia.</p>';
-    if (count) count.textContent = '0 / 0';
-    if (prev) prev.disabled = true;
-    if (next) next.disabled = true;
+  const count = elById('reader-count');
+  if (mqlPonsel.matches) {
+    const hal = pembaca.ponsel;
+    pembaca.leaves.forEach(function (leaf, k) {
+      const aktif = k === Math.floor(hal / 2);
+      leaf.classList.toggle('m-aktif', aktif);
+      leaf.classList.toggle('m-belakang', aktif && (hal % 2 === 1));
+    });
+    if (prev) prev.disabled = hal <= 0;
+    if (next) next.disabled = hal >= totalPonsel() - 1;
+    if (count) count.textContent = 'Halaman ' + (hal + 1) + ' / ' + totalPonsel();
     return;
   }
-  const isi = pembaca.halaman[pembaca.index];
-  body.innerHTML = isi.split('\n').map(function (p) { return '<p>' + cEsc(p) + '</p>'; }).join('');
-  body.scrollTop = 0;
-  if (count) count.textContent = (pembaca.index + 1) + ' / ' + total;
-  if (prev) prev.disabled = pembaca.index <= 0;
-  if (next) next.disabled = pembaca.index >= total - 1;
+  if (prev) prev.disabled = pembaca.turned <= 0;
+  if (next) next.disabled = pembaca.turned >= pembaca.N;
+  if (count) count.textContent = 'Buku ' + (pembaca.turned + 1) + ' / ' + (pembaca.N + 1);
+}
+
+function flipMaju() {
+  if (mqlPonsel.matches) {
+    if (pembaca.ponsel < totalPonsel() - 1) { pembaca.ponsel++; flipUpdate(); }
+    return;
+  }
+  if (pembaca.animating || pembaca.turned >= pembaca.N) return;
+  const leaf = pembaca.leaves[pembaca.turned];
+  if (!leaf) return;
+  pembaca.animating = true;
+  leaf.style.zIndex = '500';
+  leaf.classList.add('flipping');
+  leaf.classList.add('flipped');
+  setTimeout(function () {
+    leaf.classList.remove('flipping');
+    pembaca.turned++;
+    pembaca.animating = false;
+    flipZ();
+    flipUpdate();
+  }, 900);
+}
+
+function flipMundur() {
+  if (mqlPonsel.matches) {
+    if (pembaca.ponsel > 0) { pembaca.ponsel--; flipUpdate(); }
+    return;
+  }
+  if (pembaca.animating || pembaca.turned <= 0) return;
+  const leaf = pembaca.leaves[pembaca.turned - 1];
+  if (!leaf) return;
+  pembaca.animating = true;
+  leaf.style.zIndex = '500';
+  leaf.classList.add('flipping');
+  leaf.classList.remove('flipped');
+  setTimeout(function () {
+    leaf.classList.remove('flipping');
+    pembaca.turned--;
+    pembaca.animating = false;
+    flipZ();
+    flipUpdate();
+  }, 900);
 }
 
 function bukaPembaca(id) {
@@ -71,9 +162,13 @@ function bukaPembaca(id) {
   pembaca.aktif = true;
   pembaca.buku = b;
   pembaca.halaman = pecahHalaman(b.isi);
-  pembaca.index = 0;
   const reader = elById('book-reader');
   if (!reader) return;
+  // Sampul dalam flipbook menampilkan judul & jenis buku yang dibuka.
+  const ct = elById('reader-cover-title');
+  if (ct) ct.textContent = cTxt(b.judul).substring(0, 42) || 'AKSARA';
+  const cs = elById('reader-cover-sub');
+  if (cs) cs.textContent = cTxt(b.jenis) || (cTxt(b.tipe) === 'flipbook' ? 'Booklet' : 'Katalog');
   const cover = elById('reader-cover');
   if (cover) cover.style.backgroundImage = cTxt(b.cover) ? 'url(' + cEsc(b.cover) + ')' : '';
   const kicker = elById('reader-kicker');
@@ -94,7 +189,7 @@ function bukaPembaca(id) {
   reader.classList.add('open');
   reader.setAttribute('aria-hidden', 'false');
   document.body.classList.add('reader-open');
-  tampilkanHalaman();
+  flipBangun();
 }
 
 function tutupPembaca() {
@@ -104,14 +199,6 @@ function tutupPembaca() {
   reader.classList.remove('open');
   reader.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('reader-open');
-}
-
-function langkah(delta) {
-  if (!pembaca.aktif) return;
-  const target = pembaca.index + delta;
-  if (target < 0 || target >= pembaca.halaman.length) return;
-  pembaca.index = target;
-  tampilkanHalaman();
 }
 
 // ---------- DETAIL BUKU ----------
@@ -344,8 +431,23 @@ function pasangOverlay() {
     reader.dataset.siap = '1';
     const t = elById('reader-close'); if (t) t.addEventListener('click', tutupPembaca);
     const back = elById('reader-back'); if (back) back.addEventListener('click', tutupPembaca);
-    const prev = elById('reader-prev'); if (prev) prev.addEventListener('click', function () { langkah(-1); });
-    const next = elById('reader-next'); if (next) next.addEventListener('click', function () { langkah(1); });
+    const prev = elById('reader-prev'); if (prev) prev.addEventListener('click', function () { flipMundur(); });
+    const next = elById('reader-next'); if (next) next.addEventListener('click', function () { flipMaju(); });
+    // Geser untuk membalik lembar (perangkat sentuh).
+    const spread = elById('reader-spread');
+    if (spread) {
+      let x0 = 0, y0 = 0;
+      spread.addEventListener('touchstart', function (e) {
+        const t = (e.touches || [])[0]; if (t) { x0 = t.clientX; y0 = t.clientY; }
+      }, { passive: true });
+      spread.addEventListener('touchend', function (e) {
+        const t = (e.changedTouches || [])[0]; if (!t || !x0) return;
+        const dx = t.clientX - x0, dy = t.clientY - y0;
+        x0 = 0;
+        if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy)) return;
+        if (dx < 0) flipMaju(); else flipMundur();
+      }, { passive: true });
+    }
   }
   const detail = elById('book-detail');
   if (detail && detail.dataset.siap !== '1') {
@@ -358,14 +460,24 @@ function pasangOverlay() {
       if (baca) { e.preventDefault(); bukaPembaca(baca.getAttribute('data-baca')); }
     });
   }
-  if (document.body.dataset.bkEsc !== '1') {
-    document.body.dataset.bkEsc = '1';
+  if (document.body.dataset.bkKeys !== '1') {
+    document.body.dataset.bkKeys = '1';
     document.addEventListener('keydown', function (e) {
+      // Saat flipbook terbuka: panah membalik lembar, Esc menutup.
+      if (pembaca.aktif) {
+        if (e.key === 'Escape') { tutupPembaca(); return; }
+        if (e.key === 'ArrowRight') { flipMaju(); return; }
+        if (e.key === 'ArrowLeft') { flipMundur(); return; }
+        return;
+      }
       if (e.key !== 'Escape') return;
-      if (pembaca.aktif) { tutupPembaca(); return; }
       const d = elById('book-detail');
       if (d && d.classList.contains('open')) tutupDetail();
     });
+    // Ganti mode desktop ↔ ponsel → gambar ulang posisi halaman.
+    const gantiMode = function () { if (pembaca.aktif) { pembaca.ponsel = 0; flipUpdate(); } };
+    if (mqlPonsel.addEventListener) mqlPonsel.addEventListener('change', gantiMode);
+    else if (mqlPonsel.addListener) mqlPonsel.addListener(gantiMode);
   }
 }
 

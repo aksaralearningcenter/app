@@ -495,9 +495,65 @@
     .reader-desc { font-size: .76rem; color: var(--muted); flex: 1; min-width: 160px; }
     .reader-body { padding: 22px 30px; overflow-y: auto; flex: 1; }
     .reader-body p { font-size: .92rem; line-height: 1.85; margin-bottom: 12px; color: #2D3748; }
-    .reader-kosong { font-size: .9rem; color: var(--muted); }
     .reader-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 30px; border-top: 1px solid var(--border); background: #FAF8F4; }
     .reader-count { font-size: .8rem; font-weight: 700; color: var(--navy); }
+
+    /* ---------- FLIPBOOK DALAM PEMBACA ---------- */
+    .reader-body { display: flex; align-items: flex-start; justify-content: center; }
+    .reader-body .book-spread { position: relative; width: 100%; max-width: 900px; height: clamp(320px, 46vh, 520px); perspective: 3000px; }
+    .reader-body .sp-base {
+      position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr;
+      border-radius: 10px 18px 18px 10px; overflow: hidden; z-index: 1;
+      background: linear-gradient(135deg, #efeadd, #f8f5ee);
+      box-shadow: 0 30px 60px -34px rgba(0, 0, 0, .5), 0 0 0 1px rgba(16, 43, 78, .07);
+    }
+    .reader-body .sp-base .base-page {
+      position: relative; padding: 30px 28px; background: #fff; overflow: hidden;
+      background-image: linear-gradient(rgba(184,147,74,.045) 1px, transparent 1px); background-size: 100% 34px;
+    }
+    .reader-body .sp-base .base-page.left { border-radius: 10px 0 0 10px; }
+    .reader-body .sp-base .base-page.right {
+      border-radius: 0 18px 18px 0; display: flex; align-items: center; justify-content: center; text-align: center;
+      background-image: radial-gradient(rgba(184,147,74,.16) 1px, transparent 1px); background-size: 22px 22px;
+    }
+    .reader-body .ep-mark { font-family: 'Playfair Display', serif; letter-spacing: .28em; font-size: .7rem; color: var(--navy); opacity: .45; }
+    .reader-body .base-page.cover {
+      display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+      background-image: linear-gradient(150deg, var(--navy), #0d1f38); background-size: auto;
+    }
+    .reader-body .base-page.cover * { color: #fff; }
+    .reader-body .base-page.cover h3 { color: #fff; font-size: 1.35rem; letter-spacing: .04em; }
+    .reader-body .base-page.cover .cover-mark { color: var(--gold-light); font-size: 2rem; margin-bottom: 12px; }
+    .reader-body .base-page.cover .cover-sub { color: var(--gold-light); font-size: .62rem; letter-spacing: .28em; text-transform: uppercase; margin-top: 8px; }
+    .reader-body .sp-spine {
+      position: absolute; left: 50%; top: 0; bottom: 0; width: 42px; transform: translateX(-50%); z-index: 2; pointer-events: none;
+      background: linear-gradient(to right, rgba(16,43,78,0) 0%, rgba(16,43,78,.16) 42%, rgba(16,43,78,.28) 50%, rgba(16,43,78,.16) 58%, rgba(16,43,78,0) 100%);
+    }
+    .reader-body .sp-leaves { position: absolute; left: 50%; top: 0; width: 50%; height: 100%; transform-style: preserve-3d; z-index: 3; }
+    .reader-body .sp-leaf {
+      position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d;
+      transition: transform .9s cubic-bezier(.55, .06, .32, 1); will-change: transform;
+    }
+    .reader-body .sp-leaf.flipped { transform: rotateY(-180deg); }
+    .reader-body .face {
+      position: absolute; inset: 0; padding: 30px 28px; background: #fff;
+      background-image: linear-gradient(rgba(184,147,74,.045) 1px, transparent 1px); background-size: 100% 34px;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden;
+    }
+    .reader-body .face.front { border-radius: 0 18px 18px 0; box-shadow: inset 16px 0 28px -24px rgba(16,43,78,.6); }
+    .reader-body .face.back { transform: rotateY(180deg); border-radius: 10px 0 0 10px; box-shadow: inset -16px 0 28px -24px rgba(16,43,78,.6); }
+    .reader-body .face::after {
+      content: ''; position: absolute; inset: 0; opacity: 0; pointer-events: none;
+      background: linear-gradient(to left, rgba(16,43,78,.26), rgba(16,43,78,.05) 50%, rgba(16,43,78,0));
+    }
+    .reader-body .sp-leaf.flipping .face::after { animation: shadePulse .9s ease; }
+    @keyframes shadePulse { 0% { opacity: 0; } 45% { opacity: .8; } 100% { opacity: 0; } }
+    .reader-body .page-kicker { font-size: .62rem; text-transform: uppercase; letter-spacing: .18em; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+    .reader-body .face h3 { font-size: 1.2rem; margin-bottom: 10px; }
+    .reader-body .face p { font-size: .85rem; line-height: 1.75; margin-bottom: 10px; color: #2D3748; }
+    .reader-body .page-num { position: absolute; bottom: 14px; font-size: .68rem; color: var(--muted); font-weight: 700; }
+    .reader-body .face.front .page-num { right: 20px; }
+    .reader-body .face.back .page-num { left: 20px; }
 
     /* ---------- SEKSI KATALOG (latar) ---------- */
     .book-section { background: linear-gradient(135deg, #0d1f38, var(--navy) 60%, var(--navy-light)); position: relative; overflow: hidden; }
@@ -959,8 +1015,23 @@
       .bd-meta-row { flex-direction: column; gap: 3px; }
       .reader-meta { flex-direction: column; padding: 20px 18px 16px; }
       .reader-cover { width: 76px; height: 100px; }
-      .reader-body { padding: 18px; }
+      .reader-body { padding: 14px; }
       .reader-nav { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+      /* Flipbook pembaca: satu halaman per layar di ponsel */
+      .reader-body .book-spread { height: auto; min-height: 0; max-width: none; }
+      .reader-body .sp-base { display: none; }
+      .reader-body .sp-spine { display: none; }
+      .reader-body .sp-leaves { position: static; width: 100%; height: auto; display: block; }
+      .reader-body .sp-leaf { position: static; inset: auto; height: auto; transform: none !important; }
+      .reader-body .sp-leaf { display: none; }
+      .reader-body .sp-leaf.m-aktif { display: block; }
+      .reader-body .sp-leaf .face.back { display: none; transform: none; }
+      .reader-body .sp-leaf.m-belakang .face.back { display: block; }
+      .reader-body .sp-leaf.m-belakang .face.front { display: none; }
+      .reader-body .face {
+        position: static; height: auto; min-height: 300px; max-height: none; overflow-y: auto;
+        backface-visibility: visible; border-radius: 14px; box-shadow: 0 14px 34px -18px rgba(0,0,0,.4);
+      }
     }
 
     /* =====================================================================
