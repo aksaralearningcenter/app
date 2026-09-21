@@ -188,7 +188,10 @@ const API_MAP = {
   testWhatsApp:           { m: 'POST', p: 'whatsapp/test', b: a => ({ phone: a[0] }) },
   getChatConfig:          { m: 'GET', p: 'chatbot' },
   saveChatApiKey:         { m: 'POST', p: 'chatbot/key', b: a => a[0] },
+  saveChatModel:          { m: 'POST', p: 'chatbot/model', b: a => a[0] },
   hapusChatApiKey:        { m: 'DELETE', p: 'chatbot/key' },
+  // Endpoint publik landing (dipakai tombol Tes Balasan di panel admin).
+  publicChat:             { m: 'POST', p: 'public/chat', b: a => a[0] },
   getReportSettings:      { m: 'GET', p: 'site-settings' },
   saveReportSettings:     { m: 'POST', p: 'site-settings', b: a => ({ nilai: { laporan_email_penerima: a[0] } }) },
   downloadReport:         { m: 'GET', p: a => 'reports/' + a[0] + (a[1] ? ('/' + a[1]) : '') },

@@ -345,7 +345,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
       $('page').innerHTML =
         '<div class="card-head" style="margin-bottom:16px;"><h2>🤖 Chatbot Aksara</h2>' +
         '<button class="btn btn-o btn-sm" data-action="refresh-page" data-id="chatbot">🔄 Muat Ulang</button></div>' +
-        '<p style="font-size:.78rem; margin-bottom:14px;">Asisten AI di landing menjawab pertanyaan seputar Aksara (program, harga, pendaftaran) <b>dan</b> membantu materi belajar. Jawaban selalu berbasis data landing yang dikelola admin. Kunci API disimpan di <b>Script Properties server</b> — tidak pernah dikirim ke browser pengunjung.</p>' +
+        '<p style="font-size:.78rem; margin-bottom:14px;">Asisten AI di landing menjawab pertanyaan seputar Aksara (program, harga, pendaftaran) <b>dan</b> membantu materi belajar. Jawaban selalu berbasis data landing yang dikelola admin. Kunci API disimpan di <b>server</b> — tidak pernah dikirim ke browser pengunjung.</p>' +
         '<div class="grid" style="margin-bottom:16px;">' +
           '<div class="stat"><div class="n">' + (c.adaKunci ? '✓' : '—') + '</div><div class="l">Kunci API</div></div>' +
           '<div class="stat"><div class="n">' + (c.aktif ? 'Aktif' : 'Off') + '</div><div class="l">Status Chatbot</div></div>' +
@@ -353,14 +353,25 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
           '<div class="stat"><div class="n">' + (c.batasSesi || '-') + '</div><div class="l">Maks / Sesi 10 Menit</div></div>' +
         '</div>' +
         '<div class="card" style="margin-bottom:16px;"><h3 style="margin-bottom:10px;">Kunci API Gemini</h3>' +
-          '<p style="font-size:.78rem; margin-bottom:10px;">' + statusBadge + ' ' + statusAktif + ' <span style="opacity:.7;">· model ' + esc(c.model || '-') + '</span></p>' +
+          '<p style="font-size:.78rem; margin-bottom:10px;">' + statusBadge + ' ' + statusAktif + '</p>' +
           '<div class="fg"><label>Kunci API Baru (kosongkan bila tidak ingin mengubah)</label>' +
           '<input type="password" id="chat-kunci" placeholder="AIza… atau AQ…" autocomplete="new-password">' +
-          '<p style="font-size:.7rem; opacity:.75; margin-top:6px;">Kunci disimpan ke Script Properties dan tidak bisa dilihat kembali — cukup diperbarui bila berganti kunci.</p></div>' +
+          '<p style="font-size:.7rem; opacity:.75; margin-top:6px;">Kunci disimpan di server dan tidak bisa dilihat kembali — cukup diperbarui bila berganti kunci.</p></div>' +
           '<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">' +
             '<button class="btn btn-n btn-sm" data-action="chat-simpan-kunci">🔑 Simpan Kunci</button>' +
             (c.adaKunci ? '<button class="btn btn-d btn-sm" data-action="chat-hapus-kunci">🗑️ Hapus Kunci</button>' : '') +
           '</div></div>' +
+        '<div class="card" style="margin-bottom:16px;"><h3 style="margin-bottom:10px;">Model Gemini</h3>' +
+          '<p style="font-size:.78rem; margin-bottom:10px;">Model aktif: <span class="badge b-info">' + esc(c.model || '-') + '</span>' +
+          (c.modelDefault && c.model !== c.modelDefault ? ' <span style="opacity:.7;">(bawaan: ' + esc(c.modelDefault) + ')</span>' : '') + '</p>' +
+          '<div class="fg"><label>Nama Model</label>' +
+          '<input id="chat-model" value="' + esc(c.model || '') + '" placeholder="mis. gemini-3.8-flash" autocomplete="off" spellcheck="false">' +
+          '<p style="font-size:.7rem; opacity:.75; margin-top:6px;">Huruf/angka/titik/strip saja. Model baru Google langsung bisa dipakai tanpa update aplikasi.</p></div>' +
+          '<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">' +
+            '<button class="btn btn-n btn-sm" data-action="chat-simpan-model">💾 Simpan Model</button>' +
+            (c.adaKunci ? '<button class="btn btn-o btn-sm" data-action="chat-tes">🧪 Tes Balasan</button>' : '') +
+          '</div>' +
+          '<div id="chat-tes-hasil" style="margin-top:12px;"></div></div>' +
         '<div class="card"><h3 style="margin-bottom:10px;">Teks &amp; Sapaan Chatbot</h3>' +
           '<p style="font-size:.75rem; margin-bottom:10px;">Nama, sapaan, catatan, dan chip saran pertanyaan diatur di <b>⚙️ Pengaturan Situs</b> → grup “Chatbot”. Aktif/nonaktif juga dari sana.</p></div>';
     },
@@ -927,6 +938,35 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     } catch (ex) { toast(ex.message, 'err'); }
   }
 
+  // ============ CHATBOT: SIMPAN MODEL & TES BALASAN ============
+  async function simpanModelChat() {
+    const model = (($('chat-model') || {}).value || '').trim();
+    if (!model) { toast('Tuliskan nama modelnya dulu ya.', 'err'); return; }
+    try {
+      const res = await api('saveChatModel', { model });
+      if (!res || !res.success) { toast((res && res.message) || 'Gagal menyimpan model.', 'err'); return; }
+      toast(res.message || 'Model tersimpan.', 'ok');
+      invalidateCache('chatbot'); app.loadPage('chatbot');
+    } catch (ex) { toast(ex.message, 'err'); }
+  }
+
+  // Tes kombinasi kunci + model langsung dari panel: mengirim sapaan uji ke
+  // endpoint publik yang sama dengan landing (memakai 1 hit kuota harian).
+  async function tesBalasanChat() {
+    const box = $('chat-tes-hasil');
+    if (box) box.innerHTML = '<p class="ab-kecil">⏳ Menghubungi model…</p>';
+    try {
+      const res = await api('publicChat', { pesan: 'Halo, apakah kamu aktif?', sesi: 'tes-admin' });
+      if (box) {
+        box.innerHTML = res && res.balasan
+          ? '<p><span class="badge b-ok">✅ Model menjawab</span></p><p style="font-size:.85rem;">' + esc(res.balasan).substring(0, 600) + '</p>'
+          : '<p><span class="badge b-err">⚠️ Tanpa balasan</span></p><p style="font-size:.85rem;">' + esc((res && res.message) || 'Tidak ada balasan.') + '</p>';
+      }
+    } catch (ex) {
+      if (box) box.innerHTML = '<p><span class="badge b-err">⚠️ Gagal</span></p><p style="font-size:.85rem;">' + esc(ex.message) + '</p>';
+    }
+  }
+
   // ============ PENGURUT KONTEN (DRAG & TOMBOL) ============
   // Urutan = kolom "Urutan" pada sheet Buku/Galeri/Mitra. Hanya baris yang
   // benar-benar berpindah yang ditulis (lihat reorderRows_ di Code.gs).
@@ -1055,5 +1095,7 @@ import { uploadField, dokumenField, badgeBerkas, pratinjauGambar, pratinjauDokum
     'sort-down': function (id, name, extra) { moveItem(extra, id, 1); },
     'save-settings': function () { saveSettingsPage(); },
     'chat-simpan-kunci': function () { simpanKunciChat(); },
-    'chat-hapus-kunci': function () { hapusKunciChat(); }
+    'chat-hapus-kunci': function () { hapusKunciChat(); },
+    'chat-simpan-model': function () { simpanModelChat(); },
+    'chat-tes': function () { tesBalasanChat(); }
   };
