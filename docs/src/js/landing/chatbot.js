@@ -42,6 +42,22 @@ import { LP_API_URL } from './config.js';
     try { return localStorage.getItem('aksara_token') || ''; } catch (_e) { return ''; }
   }
 
+  // Keberadaan token belum tentu sah (bisa kedaluwarsa). Verifikasi ke server
+  // sekali saat widget dibuka; token basi dibuang agar tombol 📎 tidak muncul
+  // untuk pengunjung yang sebenarnya sudah logout.
+  let loginOk = false;
+  async function cekLogin() {
+    const t = tokenLogin();
+    if (!t) return false;
+    try {
+      const r = await fetch(LP_API_URL + '/auth/me', { headers: { Authorization: 'Bearer ' + t } });
+      const j = await r.json();
+      if (j && j.success) return true;
+    } catch (_e) { /* abaikan */ }
+    try { localStorage.removeItem('aksara_token'); } catch (_e2) { /* abaikan */ }
+    return false;
+  }
+
   function idSesi() {
     try {
       let s = sessionStorage.getItem('aksara_chat_sesi');
@@ -249,7 +265,7 @@ import { LP_API_URL } from './config.js';
   }
 
   async function pilihBerkas() {
-    if (!tokenLogin()) { tambah('err', kaya('Masuk dulu lewat panel untuk mengirim foto/berkas.')); return; }
+    if (!loginOk) { tambah('err', kaya('Masuk dulu lewat panel untuk mengirim foto/berkas.')); return; }
     if (inputBerkas) inputBerkas.click();
   }
 
@@ -339,18 +355,14 @@ import { LP_API_URL } from './config.js';
     if (cfg.sapaan) tambah('bot', kaya(cfg.sapaan), { waktu: new Date().toISOString() });
     gambarSaran(cfg.saran);
     btnX.addEventListener('click', function () { buka(false); });
-    if (btnLampirkan) {
-      if (tokenLogin()) {
-        btnLampirkan.hidden = false;
-        btnLampirkan.addEventListener('click', pilihBerkas);
-      } else {
-        btnLampirkan.hidden = true;
-      }
-    }
+    if (btnLampirkan) btnLampirkan.addEventListener('click', pilihBerkas);
     if (inputBerkas) inputBerkas.addEventListener('change', berkasDipilih);
     if (btnHapusRiwayat) btnHapusRiwayat.addEventListener('click', hapusRiwayatTersimpan);
-    // Riwayat tersimpan (login saja): lanjutkan percakapan lama.
-    if (tokenLogin()) {
+    // Verifikasi login dulu: tombol 📎 + riwayat hanya untuk sesi yang sah.
+    cekLogin().then(function (ok) {
+      loginOk = ok;
+      if (!ok) return;
+      if (btnLampirkan) btnLampirkan.hidden = false;
       muatRiwayatServer().then(function (daftar) {
         if (!daftar.length) return;
         if (btnHapusRiwayat) btnHapusRiwayat.hidden = false;
@@ -362,7 +374,7 @@ import { LP_API_URL } from './config.js';
         });
         if (riwayat.length > 10) riwayat = riwayat.slice(-10);
       });
-    }
+    });
     form.addEventListener('submit', function (e) { e.preventDefault(); tanya(input.value); });
     input.addEventListener('input', aturTinggi);
     input.addEventListener('keydown', function (e) {
