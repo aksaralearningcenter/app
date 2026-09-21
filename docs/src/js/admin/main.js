@@ -13,6 +13,7 @@ import { boot, doLogin, doLogout, forgotPass, setAppContext } from './auth.js';
 import { app, closeModal, filterTable } from './helpers.js';
 import { kunciTombol, lepasTombol, sekaliTulis } from './kunci.js';
 import { render as renderDashboard, actions as actionsDashboard } from './pages/dashboard.js';
+import { render as renderAsisten, actions as actionsAsisten } from './pages/asisten.js';
 import { render as renderMurid, actions as actionsMurid,
   openAddProgress, openAddProgressFor, loadProgressStudent, saveProgress,
   saveAddStudent, saveEditStudent, saveAttendance, saveTransaction, txFillSavings,
@@ -53,11 +54,11 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-const ACTIONS = Object.assign({}, actionsDashboard, actionsMurid, actionsKelas,
+const ACTIONS = Object.assign({}, actionsDashboard, actionsAsisten, actionsMurid, actionsKelas,
   actionsJadwal, actionsPermintaan, actionsUsers, actionsAnak, actionsKonten, actionsAsesmen, actionsLaporan);
 
 // Renderer seluruh halaman, dirangkai dari modul per domain.
-const RENDER = Object.assign({}, renderDashboard, renderMurid, renderKelas,
+const RENDER = Object.assign({}, renderDashboard, renderAsisten, renderMurid, renderKelas,
   renderJadwal, renderPermintaan, renderUsers, renderAnak, renderKonten, renderAsesmen, renderLaporan);
 
 function handleAction(action, id, name, extra, el) {
@@ -103,12 +104,12 @@ function handleAction(action, id, name, extra, el) {
     // login, dan token WhatsApp — sebelumnya menunya tampil untuk Guru tetapi
     // halamannya selalu gagal dengan "Hanya Admin yang bisa melakukan aksi ini".
     const adminOnly = ['users', 'orangtua', 'registrations', 'pricing', 'news', 'books', 'gallery', 'partners', 'testimoni', 'faq', 'program', 'kurikulum', 'kartu', 'situs', 'chatbot', 'maintenance', 'reports', 'loginhistory', 'settings'];
-    // Orang Tua & Murid bukan staf: keduanya hanya punya dua halaman — data
-    // mereka sendiri + pengajuan/riwayat jadwal.
+    // Orang Tua & Murid bukan staf: menunya Dashboard + Permintaan + Asisten —
+    // data mereka sendiri + pengajuan/riwayat jadwal + chatbot.
     const nonStaf = peran === 'Orang Tua' || peran === 'Murid';
     document.querySelectorAll('#nav button').forEach(b => {
       const p = b.dataset.page;
-      if (nonStaf) b.style.display = (p === 'dashboard' || p === 'requests') ? '' : 'none';
+      if (nonStaf) b.style.display = (p === 'dashboard' || p === 'requests' || p === 'asisten') ? '' : 'none';
       else if (peran !== 'Admin') b.style.display = adminOnly.includes(p) ? 'none' : '';
       else b.style.display = '';
     });
@@ -208,6 +209,7 @@ function handleAction(action, id, name, extra, el) {
     setMode(state.mode === 'Orang Tua' ? 'Guru' : 'Orang Tua');
     invalidateCache('dashboard');
     invalidateCache('requests');
+    invalidateCache('asisten');
     pasangIdentitas(state.me);
     applyGate();
     const p = state.currentPage;
@@ -303,6 +305,13 @@ function handleAction(action, id, name, extra, el) {
         if (tampil === 'Orang Tua') data = await api('getMyChildrenData');
         else if (tampil === 'Murid') data = await api('getMyStudent');
         else data = await api('getDashboardData');
+      } else if (page === 'asisten') {
+        // Halaman Asisten AI: info bot + riwayat tersimpan milik akun ini.
+        const [info, rw] = await Promise.all([
+          api('getChatInfo'),
+          api('getRiwayatChat').catch(() => ({ riwayat: [] }))
+        ]);
+        data = { info, riwayat: (rw && rw.riwayat) || [] };
       } else if (page === 'students') data = await api('getStudents');
       else if (page === 'classes') data = await api('getClasses');
       // Halaman Absensi memuat LEMBAR ABSENSI (sesi jadwal hari itu + catatan

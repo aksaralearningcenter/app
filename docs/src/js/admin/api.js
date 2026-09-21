@@ -197,7 +197,11 @@ const API_MAP = {
   saveChatApiKey:         { m: 'POST', p: 'chatbot/key', b: a => a[0] },
   saveChatModel:          { m: 'POST', p: 'chatbot/model', b: a => a[0] },
   hapusChatApiKey:        { m: 'DELETE', p: 'chatbot/key' },
-  // Endpoint publik landing (dipakai tombol Tes Balasan di panel admin).
+  // Asisten AI panel (semua peran login).
+  getChatInfo:           { m: 'GET', p: 'chat/info' },
+  getRiwayatChat:        { m: 'GET', p: 'chat/riwayat' },
+  hapusRiwayatChat:      { m: 'DELETE', p: 'chat/riwayat' },
+  // Endpoint publik landing (dipakai halaman Asisten + tombol Tes Balasan).
   publicChat:             { m: 'POST', p: 'public/chat', b: a => a[0] },
   getReportSettings:      { m: 'GET', p: 'site-settings' },
   saveReportSettings:     { m: 'POST', p: 'site-settings', b: a => ({ nilai: { laporan_email_penerima: a[0] } }) },

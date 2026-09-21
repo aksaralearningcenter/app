@@ -27,6 +27,8 @@ const KAMUS = {
   // Admin, Username, FAQ, Normal) sengaja TIDAK didaftarkan — tanpa entri pun
   // hasilnya sudah benar, dan kamus tetap ramping.
   'Utama': 'Main',
+  'Asisten AI': 'AI Assistant',
+  'Asisten': 'Assistant',
   'Akademik': 'Academic',
   'Keuangan': 'Finance',
   'Konten Landing': 'Landing Content',
