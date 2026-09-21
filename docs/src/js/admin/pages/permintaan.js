@@ -14,13 +14,15 @@ import { $, esc, toast } from '../ui.js';
 import { api } from '../api.js';
 import { app, modal, closeModal, unduhCSV } from '../helpers.js';
 import { HARI_PEKAN, STATUS_PERMINTAAN, BADGE_PERMINTAAN, labelKuota, badgeKuota,
-  ringkasKuota, bolehProsesPermintaanLokal, bolehBatalkan, validasiPermintaan }
+  ringkasKuota, bolehProsesPermintaanLokal, bolehBatalkan, validasiPermintaan, tabArsip }
   from '../../shared/jadwal.js';
 
 // Data halaman yang sedang tampil + pilihan kelas/murid untuk formulir.
 let halaman = { permintaan: [], jadwal: [], kuotaMurid: {}, kuotaKelas: {}, paket: [] };
 let kelasCache = [];
 let muridCache = [];
+// Tab status: Diajukan | Disetujui | Selesai | Riwayat (arsip otomatis).
+let tabAktif = 'Diajukan';
 
 const aku = () => Object.assign({}, state.me || {}, { peran: peranTampil() });
 const ortu = () => aku().peran === 'Orang Tua';
@@ -85,13 +87,18 @@ function barisPermintaan(p) {
   const kuota = p.kuota || null;
   const bolehProses = bolehProsesPermintaanLokal(p, aku(), kelasSaya());
   const bolehBatal = bolehBatalkan(p, aku());
+  // Tandai selesai: staf, dari status Disetujui (guru: kelas ampuan saja).
+  const staf = !nonStaf();
+  const bolehSelesai = staf && p.status === 'Disetujui' &&
+    (aku().peran === 'Admin' || kelasSaya().indexOf(p.kelasId) !== -1);
   const cari = [p.pemohonNama, p.pemohon, p.kelasNama, p.namaMurid, p.mapel, p.ruang, p.hari, p.status, p.catatan]
     .join(' ').toLowerCase();
   const jenis = p.tipe === 'Guru' ? 'b-info' : (p.tipe === 'Ortu' ? 'b-warn' : 'b-ok');
   const aksi = [];
   if (bolehProses) aksi.push('<button class="btn btn-n btn-sm" data-action="proses-request" data-id="' + esc(p.id) + '">⚙️ Proses</button>');
+  if (bolehSelesai) aksi.push('<button class="btn btn-g btn-sm" data-action="selesai-request" data-id="' + esc(p.id) + '">✅ Selesai</button>');
   if (bolehBatal) aksi.push('<button class="btn btn-o btn-sm" data-action="batal-request" data-id="' + esc(p.id) + '" data-name="' + esc(p.kelasNama) + '">🚫 Batalkan</button>');
-  return '<tr data-rq-row data-rq-status="' + esc(p.status) + '" data-rq-kelas="' + esc(p.kelasId) + '" data-rq-cari="' + esc(cari) + '">' +
+  return '<tr data-rq-row data-rq-status="' + esc(p.status) + '" data-rq-kelas="' + esc(p.kelasId) + '" data-rq-cari="' + esc(cari) + '" data-rq-tab="' + tabArsip(p.status, p.diproses || p.dibuat) + '">' +
     '<td><span class="badge ' + jenis + '">' + esc(p.tipe || '-') + '</span>' +
       '<div class="ab-kecil">' + esc(p.pemohonNama || p.pemohon || '-') + '</div></td>' +
     '<td><b>' + esc(p.kelasNama) + '</b><div class="ab-kecil">' +
@@ -155,11 +162,19 @@ function kartuKuota(staf) {
 
 export const render = {
   requests: function (d) {
-    halaman = Object.assign({ permintaan: [], jadwal: [], kuotaMurid: {}, kuotaKelas: {}, paket: [] }, d || {});
+    halaman = Object.assign({ permintaan: [], jadwal: [], kuotaMurid: {}, kuotaKelas: {}, paket: [], pengajuanUmum: [] }, d || {});
     halaman.permintaan = halaman.permintaan || [];
+    halaman.pengajuanUmum = (d && d.pengajuanUmum && d.pengajuanUmum.pengajuan) || d.pengajuanUmum || [];
     kumpulkanRelasi();
 
     const staf = !nonStaf();
+    const hitungTab = { Diajukan: 0, Disetujui: 0, Selesai: 0, Riwayat: 0 };
+    halaman.permintaan.forEach(p => { hitungTab[tabArsip(p.status, p.diproses || p.dibuat)]++; });
+    if (!hitungTab[tabAktif] && tabAktif !== 'Diajukan') tabAktif = 'Diajukan';
+    const tabBar = '<div class="ortu-tabs" role="tablist" style="margin:0 0 14px;">' +
+      ['Diajukan', 'Disetujui', 'Selesai', 'Riwayat'].map(t =>
+        '<button type="button" role="tab" aria-selected="' + (t === tabAktif) + '" class="ortu-tab' + (t === tabAktif ? ' on' : '') + '" data-action="tab-request" data-id="' + t + '">' +
+        (t === 'Diajukan' ? '📩 ' : t === 'Disetujui' ? '✅ ' : t === 'Selesai' ? '🏁 ' : '🗂️ ') + t + ' · ' + hitungTab[t] + '</button>').join('') + '</div>';
     const hitung = { Menunggu: 0, Disetujui: 0, Ditolak: 0 };
     halaman.permintaan.forEach(p => { if (hitung[p.status] !== undefined) hitung[p.status]++; });
     const menungguSaya = halaman.permintaan.filter(p => bolehProsesPermintaanLokal(p, aku(), kelasSaya())).length;
@@ -172,7 +187,7 @@ export const render = {
         '<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
           '<button class="btn btn-o btn-sm" data-action="export-request-csv">⬇️ CSV</button>' +
           '<button class="btn btn-n btn-sm" data-action="add-request">➕ Ajukan Jadwal</button>' +
-        '</div></div>' +
+        '</div></div>' + tabBar +
       '<p class="ab-kecil" style="margin-bottom:14px;">' + (mandiri()
         ? 'Ajukan sendiri jadwal belajar Anda di sini (mis. minta ganti jam atau tambah sesi). Pengajuan dicek terhadap kuota sesi paket Anda — selama masih tersisa, permintaan langsung masuk ke antrean persetujuan pengajar.'
         : (ortu()
@@ -198,8 +213,10 @@ export const render = {
         '<thead><tr><th>Pemohon</th><th>Kelas</th><th>Sesi</th><th>Kuota</th><th>Status</th><th>Diajukan</th><th></th></tr></thead>' +
         '<tbody>' + (rows || '<tr><td colspan="7" style="text-align:center;">Belum ada pengajuan jadwal. Tekan <b>➕ Ajukan Jadwal</b> untuk mengajukan sesi baru.</td></tr>') + '</tbody>' +
       '</table></div></div>' +
-      kartuKuota(staf) +
+      kartuKuota(staf) + kartuUmum() +
       '<p class="ab-kecil" style="margin-top:14px;">Kuota dihitung per pekan: sesi aktif + pengajuan yang masih menunggu. Angka <b>0</b> berarti belum diatur (tanpa batas). Butuh tabelnya? Jalankan <code>MIGRASI-jadwal.sql</code> bila halaman ini menolak memuat data.</p>';
+    saringPermintaan();   // terapkan tab aktif sejak awal
+    saringUmum();
   }
 };
 
@@ -210,7 +227,8 @@ function saringPermintaan() {
   const q = (($('rq-s-cari') || {}).value || '').toLowerCase().trim();
   let tampil = 0;
   document.querySelectorAll('#page [data-rq-row]').forEach(tr => {
-    const cocok = (!status || tr.dataset.rqStatus === status) &&
+    const cocok = (tr.dataset.rqTab || 'Diajukan') === tabAktif &&
+      (!status || tr.dataset.rqStatus === status) &&
       (!kelas || tr.dataset.rqKelas === kelas) &&
       (!q || (tr.dataset.rqCari || '').indexOf(q) !== -1);
     tr.style.display = cocok ? '' : 'none';
@@ -220,7 +238,183 @@ function saringPermintaan() {
   if (info) info.textContent = tampil + ' dari ' + halaman.permintaan.length + ' pengajuan';
 }
 
-// ---------- FORM PENGAJUAN ----------
+// ---------- PENGAJUAN UMUM (izin, pembayaran, progres) ----------
+// Alur: Diajukan → Disetujui/Ditolak → Selesai → Riwayat (otomatis).
+// Disetujui = baris asli auto-tercatat (absensi/transaksi/progres).
+let tabUmum = 'Diajukan';
+
+const LABEL_JENIS = { izin: '📝 Izin', pembayaran: '💰 Pembayaran', progres: '📈 Progres' };
+const BADGE_JENIS = { izin: 'b-warn', pembayaran: 'b-ok', progres: 'b-info' };
+
+function isiUmum(p) {
+  const t = [];
+  if (p.jenis === 'izin') t.push((p.subtipe || 'Izin') + ' · ' + (p.tanggal || '-'));
+  if (p.jenis === 'pembayaran') t.push('Rp' + Number(p.jumlah || 0).toLocaleString('id-ID'));
+  if (p.jenis === 'progres') t.push([p.mapel, p.topik, p.nilai ? ('nilai ' + p.nilai) : ''].filter(Boolean).join(' · '));
+  if (p.bukti) t.push('<a href="' + esc(p.bukti) + '" target="_blank" rel="noopener">🧾 bukti</a>');
+  if (p.catatan) t.push('📝 ' + esc(p.catatan));
+  return t.join('<br>') || '-';
+}
+
+function barisUmum(p) {
+  const bolehProsesUmum = !nonStaf() && p.status === 'Diajukan' &&
+    (aku().peran === 'Admin' || (function () {
+      const ids = Object.keys(halaman.kuotaMurid || {});
+      return ids.indexOf(p.studentId) !== -1 || kelasSaya().indexOf(p.kelasId) !== -1;
+    })());
+  const bolehSelesaiUmum = !nonStaf() && p.status === 'Disetujui' &&
+    (aku().peran === 'Admin' || kelasSaya().indexOf(p.kelasId) !== -1);
+  const bolehBatalUmum = p.status === 'Diajukan' && (p.pemohon === (aku().email || '') || aku().peran === 'Admin');
+  const aksi = [];
+  if (bolehProsesUmum) aksi.push('<button class="btn btn-n btn-sm" data-action="proses-pengajuan" data-id="' + esc(p.id) + '">⚙️ Proses</button>');
+  if (bolehSelesaiUmum) aksi.push('<button class="btn btn-g btn-sm" data-action="selesai-pengajuan" data-id="' + esc(p.id) + '">✅ Selesai</button>');
+  if (bolehBatalUmum) aksi.push('<button class="btn btn-o btn-sm" data-action="batal-pengajuan" data-id="' + esc(p.id) + '">🚫 Batalkan</button>');
+  const cari = [p.pemohonNama, p.pemohon, p.namaMurid, p.kelasNama, p.jenis, p.mapel, p.topik, p.status, p.catatan].join(' ').toLowerCase();
+  return '<tr data-pu-row data-pu-tab="' + tabArsip(p.status, p.diproses || p.dibuat) + '" data-pu-cari="' + esc(cari) + '">' +
+    '<td><span class="badge ' + (BADGE_JENIS[p.jenis] || 'b-info') + '">' + esc(LABEL_JENIS[p.jenis] || p.jenis) + '</span>' +
+      '<div class="ab-kecil">' + esc(p.pemohonNama || p.pemohon || '-') + '</div></td>' +
+    '<td><b>' + esc(p.namaMurid || '-') + '</b><div class="ab-kecil">' + esc(p.kelasNama || '') + '</div></td>' +
+    '<td style="font-size:.8rem;">' + isiUmum(p) + '</td>' +
+    '<td><span class="badge ' + (p.status === 'Diajukan' ? 'b-warn' : p.status === 'Disetujui' ? 'b-ok' : p.status === 'Selesai' ? 'b-info' : 'b-err') + '">' + esc(p.status) + '</span>' +
+      (p.jawaban ? '<div class="ab-kecil">💬 ' + esc(p.jawaban) + '</div>' : '') + '</td>' +
+    '<td class="ab-kecil">' + esc(String(p.dibuat || '').substring(0, 10)) +
+      (p.pemroses ? '<div class="ab-kecil">oleh ' + esc(p.pemroses) + '</div>' : '') + '</td>' +
+    '<td style="white-space:nowrap;">' + (aksi.join(' ') || '<span class="ab-kecil">-</span>') + '</td></tr>';
+}
+
+function kartuUmum() {
+  const daftar = halaman.pengajuanUmum || [];
+  const hitung = { Diajukan: 0, Disetujui: 0, Selesai: 0, Riwayat: 0 };
+  daftar.forEach(p => { hitung[tabArsip(p.status, p.diproses || p.dibuat)]++; });
+  if (!hitung[tabUmum] && tabUmum !== 'Diajukan') tabUmum = 'Diajukan';
+  const tabs = '<div class="ortu-tabs" role="tablist" style="margin:0 0 12px;">' +
+    ['Diajukan', 'Disetujui', 'Selesai', 'Riwayat'].map(t =>
+      '<button type="button" role="tab" aria-selected="' + (t === tabUmum) + '" class="ortu-tab' + (t === tabUmum ? ' on' : '') + '" data-action="tab-pengajuan" data-id="' + t + '">' + t + ' · ' + hitung[t] + '</button>').join('') + '</div>';
+  const rows = daftar.map(barisUmum).join('');
+  return '<div class="card" style="margin-top:18px;"><div class="card-head"><h3>📬 Pengajuan Umum (Izin · Pembayaran · Progres)</h3>' +
+    (nonStaf() ? '<button class="btn btn-n btn-sm" data-action="add-pengajuan">➕ Pengajuan Baru</button>' : '<span class="badge b-info">' + daftar.length + ' pengajuan</span>') + '</div>' +
+    '<p class="ab-kecil" style="margin-bottom:12px;">Izin absensi, konfirmasi pembayaran, dan usulan progres dari orang tua — disetujui staf lalu <b>tercatat otomatis</b>, selesai otomatis masuk Riwayat.</p>' +
+    tabs +
+    '<div class="table-wrap"><table><thead><tr><th>Jenis</th><th>Murid</th><th>Isi</th><th>Status</th><th>Diajukan</th><th></th></tr></thead><tbody>' +
+    (rows || '<tr><td colspan="6" style="text-align:center;">Belum ada pengajuan.</td></tr>') + '</tbody></table></div></div>';
+}
+
+function saringUmum() {
+  const q = (($('pu-cari') || {}).value || '').toLowerCase().trim();
+  document.querySelectorAll('#page [data-pu-row]').forEach(tr => {
+    const cocok = (tr.dataset.puTab || 'Diajukan') === tabUmum &&
+      (!q || (tr.dataset.puCari || '').indexOf(q) !== -1);
+    tr.style.display = cocok ? '' : 'none';
+  });
+}
+
+// ---------- FORM PENGAJUAN UMUM ----------
+function opsiAnakUmum() {
+  return anakSaya().map(c => '<option value="' + esc(c.studentId) + '">' + esc(c.nama) + ' — ' + esc(c.kelas || '') + '</option>').join('');
+}
+
+export function pengajuanJenisBerubah() {
+  const j = ($('pu-jenis') || {}).value || 'izin';
+  const w = $('pu-jenis-fields');
+  if (!w) return;
+  if (j === 'izin') {
+    w.innerHTML = '<div class="frow"><div class="fg"><label>Tanggal *</label><input type="date" id="pu-tanggal"></div>' +
+      '<div class="fg"><label>Keperluan *</label><select id="pu-subtipe"><option>Sakit</option><option>Izin</option></select></div></div>';
+  } else if (j === 'pembayaran') {
+    w.innerHTML = '<div class="frow"><div class="fg"><label>Nominal (Rp) *</label><input type="number" id="pu-jumlah" min="1000" placeholder="mis. 350000"></div>' +
+      '<div class="fg"><label>Link Bukti (opsional)</label><input id="pu-bukti" placeholder="https://…"></div></div>';
+  } else {
+    w.innerHTML = '<div class="frow"><div class="fg"><label>Mapel *</label><input id="pu-mapel" placeholder="mis. Matematika"></div>' +
+      '<div class="fg"><label>Nilai (opsional)</label><input id="pu-nilai" placeholder="mis. 85"></div></div>' +
+      '<div class="fg"><label>Topik *</label><input id="pu-topik" placeholder="mis. Pecahan"></div>';
+  }
+}
+
+function bukaFormUmum() {
+  const anak = anakSaya();
+  if (!anak.length) { toast('Belum ada data anak pada akun ini. Hubungi admin sekolah.', 'err'); return; }
+  modal('📬 Pengajuan Baru',
+    '<div class="frow"><div class="fg"><label>Jenis *</label><select id="pu-jenis" onchange="pengajuanJenisBerubah()">' +
+      '<option value="izin">📝 Izin Absensi</option><option value="pembayaran">💰 Konfirmasi Pembayaran</option><option value="progres">📈 Usulan Progres</option></select></div>' +
+    '<div class="fg"><label>Anak *</label><select id="pu-anak">' + opsiAnakUmum() + '</select></div></div>' +
+    '<div id="pu-jenis-fields"></div>' +
+    '<div class="fg"><label>Catatan</label><textarea id="pu-catatan" rows="2" placeholder="Keterangan tambahan (opsional)"></textarea></div>',
+    '<button class="btn btn-o btn-sm" onclick="closeModal()">Batal</button>' +
+    '<button class="btn btn-n btn-sm" data-action="kirim-pengajuan">📩 Kirim Pengajuan</button>');
+  pengajuanJenisBerubah();
+}
+
+function bukaProsesUmum(id) {
+  const p = (halaman.pengajuanUmum || []).filter(x => x.id === id)[0];
+  if (!p) { toast('Pengajuan tidak ditemukan. Muat ulang halaman.', 'err'); return; }
+  modal('⚙️ Proses Pengajuan',
+    '<p><b>' + esc(p.pemohonNama || p.pemohon || '-') + '</b> mengajukan ' + esc(LABEL_JENIS[p.jenis] || p.jenis) + ' untuk <b>' + esc(p.namaMurid || '-') + '</b>:</p>' +
+    '<p style="font-size:.85rem;">' + isiUmum(p) + '</p>' +
+    '<div class="fg"><label>Catatan / alasan (opsional)</label><textarea id="pu-jawaban" rows="2"></textarea></div>',
+    '<button class="btn btn-o btn-sm" onclick="closeModal()">Batal</button>' +
+    '<button class="btn btn-d btn-sm" data-action="tolak-pengajuan" data-id="' + esc(p.id) + '">❌ Tolak</button>' +
+    '<button class="btn btn-n btn-sm" data-action="setujui-pengajuan" data-id="' + esc(p.id) + '">✅ Setujui &amp; Catat</button>');
+}
+
+export const actionsUmum = {
+  'add-pengajuan': function () { bukaFormUmum(); },
+  'kirim-pengajuan': async function () {
+    const data = {
+      jenis: ($('pu-jenis') || {}).value || 'izin',
+      studentId: ($('pu-anak') || {}).value || '',
+      tanggal: ($('pu-tanggal') || {}).value || '',
+      subtipe: ($('pu-subtipe') || {}).value || '',
+      jumlah: ($('pu-jumlah') || {}).value || '',
+      bukti: ($('pu-bukti') || {}).value || '',
+      mapel: ($('pu-mapel') || {}).value || '',
+      topik: ($('pu-topik') || {}).value || '',
+      nilai: ($('pu-nilai') || {}).value || '',
+      catatan: ($('pu-catatan') || {}).value || ''
+    };
+    try {
+      const res = await api('tambahPengajuan', data);
+      closeModal();
+      toast(res.message || 'Pengajuan terkirim.', 'ok');
+      invalidateCache('requests');
+      app.loadPage('requests');
+    } catch (ex) { toast(ex.message, 'err'); }
+  },
+  'proses-pengajuan': function (id) { bukaProsesUmum(id); },
+  'setujui-pengajuan': async function (id) { await kirimProsesUmum(id, 'setuju'); },
+  'tolak-pengajuan': async function (id) { await kirimProsesUmum(id, 'tolak'); },
+  'batal-pengajuan': async function (id) {
+    if (!confirm('Batalkan pengajuan ini?')) return;
+    try {
+      const res = await api('batalPengajuan', id);
+      toast(res.message || 'Dibatalkan.', 'ok');
+      invalidateCache('requests');
+      app.loadPage('requests');
+    } catch (ex) { toast(ex.message, 'err'); }
+  },
+  'selesai-pengajuan': async function (id) {
+    if (!confirm('Tandai selesai? Pengajuan otomatis masuk Riwayat.')) return;
+    try {
+      const res = await api('selesaikanPengajuan', id);
+      toast(res.message || 'Selesai.', 'ok');
+      invalidateCache('requests');
+      app.loadPage('requests');
+    } catch (ex) { toast(ex.message, 'err'); }
+  },
+  'tab-pengajuan': function (id) {
+    if (['Diajukan', 'Disetujui', 'Selesai', 'Riwayat'].indexOf(id) !== -1) { tabUmum = id; render.requests(halaman); }
+  }
+};
+
+async function kirimProsesUmum(id, aksi) {
+  const jawaban = ($('pu-jawaban') || {}).value || '';
+  try {
+    const res = await api('prosesPengajuan', id, aksi, jawaban);
+    closeModal();
+    toast(res.message || 'Diproses.', 'ok');
+    invalidateCache('requests');
+    app.loadPage('requests');
+  } catch (ex) { toast(ex.message, 'err'); }
+}
 function opsiMurid(kelasId, pilih) {
   const anggota = (nonStaf() ? anakSaya().map(c => ({ id: c.studentId, nama: c.nama, kelasId: c.kelasId })) : muridCache)
     .filter(m => !kelasId || m.kelasId === kelasId);
@@ -379,6 +573,16 @@ async function batalkanPermintaan(id, nama) {
   } catch (ex) { toast(ex.message, 'err'); }
 }
 
+async function selesaikanPermintaan(id) {
+  if (!confirm('Tandai sesi ini selesai? Pengajuan otomatis masuk Riwayat.')) return;
+  try {
+    const res = await api('selesaikanRequest', id);
+    toast(res.message || 'Selesai.', 'ok');
+    invalidateCache('requests');
+    app.loadPage('requests');
+  } catch (ex) { toast(ex.message, 'err'); }
+}
+
 // ---------- KUOTA ----------
 function formKuotaKelas(id) {
   const k = halaman.kuotaKelas[id] || {};
@@ -465,13 +669,17 @@ function permintaanCSV() {
 export { bukaFormPermintaan, savePermintaan, prosesPermintaanSekarang, permintaanKelasBerubah,
   permintaanKuotaBerubah, saveKuotaKelas, saveKuotaMurid, saringPermintaan };
 
-export const actions = {
+export const actions = Object.assign({
   'add-request': function () { bukaFormPermintaan(); },
   'proses-request': function (id) { bukaProses(id); },
   'batal-request': function (id, nama) { batalkanPermintaan(id, nama); },
+  'selesai-request': function (id) { selesaikanPermintaan(id); },
+  'tab-request': function (id) {
+    if (['Diajukan', 'Disetujui', 'Selesai', 'Riwayat'].indexOf(id) !== -1) { tabAktif = id; render.requests(halaman); }
+  },
   'kuota-kelas': function (id) { formKuotaKelas(id); },
   'kuota-murid': function (id) { formKuotaMurid(id); },
   'terapkan-kuota-paket': function () { terapkanKuotaPaket(); },
   'export-request-csv': function () { permintaanCSV(); },
   'lihat-requests': function () { app.loadPage('requests'); }
-};
+}, actionsUmum);

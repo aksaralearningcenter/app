@@ -935,14 +935,20 @@
           <span class="chat-avatar"><i class="fa-solid fa-graduation-cap"></i></span>
           <span>
             <b id="chat-nama">Tanya Aksara</b>
-            <small>Asisten Aksara Learning Center</small>
+            <small><span class="chat-online" aria-hidden="true"></span><span id="chat-status">Online — balasan otomatis</span></small>
           </span>
         </div>
-        <button class="chat-x" id="chat-x" type="button" aria-label="Tutup chat"><i class="fa-solid fa-xmark"></i></button>
+        <div class="chat-aksi">
+          <button class="chat-x" id="chat-hapus" type="button" aria-label="Hapus riwayat chat" title="Hapus riwayat chat" hidden><i class="fa-solid fa-trash-can"></i></button>
+          <button class="chat-x" id="chat-x" type="button" aria-label="Tutup chat"><i class="fa-solid fa-xmark"></i></button>
+        </div>
       </header>
       <div class="chat-body" id="chat-body" aria-live="polite"></div>
       <div class="chat-saran" id="chat-saran"></div>
+      <div class="chat-prev" id="chat-prev" hidden></div>
       <form class="chat-form" id="chat-form" autocomplete="off">
+        <button class="chat-lampir" id="chat-lampir" type="button" aria-label="Lampirkan foto atau PDF" title="Lampirkan foto atau PDF (khusus akun login)" hidden><i class="fa-solid fa-paperclip"></i></button>
+        <input type="file" id="chat-file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" hidden>
         <textarea id="chat-input" rows="1" placeholder="Tulis pertanyaan Anda…" aria-label="Tulis pesan"></textarea>
         <button type="submit" id="chat-kirim" aria-label="Kirim pesan"><i class="fa-solid fa-paper-plane"></i></button>
       </form>

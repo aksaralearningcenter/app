@@ -28,6 +28,7 @@ export default [
         File: 'readonly',
         FormData: 'readonly',
         FileReader: 'readonly',
+        Image: 'readonly',
         AbortController: 'readonly',
         IntersectionObserver: 'readonly',
         MutationObserver: 'readonly',

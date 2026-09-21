@@ -217,7 +217,8 @@ import { BADGE_PERMINTAAN, labelKuota, badgeKuota, ringkasKuota } from '../../sh
         '<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">' +
           '<button class="btn btn-n btn-sm" data-action="add-request">📩 Ajukan Jadwal</button>' +
           '<button class="btn btn-o btn-sm" data-action="lihat-requests">🗂️ Kuota &amp; Riwayat</button>' +
-        '</div>') +
+        '</div>' +
+        '<p class="ab-kecil" style="margin:8px 0 0;">Izin absensi, konfirmasi pembayaran &amp; usulan progres diajukan dari halaman <button class="btn btn-o btn-sm" data-action="lihat-requests" style="padding:2px 8px;">📬 Pengajuan</button> — riwayatnya otomatis terarsip bila selesai.</p>') +
       seksi('📚', 'Ujian' + ((c.ujian || []).length ? ' · ' + (c.ujian || []).length + ' riwayat' : ''),
         uj ? '<div class="table-wrap"><table><thead><tr><th>Ujian</th><th>Tanggal</th><th style="text-align:right;">Skor</th><th>Status</th></tr></thead><tbody>' + uj + '</tbody></table></div>' : '<div class="empty">Belum ada riwayat ujian.</div>') +
       '<div class="card"><div class="card-head"><h3>📖 Buku Khusus</h3><span class="badge b-info">' + buku.length + ' buku</span></div>' +

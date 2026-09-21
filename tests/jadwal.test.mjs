@@ -161,3 +161,15 @@ test('ringkasKehadiran: menghitung status dan persen hadir', () => {
   assert.equal(j.BADGE_ABSENSI.Hadir, 'b-ok');
   assert.equal(j.BADGE_ABSENSI.Alpha, 'b-err');
 });
+
+test('tabArsip: alur Diajukan Disetujui Selesai Riwayat', () => {
+  assert.equal(j.tabArsip('Menunggu'), 'Diajukan');
+  assert.equal(j.tabArsip('Baru'), 'Diajukan');
+  assert.equal(j.tabArsip('Disetujui'), 'Disetujui');
+  assert.equal(j.tabArsip('Selesai'), 'Selesai');
+  assert.equal(j.tabArsip('Ditolak'), 'Riwayat');
+  assert.equal(j.tabArsip('Dibatalkan'), 'Riwayat');
+  const lama = new Date(Date.now() - 40 * 86400000).toISOString();
+  assert.equal(j.tabArsip('Selesai', lama), 'Riwayat', 'selesai tua otomatis arsip');
+  assert.equal(j.tabArsip('Disetujui', lama), 'Disetujui', 'disetujui tidak ikut arsip');
+});

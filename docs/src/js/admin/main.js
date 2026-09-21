@@ -22,7 +22,7 @@ import { render as renderJadwal, actions as actionsJadwal,
   saveSchedule, jadwalKelasBerubah, saringJadwal, bukaFormJadwal } from './pages/jadwal.js';
 import { render as renderPermintaan, actions as actionsPermintaan,
   bukaFormPermintaan, savePermintaan, prosesPermintaanSekarang, permintaanKelasBerubah,
-  permintaanKuotaBerubah, saveKuotaKelas, saveKuotaMurid, saringPermintaan } from './pages/permintaan.js';
+  permintaanKuotaBerubah, saveKuotaKelas, saveKuotaMurid, saringPermintaan, pengajuanJenisBerubah } from './pages/permintaan.js';
 import { render as renderUsers, actions as actionsUsers, openChangePass, saveChangePass, saveAddUser } from './pages/users.js';
 import { render as renderAnak, actions as actionsAnak, saringAkunAnak } from './pages/anak.js';
 import { render as renderKonten, actions as actionsKonten,
@@ -312,6 +312,8 @@ function handleAction(action, id, name, extra, el) {
       // Permintaan jadwal + kuota sesi (kelas & murid).
       else if (page === 'requests') {
         data = await api('getScheduleRequests');
+        // Pengajuan umum ortu (izin/pembayaran/progres) digabung di halaman ini.
+        try { data.pengajuanUmum = await api('getPengajuan'); } catch (_e) { data.pengajuanUmum = []; }
         // Mode ortu butuh daftar anak untuk formulir: pastikan cache dashboard
         // memegang respons my-children (bukan dashboard staf).
         if (peranTampil() === 'Orang Tua' && !((state.cache.dashboard || {}).children)) {
@@ -451,7 +453,7 @@ function handleAction(action, id, name, extra, el) {
     bukaFormJadwal, jadwalKelasBerubah, muatAbsensi, muatRiwayatAbsensi,
     saringJadwal, saveSchedule: sekaliTulis(saveSchedule),
     // Permintaan jadwal & kuota (form pengajuan, proses, dan kuota).
-    bukaFormPermintaan, permintaanKelasBerubah, permintaanKuotaBerubah,
+    bukaFormPermintaan, permintaanKelasBerubah, permintaanKuotaBerubah, pengajuanJenisBerubah,
     prosesPermintaanSekarang: sekaliTulis(prosesPermintaanSekarang),
     saringPermintaan,
     saveKuotaKelas: sekaliTulis(saveKuotaKelas), saveKuotaMurid: sekaliTulis(saveKuotaMurid),

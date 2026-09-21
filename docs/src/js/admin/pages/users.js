@@ -3,6 +3,10 @@ import { state, invalidateCache } from '../state.js';
 import { $, esc, toast } from '../ui.js';
 import { api, post } from '../api.js';
 import { app, modal, closeModal } from '../helpers.js';
+import { tabArsip } from '../../shared/jadwal.js';
+
+// Tab status pendaftaran: Diajukan (Baru) | Selesai | Riwayat (arsip otomatis).
+let tabDaftar = 'Diajukan';
 
 
   // Jumlah murid tertaut (kolom `users.anak` = "S-1:A, S-2:B"): anak-anak untuk
@@ -46,8 +50,14 @@ import { app, modal, closeModal } from '../helpers.js';
     registrations: function(list) {
       list = list || [];
       const count = st => list.filter(r => r.status === st).length;
+      const hitungTab = { Diajukan: 0, Selesai: 0, Riwayat: 0 };
+      list.forEach(r => { hitungTab[tabArsip(r.status, r.waktu)]++; });
+      if (!hitungTab[tabDaftar] && tabDaftar !== 'Diajukan') tabDaftar = 'Diajukan';
+      const tabBar = '<div class="ortu-tabs" role="tablist" style="margin:0 0 14px;">' +
+        ['Diajukan', 'Selesai', 'Riwayat'].map(t =>
+          '<button type="button" role="tab" aria-selected="' + (t === tabDaftar) + '" class="ortu-tab' + (t === tabDaftar ? ' on' : '') + '" data-action="tab-reg" data-id="' + t + '">' + t + ' · ' + hitungTab[t] + '</button>').join('') + '</div>';
       const rows = list.map(r =>
-        '<tr><td><b>' + esc(r.nama) + '</b><div style="font-size:0.75rem;">' + esc(r.program || '-') + '</div></td>' +
+        '<tr data-reg-tab="' + tabArsip(r.status, r.waktu) + '"><td><b>' + esc(r.nama) + '</b><div style="font-size:0.75rem;">' + esc(r.program || '-') + '</div></td>' +
         '<td>' + esc(r.noHP || '-') + '<div style="font-size:0.75rem;">' + esc(r.namaOrangTua || '-') + '</div></td>' +
         '<td><a href="mailto:' + esc(r.email || '') + '">' + esc(r.email || '-') + '</a></td>' +
         '<td>' + new Date(r.waktu).toLocaleDateString('id-ID') + '</td>' +
@@ -61,9 +71,18 @@ import { app, modal, closeModal } from '../helpers.js';
         '<div class="stat"><div class="n">' + count('Baru') + '</div><div class="l">Menunggu</div></div>' +
         '<div class="stat"><div class="n">' + count('Selesai') + '</div><div class="l">Jadi Murid</div></div>' +
         '<div class="stat"><div class="n">' + count('Ditolak') + '</div><div class="l">Ditolak</div></div></div>' +
-        '<div class="card" style="margin-top:16px;"><div class="table-wrap"><table><thead><tr><th>Calon Murid</th><th>Kontak</th><th>Email</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+        '<div style="margin-top:14px;">' + tabBar + '</div>' +
+        '<div class="card" style="margin-top:2px;"><div class="table-wrap"><table><thead><tr><th>Calon Murid</th><th>Kontak</th><th>Email</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+      saringReg();
     },
   };
+
+  // Saring baris pendaftaran ke tab aktif.
+  function saringReg() {
+    document.querySelectorAll('#page [data-reg-tab]').forEach(tr => {
+      tr.style.display = (tr.dataset.regTab || 'Diajukan') === tabDaftar ? '' : 'none';
+    });
+  }
 
 
   // ============ AKSI: USERS ============
@@ -185,5 +204,8 @@ import { app, modal, closeModal } from '../helpers.js';
     'toggle-notif-email': function (id, extra) { toggleNotifEmail(id, extra); },
     'toggle-my-notif': function (id, name, extra) { toggleMyNotif(extra); },
     'convert-reg': function (id) { convertReg(id); },
-    'reject-reg': function (id) { rejectReg(id); }
+    'reject-reg': function (id) { rejectReg(id); },
+    'tab-reg': function (id) {
+      if (['Diajukan', 'Selesai', 'Riwayat'].indexOf(id) !== -1) { tabDaftar = id; saringReg(); }
+    }
   };

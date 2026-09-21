@@ -15,10 +15,10 @@ const HARI_UTC = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
 export const STATUS_ABSENSI = ['Hadir', 'Sakit', 'Izin', 'Alpha'];
 export const STATUS_JADWAL = ['Aktif', 'Nonaktif'];
 // Permintaan jadwal (Guru / Orang Tua) → disetujui Admin atau Guru pengampu.
-export const STATUS_PERMINTAAN = ['Menunggu', 'Disetujui', 'Ditolak', 'Dibatalkan'];
+export const STATUS_PERMINTAAN = ['Menunggu', 'Disetujui', 'Selesai', 'Ditolak', 'Dibatalkan'];
 // Warna badge per status absensi (kelas CSS panel admin).
 export const BADGE_ABSENSI = { Hadir: 'b-ok', Sakit: 'b-warn', Izin: 'b-warn', Alpha: 'b-err' };
-export const BADGE_PERMINTAAN = { Menunggu: 'b-warn', Disetujui: 'b-ok', Ditolak: 'b-err', Dibatalkan: 'b-info' };
+export const BADGE_PERMINTAAN = { Menunggu: 'b-warn', Disetujui: 'b-ok', Selesai: 'b-info', Ditolak: 'b-err', Dibatalkan: 'b-info' };
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 
@@ -259,4 +259,38 @@ export function bolehBatalkan(p, aku) {
   if ((r.status || 'Menunggu') !== 'Menunggu') return false;
   if (me.peran === 'Admin') return true;
   return !!(r.pemohon && r.pemohon === me.email);
+}
+
+// ---------- TAB STATUS & ARSIP RIWAYAT ----------
+// Alur seragam: Diajukan → Disetujui → Selesai → Riwayat (otomatis).
+// "Riwayat" = aturan tampil: status final (Selesai/Ditolak/Dibatalkan) yang
+// berumur >30 hari, plus semua Ditolak/Dibatalkan. Tanpa memindah data.
+export const ARSIP_HARI = 30;
+const STATUS_FINAL = ['Selesai', 'Ditolak', 'Dibatalkan'];
+const STATUS_MENUNGGU = ['Menunggu', 'Baru', 'Diajukan'];
+
+export function umurHari(tanggal) {
+  const t = new Date(tanggal || '').getTime();
+  if (!t) return -1;
+  return Math.floor((Date.now() - t) / 86400000);
+}
+
+// Tab tampilan satu baris: Diajukan | Disetujui | Selesai | Riwayat.
+export function tabArsip(status, tanggal) {
+  const s = String(status || 'Menunggu');
+  if (s === 'Disetujui') return 'Disetujui';
+  if (s === 'Selesai') return umurHari(tanggal) > ARSIP_HARI ? 'Riwayat' : 'Selesai';
+  if (STATUS_FINAL.indexOf(s) !== -1) return 'Riwayat';
+  if (STATUS_MENUNGGU.indexOf(s) !== -1) return 'Diajukan';
+  return 'Diajukan';
+}
+
+export function bagiArsip(daftar) {
+  const aktif = [], riwayat = [];
+  (daftar || []).forEach(r => {
+    const tab = tabArsip(r.status, r.diproses || r.dibuat);
+    if (tab === 'Riwayat') riwayat.push(r);
+    else aktif.push(r);
+  });
+  return { aktif, riwayat };
 }

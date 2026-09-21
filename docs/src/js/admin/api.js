@@ -100,6 +100,7 @@ const API_MAP = {
   addScheduleRequest:       { m: 'POST', p: () => 'schedule-requests' + ortuQuery(false), b: a => a[0] },
   prosesScheduleRequest:    { m: 'POST', p: a => 'schedule-requests/' + enc(a[0]) + '/proses', b: a => ({ aksi: a[1], jawaban: a[2] || '' }) },
   batalkanScheduleRequest:  { m: 'POST', p: a => 'schedule-requests/' + enc(a[0]) + '/batal' },
+  selesaikanRequest:        { m: 'POST', p: a => 'schedule-requests/' + enc(a[0]) + '/selesai' },
   getScheduleQuota:         { m: 'GET',  p: a => 'schedule-quota?murid=' + enc(a[0]) + ortuQuery(true) },
   terapkanKuotaPaket:       { m: 'POST', p: 'schedule-quota/terapkan' },
   addSchedule:            { m: 'POST', p: 'schedules', b: a => a[0] },
@@ -116,6 +117,12 @@ const API_MAP = {
   getBatchStartupData:    { m: 'GET',  p: 'dashboard/batch' },
   getStatsData:           { m: 'GET',  p: 'stats' },
   getMyChildrenData:      { m: 'GET',  p: () => 'my-children' + ortuQuery(false) },
+  // Pengajuan umum ortu (izin, pembayaran, progres).
+  getPengajuan:            { m: 'GET',  p: () => 'pengajuan' + ortuQuery(false) },
+  tambahPengajuan:         { m: 'POST', p: () => 'pengajuan' + ortuQuery(false), b: a => a[0] },
+  prosesPengajuan:         { m: 'POST', p: a => 'pengajuan/' + enc(a[0]) + '/proses', b: a => ({ aksi: a[1], jawaban: a[2] || '' }) },
+  batalPengajuan:          { m: 'POST', p: a => 'pengajuan/' + enc(a[0]) + '/batal' },
+  selesaikanPengajuan:     { m: 'POST', p: a => 'pengajuan/' + enc(a[0]) + '/selesai' },
   // Panel Murid (SMA/mahasiswa/les privat dewasa): data miliknya sendiri.
   getMyStudent:           { m: 'GET',  p: 'my-student' },
   setMyNotifEmail:        { m: 'POST', p: 'my-notif-email', b: a => ({ status: a[0] }) },
