@@ -32,6 +32,8 @@ import { render as renderKonten, actions as actionsKonten,
 import { render as renderAsesmen, actions as actionsAsesmen, saveAsesmen, saveSoal,
   jenisSoalBerubah, imporSoalSekarang, unduhTemplateSoal, simpanNilaiEsai } from './pages/asesmen.js';
 import { render as renderLaporan, actions as actionsLaporan, genReport, getLhLimit } from './pages/laporan.js';
+import { render as renderTerpadu, actions as actionsTerpadu } from './pages/terpadu.js';
+import { render as renderPanduan, actions as actionsPanduan } from './pages/panduan.js';
 import { pilihBerkas, pratinjauGambar, pratinjauDokumen, unggahBerkas } from './pages/upload.js';
 
 // Modul halaman kembali ke loadPage lewat registry ini (diisi sekali di sini).
@@ -55,11 +57,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const ACTIONS = Object.assign({}, actionsDashboard, actionsAsisten, actionsMurid, actionsKelas,
-  actionsJadwal, actionsPermintaan, actionsUsers, actionsAnak, actionsKonten, actionsAsesmen, actionsLaporan);
+  actionsJadwal, actionsPermintaan, actionsUsers, actionsAnak, actionsKonten, actionsAsesmen, actionsLaporan, actionsTerpadu, actionsPanduan);
 
 // Renderer seluruh halaman, dirangkai dari modul per domain.
 const RENDER = Object.assign({}, renderDashboard, renderAsisten, renderMurid, renderKelas,
-  renderJadwal, renderPermintaan, renderUsers, renderAnak, renderKonten, renderAsesmen, renderLaporan);
+  renderJadwal, renderPermintaan, renderUsers, renderAnak, renderKonten, renderAsesmen, renderLaporan, renderTerpadu, renderPanduan);
 
 function handleAction(action, id, name, extra, el) {
   if (action === 'refresh-page') { invalidateCache(id); app.loadPage(id); return; }
@@ -103,13 +105,13 @@ function handleAction(action, id, name, extra, el) {
     // 'settings' ikut di sini karena isinya memakai pengaturan situs, riwayat
     // login, dan token WhatsApp — sebelumnya menunya tampil untuk Guru tetapi
     // halamannya selalu gagal dengan "Hanya Admin yang bisa melakukan aksi ini".
-    const adminOnly = ['users', 'orangtua', 'registrations', 'pricing', 'news', 'books', 'gallery', 'partners', 'testimoni', 'faq', 'program', 'kurikulum', 'kartu', 'situs', 'chatbot', 'maintenance', 'reports', 'loginhistory', 'settings'];
+    const adminOnly = ['users', 'orangtua', 'registrations', 'pricing', 'news', 'books', 'gallery', 'partners', 'testimoni', 'faq', 'program', 'kurikulum', 'kartu', 'situs', 'chatbot', 'maintenance', 'reports', 'loginhistory', 'settings', 'modul', 'identitas', 'terpadu'];
     // Orang Tua & Murid bukan staf: menunya Dashboard + Permintaan + Asisten —
     // data mereka sendiri + pengajuan/riwayat jadwal + chatbot.
     const nonStaf = peran === 'Orang Tua' || peran === 'Murid';
     document.querySelectorAll('#nav button').forEach(b => {
       const p = b.dataset.page;
-      if (nonStaf) b.style.display = (p === 'dashboard' || p === 'requests' || p === 'asisten') ? '' : 'none';
+      if (nonStaf) b.style.display = (p === 'dashboard' || p === 'requests' || p === 'asisten' || p === 'panduan') ? '' : 'none';
       else if (peran !== 'Admin') b.style.display = adminOnly.includes(p) ? 'none' : '';
       else b.style.display = '';
     });
@@ -361,6 +363,10 @@ function handleAction(action, id, name, extra, el) {
       else if (page === 'activitylog') data = await api('getActivityLog', 200);
       else if (page === 'loginhistory') { const res = await api('getLoginHistory', getLhLimit()); data = res.data || []; }
       else if (page === 'settings') data = await api('getWhatsAppSettings');
+      else if (page === 'modul') data = await api('getModul');
+      else if (page === 'panduan') data = await api('getPanduan');
+      else if (page === 'identitas') data = await api('getIdentitas');
+      else if (page === 'terpadu') data = {};
       state.cache[page] = data;
       state.cacheTime[page] = Date.now();
       RENDER[page](data);
